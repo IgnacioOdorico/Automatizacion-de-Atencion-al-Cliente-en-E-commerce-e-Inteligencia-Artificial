@@ -1,0 +1,502 @@
+{
+  "name": "Atencion Cliente OMNICANAL IA PRO TESIS",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "options": {}
+      },
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -1776,
+        16
+      ],
+      "id": "3631f03a-8b46-48ad-a8fc-1557add9111e",
+      "typeVersion": 2.1,
+      "webhookId": "249eb75e-4134-4dcf-9cfc-c3ac1a2cb166"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        -1776,
+        208
+      ],
+      "id": "31abeb83-2bd2-4837-9432-73db557dc681",
+      "typeVersion": 1.2,
+      "webhookId": "a6b1c71e-c0a2-4473-8914-159b8a22c2c5"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "position": [
+        -1776,
+        416
+      ],
+      "id": "85ce0afc-4776-4a40-9509-9b6c3400ee8f",
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ user: $json.entry[0].changes[0].value.messages[0].from, message: $json.entry[0].changes[0].value.messages[0].text.body, canal: 'whatsapp' }];"
+      },
+      "name": "Normalizar WhatsApp",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1584,
+        16
+      ],
+      "id": "0047a87b-2b45-4155-b865-d89f96abece9",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ user: $json.message.chat.id, message: $json.message.text, canal: 'telegram' }];"
+      },
+      "name": "Normalizar Telegram",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1584,
+        208
+      ],
+      "id": "0d72b5d3-4888-4788-8008-bf2b9d40fb01",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ user: $json.from, message: $json.text, canal: 'email' }];"
+      },
+      "name": "Normalizar Gmail",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1584,
+        416
+      ],
+      "id": "b87d6932-35be-45dd-a9c2-00ae8e5788c9",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "passThrough"
+      },
+      "name": "Merge Canales",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -1376,
+        208
+      ],
+      "id": "261c66d1-0a20-4ed7-a332-e4eb19a8c718",
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "prompt": "Sos un sistema de atención al cliente.\n\nClasificá y respondé en JSON:\n{\n\"intent\":\"FAQ|ESTADO_PEDIDO|RECLAMO|GENERAL\",\n\"order_id\":null,\n\"urgente\":false,\n\"respuesta\":\"texto claro para el cliente\"\n}\n\nMensaje: {{$json.message}}",
+        "options": {},
+        "requestOptions": {}
+      },
+      "name": "IA - Motor Decision",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        -1184,
+        208
+      ],
+      "id": "f3795508-512e-4083-a662-cc4e6dc9c4c0",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = JSON.parse($json.choices[0].message.content);\nreturn [{...data, canal: $json.canal, user: $json.user}];"
+      },
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -976,
+        208
+      ],
+      "id": "f63126ff-3bea-4127-a7fd-563642ccf97c",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "56800c01-edd4-450a-a6cf-7e11f1978d57"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Switch Intent",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -784,
+        208
+      ],
+      "id": "a801fbc4-558a-4784-8e28-cac064b2a75d",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "name": "Buscar Pedido",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        -1168,
+        -320
+      ],
+      "id": "205192f2-29f6-432b-9002-abc7e6a9d57d",
+      "typeVersion": 2.5
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "name": "Crear Ticket",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -544,
+        -144
+      ],
+      "id": "2ffe1961-6372-46c7-9cc2-27cbf6e0033f",
+      "typeVersion": 4.7
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.urgente}}",
+              "operation": "isTrue"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "IF Urgente",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -640,
+        -400
+      ],
+      "id": "e8be1596-57a0-4346-a7ba-8cf506dcef22",
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "chatId": "TU_CHAT_ID",
+        "text": "⚠️ Caso urgente detectado: {{$json.respuesta}}",
+        "additionalFields": {}
+      },
+      "name": "Notificar Admin",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -128,
+        -400
+      ],
+      "id": "e3f1a8fc-efde-4a43-a086-466021ad5a6a",
+      "typeVersion": 1.2,
+      "webhookId": "da6082f6-6742-4825-9364-fb462c70e8df"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3298da4f-a275-4a3d-971d-0966b3aed0b9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Router Canal",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -112,
+        -128
+      ],
+      "id": "541ee81e-4a05-40ad-92da-c20fe3d2e2c6",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/PHONE_ID/messages",
+        "options": {}
+      },
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -112,
+        576
+      ],
+      "id": "cc182be3-4895-4c9a-8559-bf3a644de41e",
+      "typeVersion": 4.4
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.user}}",
+        "text": "={{$json.respuesta}}",
+        "additionalFields": {}
+      },
+      "name": "Enviar Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -384,
+        576
+      ],
+      "id": "6f8ad479-dc01-43c5-b4f5-3863a13cfcf3",
+      "typeVersion": 1.2,
+      "webhookId": "262a9c29-0a22-464e-b71c-1b71b791a57f"
+    },
+    {
+      "parameters": {
+        "subject": "Respuesta a tu consulta",
+        "message": "={{$json.respuesta}}",
+        "options": {}
+      },
+      "name": "Enviar Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        -672,
+        576
+      ],
+      "id": "aeffe6cc-045d-427f-8e4f-33c92e73506b",
+      "typeVersion": 2.2,
+      "webhookId": "9ccf3513-244e-4794-a074-b8debc7fd180"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Normalizar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Merge Canales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Telegram": {
+      "main": [
+        [
+          {
+            "node": "Merge Canales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Gmail": {
+      "main": [
+        [
+          {
+            "node": "Merge Canales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Canales": {
+      "main": [
+        [
+          {
+            "node": "IA - Motor Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA - Motor Decision": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Switch Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Pedido": {
+      "main": [
+        [
+          {
+            "node": "IF Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Ticket": {
+      "main": [
+        [
+          {
+            "node": "IF Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Urgente": {
+      "main": [
+        [
+          {
+            "node": "Notificar Admin",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Router Canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Admin": {
+      "main": [
+        [
+          {
+            "node": "Router Canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "bae4408a-63a6-42ff-873f-f225c3c90e45",
+  "meta": {
+    "instanceId": "e3debc620f3e158547e33d2e5fe2f4a26549ad7e00b451c7a7926a791ce77a15"
+  },
+  "id": "I6of3Ur38XQLSZCW",
+  "tags": []
+}
