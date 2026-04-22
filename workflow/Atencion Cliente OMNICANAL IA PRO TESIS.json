@@ -1,0 +1,781 @@
+{
+  "name": "Atencion Cliente OMNICANAL IA PRO TESIS",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "options": {}
+      },
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -1920,
+        -208
+      ],
+      "id": "849205a9-46d5-4510-a13e-62e466da53ac",
+      "typeVersion": 2.1,
+      "webhookId": "249eb75e-4134-4dcf-9cfc-c3ac1a2cb166",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $json.body || $json;\nreturn [{\n  json: {\n    user: data.user_id || data.from || data.user || 'unknown',\n    message: data.message || data.text || '',\n    canal: 'whatsapp',\n    received_at: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Normalizar WhatsApp",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1728,
+        -208
+      ],
+      "id": "bf9a85a9-c01d-42df-b44b-eab16c6bf95d",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  user: String($json.message.chat.id),\n  message: $json.message.text,\n  canal: 'telegram',\n  received_at: new Date().toISOString()\n}];"
+      },
+      "name": "Normalizar Telegram",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1968,
+        80
+      ],
+      "id": "71f9abac-9e14-4f29-b9a1-7cd789b14f93",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  user: $json.from,\n  message: $json.text || $json.snippet || $json.body,\n  canal: 'email',\n  received_at: new Date().toISOString()\n}];"
+      },
+      "name": "Normalizar Gmail",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1952,
+        256
+      ],
+      "id": "72761aaa-17e6-49a2-8273-2e655dac06af",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "name": "Merge Canales",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -1520,
+        -16
+      ],
+      "id": "cf140419-2eb7-4b06-b618-47f4b7b39ccf",
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT question, answer, category\nFROM faq_responses\nWHERE enabled = TRUE\nORDER BY category, id;",
+        "options": {}
+      },
+      "name": "Buscar FAQ",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        -1328,
+        -16
+      ],
+      "id": "c18376a3-e5f4-488f-8058-8ec1d8055542",
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const faqs = $input.all();\nconst originalData = $('Merge Canales').first().json;\n\nlet faqContext = '';\nif (faqs && faqs.length > 0 && faqs[0].json.question) {\n  faqContext = faqs.map(f =>\n    `P: ${f.json.question}\\nR: ${f.json.answer}`\n  ).join('\\n\\n');\n} else {\n  faqContext = '(No hay FAQ disponibles en este momento)';\n}\n\nreturn [{\n  ...originalData,\n  faq_context: faqContext\n}];"
+      },
+      "name": "Preparar Contexto FAQ",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1184,
+        0
+      ],
+      "id": "175b8709-f9bc-4903-92e4-71f8405d403f",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "functionCode": "try {\n  // Basic LLM Chain devuelve en $json.text\n  const raw = $json.text || $json.choices?.[0]?.message?.content || '';\n  const jsonMatch = raw.match(/\\{[\\s\\S]*\\}/);\n  if (!jsonMatch) throw new Error('No JSON found in AI response');\n  const data = JSON.parse(jsonMatch[0]);\n  // Recuperar datos del normalizar\n  const prev = $('Preparar Contexto FAQ').first().json;\n  return [{\n    intent: data.intent || 'GENERAL',\n    order_id: data.order_id || null,\n    urgente: data.urgente || false,\n    respuesta: data.respuesta || 'No pude procesar tu consulta.',\n    canal: prev.canal,\n    user: prev.user,\n    message: prev.message,\n    received_at: prev.received_at\n  }];\n} catch (e) {\n  const prev = $('Preparar Contexto FAQ').first().json;\n  return [{\n    intent: 'GENERAL',\n    order_id: null,\n    urgente: false,\n    respuesta: 'Disculpá, hubo un error procesando tu mensaje. ¿Podés reformularlo?',\n    canal: prev.canal,\n    user: prev.user,\n    message: prev.message,\n    received_at: prev.received_at,\n    _parse_error: e.message\n  }];\n}"
+      },
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -752,
+        -16
+      ],
+      "id": "4a82d150-894c-4741-83ec-db9f1e5a611e",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "FAQ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "56800c01-edd4-450a-a6cf-7e11f1978d57"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "ESTADO_PEDIDO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "RECLAMO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "name": "Switch Intent",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -560,
+        -16
+      ],
+      "id": "be99e1de-3e70-4196-966b-b0585d7e2a8a",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    o.order_number,\n    o.customer_name,\n    o.customer_email,\n    o.customer_phone,\n    o.status,\n    o.quantity,\n    o.total_amount,\n    o.received_at,\n    o.processed_at,\n    o.notified_at,\n    p.name AS product_name\nFROM orders o\nLEFT JOIN products p ON o.product_id = p.id\nWHERE\n    o.order_number = '{{ $json.order_id }}'\nORDER BY o.received_at DESC\nLIMIT 1;",
+        "options": {}
+      },
+      "name": "Buscar Pedido",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        -352,
+        -224
+      ],
+      "id": "f4265829-6988-41c0-adc6-45eefe07ac48",
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const pedidos = $input.all();\nconst originalData = $('Parse JSON').first().json;\n\nif (!pedidos || pedidos.length === 0 || !pedidos[0].json.order_number) {\n  return [{\n    ...originalData,\n    respuesta: 'No encontré pedidos asociados a tu cuenta. ¿Podés indicarme tu número de pedido? (Ejemplo: ORD-001)'\n  }];\n}\n\nlet respuesta = '';\nif (pedidos.length === 1) {\n  const p = pedidos[0].json;\n  const statusMap = {\n    'pending': '⏳ Pendiente de procesamiento',\n    'processing': '🔄 En procesamiento',\n    'confirmed': '✅ Confirmado',\n    'shipped': '🚚 Enviado',\n    'delivered': '📦 Entregado',\n    'no_stock': '❌ Sin stock',\n    'cancelled': '🚫 Cancelado',\n    'error': '⚠️ Error en procesamiento'\n  };\n  respuesta = `Tu pedido ${p.order_number}:\\n`\n    + `• Producto: ${p.product_name}\\n`\n    + `• Cantidad: ${p.quantity}\\n`\n    + `• Total: $${p.total_amount}\\n`\n    + `• Estado: ${statusMap[p.status] || p.status}\\n`\n    + `• Fecha: ${new Date(p.received_at).toLocaleDateString('es-AR')}`;\n} else {\n  respuesta = `Encontré ${pedidos.length} pedidos asociados a tu cuenta:\\n\\n`;\n  for (const item of pedidos) {\n    const p = item.json;\n    respuesta += `• ${p.order_number} — ${p.product_name} — Estado: ${p.status}\\n`;\n  }\n  respuesta += '\\n¿Sobre cuál querés más detalle?';\n}\n\nreturn [{\n  ...originalData,\n  respuesta: respuesta,\n  order_id_found: pedidos[0].json.order_number ? pedidos[0].json.id : null\n}];"
+      },
+      "name": "Preparar Respuesta Pedido",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -144,
+        -224
+      ],
+      "id": "435c50df-329b-4a98-8581-044742bb4b68",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO tickets (channel, user_id, subject, status, priority, created_at)\nVALUES (\n    '{{ $json.canal }}',\n    '{{ $json.user }}',\n    '{{ $json.message }}',\n    'open',\n    CASE WHEN {{ $json.urgente }} THEN 'urgent' ELSE 'normal' END,\n    NOW()\n)\nRETURNING id, status, priority, created_at;",
+        "options": {}
+      },
+      "name": "Crear Ticket",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        -352,
+        176
+      ],
+      "id": "b857f095-23c7-49e5-bd77-b6399c3ec72b",
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const ticket = $json;\nconst originalData = $('Parse JSON').first().json;\n\nreturn [{\n  ...originalData,\n  respuesta: `Tu reclamo fue registrado correctamente.\\n`\n    + `• Ticket #${ticket.id}\\n`\n    + `• Estado: Abierto\\n`\n    + `• Prioridad: ${ticket.priority}\\n\\n`\n    + `Nuestro equipo lo revisará a la brevedad. `\n    + `Te contactaremos por este mismo canal con novedades.`,\n  ticket_id: ticket.id\n}];"
+      },
+      "name": "Preparar Respuesta Ticket",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -144,
+        176
+      ],
+      "id": "0086d385-17fa-47e7-a830-821f4b0ce02d",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6c237822-3d05-4afc-b2bc-b9b26ffedefe",
+              "leftValue": "={{ $json.urgente }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "IF Urgente",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        80,
+        -16
+      ],
+      "id": "7f8d115c-62e7-457f-a5bf-71ba896cea78",
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.canal }}",
+                    "rightValue": "whatsapp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3298da4f-a275-4a3d-971d-0966b3aed0b9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.canal }}",
+                    "rightValue": "telegram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.canal }}",
+                    "rightValue": "email",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f809102"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Router Canal",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        512,
+        16
+      ],
+      "id": "4610c587-25e6-4b44-b924-ec41063b2900",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/PHONE_ID/messages",
+        "options": {}
+      },
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        784,
+        -320
+      ],
+      "id": "d181593d-2570-4fa5-a870-ebdfe69fa648",
+      "typeVersion": 4.4
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO interactions (\n    channel,\n    user_id,\n    message,\n    intent,\n    ai_response,\n    order_id,\n    is_urgent,\n    received_at,\n    responded_at,\n    metadata\n)\nVALUES (\n    '{{ $('Parse JSON').item.json.canal }}',\n    '{{ $('Parse JSON').item.json.user }}',\n    '{{ $('Parse JSON').item.json.message }}',\n    '{{ $('Parse JSON').item.json.intent }}',\n    '{{ $('Parse JSON').item.json.respuesta }}',\n    NULL,\n    {{ $('Parse JSON').item.json.urgente }},\n    '{{ $('Parse JSON').item.json.received_at }}'::TIMESTAMPTZ,\n    NOW(),\n    '{\"workflow_execution_id\": \"{{ $execution.id }}\"}'::JSONB\n)\nRETURNING id, received_at, responded_at,\n    EXTRACT(EPOCH FROM (responded_at - received_at)) AS tmr_seconds;",
+        "options": {}
+      },
+      "name": "Registrar Interacción",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        976,
+        64
+      ],
+      "id": "00a2ff25-bfb0-4253-a7aa-344c0dcdcc86",
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.message }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "# --- START ---\n\nSos un asistente virtual de atención al cliente de \"TechStore\", un e-commerce argentino.\n\n## IDENTIDAD\n- Nombre: Asistente TechStore\n- Tono: profesional, amable, en español argentino (voseás: vos, tenés, podés)\n- NO sos un chatbot genérico — representás a TechStore\n\n## TU TAREA\nAnalizá el mensaje del cliente, clasificá su intención, y generá una respuesta útil.\nRespondé ÚNICAMENTE con un JSON válido. Sin texto antes ni después del JSON. Sin markdown. Sin ```json```.\n\n## FORMATO DE RESPUESTA (JSON estricto)\n{\n  \"intent\": \"FAQ | ESTADO_PEDIDO | RECLAMO | GENERAL\",\n  \"order_id\": null,\n  \"urgente\": false,\n  \"respuesta\": \"texto claro y amable para el cliente\"\n}\n\n## REGLAS DE CLASIFICACIÓN\n\n### FAQ\nPreguntas sobre: métodos de pago, envíos, tiempos de entrega, devoluciones, garantía, facturación, soporte técnico, horarios de atención, políticas de la tienda.\n\n### ESTADO_PEDIDO\nEl cliente pregunta por el estado de un pedido, envío o compra.\n- Si menciona un número con formato ORD-XXXX-NNN o similar → extraelo EXACTO en \"order_id\"\n- Si NO menciona número de pedido → \"order_id\": null y en la respuesta pedile amablemente el número\n- NUNCA inventes un número de pedido que el cliente no haya dicho\n\n### RECLAMO\nQuejas, insatisfacción, problemas con productos, demoras excesivas, productos dañados.\n- Marcá \"urgente\": true SOLO si: menciona acción legal, DEFENSA DEL CONSUMIDOR, tono MUY agresivo, o problema de seguridad/salud\n- En todos los demás reclamos: \"urgente\": false\n\n### GENERAL\nSaludos, agradecimientos, despedidas, o consultas que no encajan en las otras categorías.\n\n## BASE DE CONOCIMIENTO FAQ\nUsá EXCLUSIVAMENTE esta información para responder FAQs. Si la pregunta no está cubierta acá, decí que vas a consultar con el equipo:\n\n{{ $json.faq_context }}\n\n## REGLAS CRÍTICAS (nunca las violes)\n1. SOLO JSON en la respuesta — nada más\n2. NUNCA inventes datos de pedidos, precios, estados, ni tracking. Si no tenés la info, decí \"Voy a consultar con el equipo y te respondo a la brevedad\"\n3. NUNCA reveles que sos una IA, modelo de lenguaje, ni mencionés \"inteligencia artificial\"\n4. NUNCA compartas información de otros clientes\n5. Si el mensaje es ambiguo, clasificá como GENERAL y pedí más contexto\n6. El campo \"order_id\" SOLO contiene el código exacto que mencionó el cliente, o null\n7. Mantené las respuestas entre 1-3 oraciones. Sé conciso.\n8. Si es RECLAMO, SIEMPRE mostrá empatía antes de cualquier otra cosa\n\n## EJEMPLOS\n\nMensaje: \"hola che, quiero saber cómo va mi pedido ORD-TEST-003\"\n→ {\"intent\": \"ESTADO_PEDIDO\", \"order_id\": \"ORD-TEST-003\", \"urgente\": false, \"respuesta\": \"¡Hola! Ya busco la info de tu pedido ORD-TEST-003.\"}\n\nMensaje: \"cuánto tarda el envío?\"\n→ {\"intent\": \"FAQ\", \"order_id\": null, \"urgente\": false, \"respuesta\": \"Los envíos demoran entre 3 y 7 días hábiles dependiendo de tu ubicación. ¿Necesitás más detalles?\"}\n\nMensaje: \"me llegó roto el producto, una vergüenza\"\n→ {\"intent\": \"RECLAMO\", \"order_id\": null, \"urgente\": false, \"respuesta\": \"Lamento mucho que hayas recibido el producto en mal estado. Vamos a solucionarlo. ¿Me pasás tu número de pedido así lo gestiono?\"}\n\nMensaje: \"quiero saber de mi pedido\"\n→ {\"intent\": \"ESTADO_PEDIDO\", \"order_id\": null, \"urgente\": false, \"respuesta\": \"¡Hola! Con gusto te ayudo. ¿Me pasás el número de tu pedido? Tiene formato ORD-XXXX.\"}\n\nMensaje: \"si no me solucionan voy a defensa del consumidor\"\n→ {\"intent\": \"RECLAMO\", \"order_id\": null, \"urgente\": true, \"respuesta\": \"Entiendo tu frustración y lamento mucho la situación. Tu caso es prioridad para nosotros. ¿Me pasás tu número de pedido para escalarlo inmediatamente?\"}\n\n## MENSAJE DEL CLIENTE\nCanal: {{ $json.canal }}\nMensaje: {{ $json.message }}\n\n# --- END ---\n."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -1024,
+        0
+      ],
+      "id": "269adbfb-0d80-4889-9f0a-407c9e94fcd6",
+      "name": "IA - Motor Decision"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1056,
+        192
+      ],
+      "id": "bc921494-60a6-4358-a258-0857be203b4e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "QOonhlkVHZEmDxwY",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "whatsapp-bot@ecommerce.local",
+        "toEmail": "={{ $json.user }}@whatsapp.sim",
+        "subject": "=Respuesta WhatsApp para {{ $json.user }}",
+        "emailFormat": "text",
+        "text": "={{ $json.respuesta }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        752,
+        -128
+      ],
+      "id": "fb266f33-1b2d-45ae-9b9c-9ae62638b4d7",
+      "name": "Enviar WhatsApp (Simulado)",
+      "webhookId": "977d35fd-e6f0-497c-8346-2c5df674ce1c",
+      "credentials": {
+        "smtp": {
+          "id": "jGpWWJ0ZnBOUtqdp",
+          "name": "SMTP Mailpit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.user}}",
+        "text": "={{$json.respuesta}}",
+        "additionalFields": {}
+      },
+      "name": "Enviar Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        752,
+        64
+      ],
+      "id": "d578e0a7-3a12-4a6c-9f98-ffa30e4a6b87",
+      "typeVersion": 1.2,
+      "webhookId": "262a9c29-0a22-464e-b71c-1b71b791a57f",
+      "credentials": {
+        "telegramApi": {
+          "id": "QfYhqgL0009ZIBWo",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Normalizar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Merge Canales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Telegram": {
+      "main": [
+        []
+      ]
+    },
+    "Merge Canales": {
+      "main": [
+        [
+          {
+            "node": "Buscar FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar FAQ": {
+      "main": [
+        [
+          {
+            "node": "Preparar Contexto FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Contexto FAQ": {
+      "main": [
+        [
+          {
+            "node": "IA - Motor Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Switch Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Intent": {
+      "main": [
+        [
+          {
+            "node": "IF Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Pedido": {
+      "main": [
+        [
+          {
+            "node": "Preparar Respuesta Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Respuesta Pedido": {
+      "main": [
+        [
+          {
+            "node": "IF Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Ticket": {
+      "main": [
+        [
+          {
+            "node": "Preparar Respuesta Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Respuesta Ticket": {
+      "main": [
+        [
+          {
+            "node": "IF Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Urgente": {
+      "main": [
+        [
+          {
+            "node": "Router Canal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Router Canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router Canal": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Interacción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        []
+      ]
+    },
+    "Normalizar Gmail": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA - Motor Decision",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA - Motor Decision": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp (Simulado)": {
+      "main": [
+        [
+          {
+            "node": "Registrar Interacción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Telegram": {
+      "main": [
+        [
+          {
+            "node": "Registrar Interacción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dda6b438-97c8-4580-8448-9ec7d3799377",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1032b900dca140fb1368876951b28c8434a788af58483b82d796a8c595bbcafc"
+  },
+  "id": "L3tXQzQhRbgCcuEx",
+  "tags": []
+}

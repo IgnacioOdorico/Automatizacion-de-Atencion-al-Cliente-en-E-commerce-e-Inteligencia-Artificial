@@ -1,0 +1,147 @@
+version: '3.8'
+
+# ============================================================
+#  TESIS UTN FRM — Pipeline Post-Venta E-commerce con n8n
+#  "Automatización del ciclo post-venta en e-commerce:
+#   pipeline de procesamiento de órdenes y atención al cliente
+#   omnicanal con IA, implementado con n8n"
+#
+#  Autores: Santiago Sordi, Ignacio Odorico, Juan Cruz Ana
+#  Tutor:   Prof. Alberto Cortez
+#
+#  Servicios:
+#    n8n      → Orquestador (Flujo 1: pipeline órdenes + Flujo 2: chatbot IA)
+#    postgres → Base de datos unificada (ambos flujos)
+#    mailpit  → SMTP local para emails de confirmación (Flujo 1)
+#    grafana  → Dashboard de métricas MTTD/MTTR/TMR (para la tesis)
+#
+#  Levantar:  docker compose up -d
+#  Detener:   docker compose down
+#  Ver logs:  docker compose logs -f n8n
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # n8n — Orquestador principal
+  # Ejecuta ambos flujos:
+  #   Flujo 1: Pipeline de procesamiento de órdenes (webhook → BD → email)
+  #   Flujo 2: Chatbot omnicanal con IA (WhatsApp/Telegram/Email → IA → respuesta)
+  # Acceso: http://localhost:5678
+  # ----------------------------------------------------------
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: tesis_n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      # Conexión a PostgreSQL (BD interna de n8n + datos del proyecto)
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=ecommerce_tesis
+      - DB_POSTGRESDB_USER=n8n_user
+      - DB_POSTGRESDB_PASSWORD=n8n_pass
+      # Autenticación web
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      # SMTP — apunta a Mailpit local (Flujo 1: emails de confirmación)
+      - N8N_EMAIL_MODE=smtp
+      - N8N_SMTP_HOST=mailpit
+      - N8N_SMTP_PORT=1025
+      - N8N_SMTP_SENDER=tesis@ecommerce.local
+      # Timezone Argentina
+      - GENERIC_TIMEZONE=America/Argentina/Mendoza
+      - TZ=America/Argentina/Mendoza
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tesis_network
+
+  # ----------------------------------------------------------
+  # PostgreSQL 15 — Base de datos unificada
+  # Contiene tablas de ambos flujos:
+  #   Flujo 1: products, orders, pipeline_events
+  #   Flujo 2: interactions, tickets, faq_responses
+  # Host: localhost:5432 | BD: ecommerce_tesis
+  # ----------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: tesis_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ecommerce_tesis
+      POSTGRES_USER: n8n_user
+      POSTGRES_PASSWORD: n8n_pass
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01_init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U n8n_user -d ecommerce_tesis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tesis_network
+
+  # ----------------------------------------------------------
+  # Mailpit — Servidor SMTP local (simula emails reales)
+  # Usado por Flujo 1 para enviar confirmaciones de orden
+  # Bandeja de entrada: http://localhost:8025
+  # SMTP interno: mailpit:1025
+  # ----------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: tesis_mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"   # Interfaz web para ver emails
+      - "1025:1025"   # Puerto SMTP
+    networks:
+      - tesis_network
+
+  # ----------------------------------------------------------
+  # Grafana — Dashboard de métricas para la tesis
+  # Conecta a PostgreSQL y visualiza las vistas:
+  #   v_order_processing_time  → MTTD/MTTR (Flujo 1)
+  #   v_chatbot_response_time  → TMR (Flujo 2)
+  #   v_metrics_summary        → Resumen ejecutivo
+  # Acceso: http://localhost:3000 (admin / admin)
+  # ----------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: tesis_grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - postgres
+    networks:
+      - tesis_network
+
+# ----------------------------------------------------------
+# Volúmenes persistentes
+# ----------------------------------------------------------
+volumes:
+  n8n_data:       # Configuración y workflows de n8n
+  pg_data:        # Datos de PostgreSQL
+  grafana_data:   # Dashboards y config de Grafana
+
+# ----------------------------------------------------------
+# Red interna (los contenedores se comunican por nombre)
+# ----------------------------------------------------------
+networks:
+  tesis_network:
+    driver: bridge

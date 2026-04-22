@@ -1,0 +1,760 @@
+{
+  "name": "Flujo 1 — Pipeline de Procesamiento de Órdenes",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "orden-nueva",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "0843bfc0-4f89-42e9-b294-61a300669a1f",
+      "name": "Webhook - Recibir Orden",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        2544,
+        1200
+      ],
+      "webhookId": "orden-nueva"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO orders (\n  order_number,\n  customer_name,\n  customer_email,\n  customer_phone,\n  product_id,\n  quantity,\n  total_amount,\n  status,\n  received_at,\n  raw_payload\n)\nSELECT\n  '{{ $json.body.order_number }}',\n  '{{ $json.body.customer_name }}',\n  '{{ $json.body.customer_email }}',\n  '{{ $json.body.customer_phone }}',\n  p.id,\n  {{ $json.body.quantity }},\n  p.price * {{ $json.body.quantity }},\n  'pending',\n  NOW(),\n  '{{ JSON.stringify($json.body) }}'::jsonb\nFROM products p\nWHERE p.sku = '{{ $json.body.product_sku }}'\nRETURNING id AS order_id, order_number, total_amount, product_id;",
+        "options": {}
+      },
+      "id": "fb00d2d3-7962-444b-a9e0-981ded591922",
+      "name": "Registrar Orden",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2784,
+        1200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pipeline_events (order_id, event_type, status, message, metadata)\nVALUES (\n  {{ $json.order_id }},\n  'order_received',\n  'success',\n  'Orden {{ $json.order_number }} registrada — total: ${{ $json.total_amount }}',\n  '{\"order_number\": \"{{ $json.order_number }}\", \"total_amount\": {{ $json.total_amount }}}'::jsonb\n)\nRETURNING id AS event_id;",
+        "options": {}
+      },
+      "id": "6b8f9ec1-b095-4f6e-94bb-d1a33aaf6dac",
+      "name": "Evento Order Received",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3008,
+        1200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  p.id AS product_id,\n  p.sku,\n  p.name AS product_name,\n  p.price,\n  p.stock AS stock_actual,\n  p.stock_min,\n  {{ $('Webhook - Recibir Orden').item.json.body.quantity }} AS cantidad_solicitada,\n  CASE\n    WHEN p.stock >= {{ $('Webhook - Recibir Orden').item.json.body.quantity }} THEN true\n    ELSE false\n  END AS stock_disponible\nFROM products p\nWHERE p.sku = '{{ $('Webhook - Recibir Orden').item.json.body.product_sku }}';",
+        "options": {}
+      },
+      "id": "9997cf7b-d3d1-42a4-8c70-f074806cb8ba",
+      "name": "Verificar Stock",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3248,
+        1200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-stock",
+              "leftValue": "={{ $json.stock_disponible }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0a426e9f-b6fa-4a84-aa02-b21f29c4e87f",
+      "name": "IF Stock Disponible",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3472,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE products\nSET stock = stock - {{ $json.cantidad_solicitada }}\nWHERE id = {{ $json.product_id }}\nRETURNING id AS product_id, sku, stock AS stock_nuevo, (SELECT stock_min FROM products WHERE id = {{ $json.product_id }}) AS stock_min;",
+        "options": {}
+      },
+      "id": "34a384fb-3a1e-4f3e-9030-cd3e80bae23e",
+      "name": "Actualizar Stock",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3728,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET status = 'processing'\nWHERE id = {{ $('Registrar Orden').item.json.order_id }};",
+        "options": {}
+      },
+      "id": "a225e38b-b7b5-40d4-93ad-2afcc54e6183",
+      "name": "Orden a Processing",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3952,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pipeline_events (order_id, event_type, status, message, metadata)\nVALUES (\n  {{ $('Registrar Orden').item.json.order_id }},\n  'stock_checked',\n  'success',\n  'Stock verificado para {{ $('Actualizar Stock').item.json.sku }} — disponible: {{ $('Verificar Stock').item.json.stock_actual }}, solicitado: {{ $('Verificar Stock').item.json.cantidad_solicitada }}',\n  jsonb_build_object(\n    'sku', '{{ $('Actualizar Stock').item.json.sku }}',\n    'stock_antes', {{ $('Verificar Stock').item.json.stock_actual }},\n    'cantidad_solicitada', {{ $('Verificar Stock').item.json.cantidad_solicitada }},\n    'stock_despues', {{ $('Actualizar Stock').item.json.stock_nuevo }}\n  )\n)\nRETURNING id AS event_id;",
+        "options": {}
+      },
+      "id": "c3abf2d9-316f-44b5-9e28-33ad965a1ead",
+      "name": "Evento Stock Checked",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4176,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pipeline_events (order_id, event_type, status, message, metadata)\nVALUES (\n  {{ $('Registrar Orden').item.json.order_id }},\n  'stock_updated',\n  'success',\n  'Stock actualizado para {{ $('Actualizar Stock').item.json.sku }} — nuevo stock: {{ $('Actualizar Stock').item.json.stock_nuevo }}',\n  jsonb_build_object(\n    'sku', '{{ $('Actualizar Stock').item.json.sku }}',\n    'stock_anterior', {{ $('Verificar Stock').item.json.stock_actual }},\n    'stock_nuevo', {{ $('Actualizar Stock').item.json.stock_nuevo }}\n  )\n)\nRETURNING id AS event_id;",
+        "options": {}
+      },
+      "id": "43fd0c0b-4fad-468e-83a6-8c8984904e00",
+      "name": "Evento Stock Updated",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4416,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-stock-bajo",
+              "leftValue": "={{ $('Actualizar Stock').item.json.stock_nuevo }}",
+              "rightValue": "={{ $('Actualizar Stock').item.json.stock_min }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "44b6ee4e-0fec-48e5-8cee-03aab152d3aa",
+      "name": "Verificar Stock Bajo",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4640,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pipeline_events (order_id, event_type, status, message, metadata)\nVALUES (\n  {{ $('Registrar Orden').item.json.order_id }},\n  'low_stock_alert',\n  'warning',\n  'ALERTA: Stock bajo para {{ $('Actualizar Stock').item.json.sku }} — stock actual: {{ $('Actualizar Stock').item.json.stock_nuevo }}, mínimo: {{ $('Actualizar Stock').item.json.stock_min }}',\n  jsonb_build_object(\n    'sku', '{{ $('Actualizar Stock').item.json.sku }}',\n    'stock_actual', {{ $('Actualizar Stock').item.json.stock_nuevo }},\n    'stock_min', {{ $('Actualizar Stock').item.json.stock_min }}\n  )\n);",
+        "options": {}
+      },
+      "id": "bd85dfbc-ce70-458d-b182-9ed833b92847",
+      "name": "Alerta Stock Bajo",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4864,
+        896
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET\n  status = 'confirmed',\n  processed_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, order_number, status, processed_at;",
+        "options": {}
+      },
+      "id": "03f90f3f-6eac-4605-9726-0172960fc7c1",
+      "name": "Confirmar Orden",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        5104,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pipeline_events (order_id, event_type, status, message, metadata)\nVALUES (\n  {{ $('Registrar Orden').item.json.order_id }},\n  'invoice_generated',\n  'success',\n  'Orden {{ $('Registrar Orden').item.json.order_number }} confirmada — factura generada',\n  jsonb_build_object(\n    'order_number', '{{ $('Registrar Orden').item.json.order_number }}',\n    'total_amount', {{ $('Registrar Orden').item.json.total_amount }},\n    'status', 'confirmed'\n  )\n);",
+        "options": {}
+      },
+      "id": "0569eaaa-9ca0-4d33-bcfe-bf340a83513d",
+      "name": "Evento Invoice Generated",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        5328,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "tesis@ecommerce.local",
+        "toEmail": "={{ $('Webhook - Recibir Orden').item.json.body.customer_email }}",
+        "subject": "=Confirmación de Orden {{ $('Registrar Orden').item.json.order_number }}",
+        "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <h2 style=\"color: #2e7d32;\">¡Gracias por tu compra!</h2>\n\n  <p>Hola <strong>{{ $('Webhook - Recibir Orden').item.json.body.customer_name }}</strong>,</p>\n\n  <p>Tu orden ha sido confirmada exitosamente. Aquí están los detalles:</p>\n\n  <table style=\"width: 100%; border-collapse: collapse; margin: 20px 0;\">\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Número de orden</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Registrar Orden').item.json.order_number }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Producto</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Verificar Stock').item.json.product_name }}</td>\n    </tr>\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Cantidad</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Webhook - Recibir Orden').item.json.body.quantity }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Total</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">${{ $('Registrar Orden').item.json.total_amount }}</td>\n    </tr>\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Estado</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">Confirmada</td>\n    </tr>\n  </table>\n\n  <p>Te notificaremos cuando tu pedido sea enviado.</p>\n\n  <p style=\"color: #888; font-size: 12px;\">\n    Este es un email automático del sistema de e-commerce — Tesis UTN FRM 2026\n  </p>\n</div>",
+        "options": {}
+      },
+      "id": "da94d21a-c28a-4b54-b173-3069ccdb3f16",
+      "name": "Enviar Email Confirmación",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        5568,
+        1008
+      ],
+      "webhookId": "ba93ab6b-1989-49ec-936e-eff3e091622c",
+      "credentials": {
+        "smtp": {
+          "id": "jGpWWJ0ZnBOUtqdp",
+          "name": "SMTP Mailpit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, notified_at;",
+        "options": {}
+      },
+      "id": "b331d98e-e51d-4e33-89cc-4d3ebc62d013",
+      "name": "Actualizar Notificación Confirmada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        5792,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pipeline_events (order_id, event_type, status, message, metadata)\nVALUES (\n  {{ $('Registrar Orden').item.json.order_id }},\n  'email_sent',\n  'success',\n  'Email de confirmación enviado a {{ $('Webhook - Recibir Orden').item.json.body.customer_email }}',\n  jsonb_build_object(\n    'to', '{{ $('Webhook - Recibir Orden').item.json.body.customer_email }}',\n    'subject', 'Confirmación de Orden {{ $('Registrar Orden').item.json.order_number }}',\n    'order_number', '{{ $('Registrar Orden').item.json.order_number }}'\n  )\n);",
+        "options": {}
+      },
+      "id": "9914ab24-23f3-4ebe-aa69-66a20657067f",
+      "name": "Evento Email Sent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        6016,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"order_number\": \"{{ $('Registrar Orden').item.json.order_number }}\",\n  \"status\": \"confirmed\",\n  \"total_amount\": {{ $('Registrar Orden').item.json.total_amount }},\n  \"message\": \"Orden procesada y confirmada. Email de confirmación enviado.\"\n}",
+        "options": {}
+      },
+      "id": "098ad178-9da5-4765-84b7-0e124c6f1cea",
+      "name": "Respuesta Confirmada",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        6256,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET\n  status = 'no_stock',\n  processed_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, order_number, status, processed_at;",
+        "options": {}
+      },
+      "id": "2040112c-d769-4c8e-82d2-d51ea6242645",
+      "name": "Marcar Sin Stock",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3728,
+        1408
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pipeline_events (order_id, event_type, status, message, metadata)\nVALUES (\n  {{ $('Registrar Orden').item.json.order_id }},\n  'stock_checked',\n  'warning',\n  'Stock insuficiente para {{ $json.sku }} — disponible: {{ $json.stock_actual }}, solicitado: {{ $json.cantidad_solicitada }}',\n  jsonb_build_object(\n    'sku', '{{ $json.sku }}',\n    'stock_disponible', {{ $json.stock_actual }},\n    'cantidad_solicitada', {{ $json.cantidad_solicitada }}\n  )\n);",
+        "options": {}
+      },
+      "id": "be35a30a-77c0-4061-b061-7563f37513ef",
+      "name": "Evento Sin Stock Checked",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3952,
+        1408
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pipeline_events (order_id, event_type, status, message, metadata)\nVALUES (\n  {{ $('Registrar Orden').item.json.order_id }},\n  'no_stock_alert',\n  'warning',\n  'ALERTA: Sin stock para {{ $('Verificar Stock').item.json.sku }} — orden {{ $('Registrar Orden').item.json.order_number }} marcada como no_stock',\n  jsonb_build_object(\n    'sku', '{{ $('Verificar Stock').item.json.sku }}',\n    'order_number', '{{ $('Registrar Orden').item.json.order_number }}',\n    'stock_disponible', {{ $('Verificar Stock').item.json.stock_actual }},\n    'cantidad_solicitada', {{ $('Verificar Stock').item.json.cantidad_solicitada }}\n  )\n);",
+        "options": {}
+      },
+      "id": "3c0d7576-dc54-4601-a2f6-2bf7a5e5480f",
+      "name": "Evento No Stock Alert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4176,
+        1408
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "tesis@ecommerce.local",
+        "toEmail": "={{ $('Webhook - Recibir Orden').item.json.body.customer_email }}",
+        "subject": "=Orden {{ $('Registrar Orden').item.json.order_number }} — Producto sin stock",
+        "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <h2 style=\"color: #c62828;\">Aviso sobre tu orden</h2>\n\n  <p>Hola <strong>{{ $('Webhook - Recibir Orden').item.json.body.customer_name }}</strong>,</p>\n\n  <p>Lamentamos informarte que el producto solicitado no tiene stock disponible en este momento.</p>\n\n  <table style=\"width: 100%; border-collapse: collapse; margin: 20px 0;\">\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Número de orden</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Registrar Orden').item.json.order_number }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Producto</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Verificar Stock').item.json.product_name }}</td>\n    </tr>\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Estado</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">Sin stock</td>\n    </tr>\n  </table>\n\n  <p>Nos pondremos en contacto contigo cuando el producto esté disponible nuevamente, o podés escribirnos para buscar una alternativa.</p>\n\n  <p style=\"color: #888; font-size: 12px;\">\n    Este es un email automático del sistema de e-commerce — Tesis UTN FRM 2026\n  </p>\n</div>",
+        "options": {}
+      },
+      "id": "e905b7c4-3b27-4124-a30e-e8bc86ef08e2",
+      "name": "Enviar Email Sin Stock",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        4416,
+        1408
+      ],
+      "webhookId": "fbf082e2-cb27-475b-9915-3a49a04f290b",
+      "credentials": {
+        "smtp": {
+          "id": "jGpWWJ0ZnBOUtqdp",
+          "name": "SMTP Mailpit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, notified_at;",
+        "options": {}
+      },
+      "id": "c45c39b5-c625-4b32-8ebb-32731c689f9e",
+      "name": "Actualizar Notificación Sin Stock",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4640,
+        1408
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DxqgA26rMVlCz1wp",
+          "name": "PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"order_number\": \"{{ $('Registrar Orden').item.json.order_number }}\",\n  \"status\": \"no_stock\",\n  \"total_amount\": {{ $('Registrar Orden').item.json.total_amount }},\n  \"message\": \"Producto sin stock disponible. Se notificó al cliente.\"\n}",
+        "options": {}
+      },
+      "id": "4a46b5af-b98c-4c6d-9d78-87bef1abecb2",
+      "name": "Respuesta Sin Stock",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        4864,
+        1408
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Recibir Orden": {
+      "main": [
+        [
+          {
+            "node": "Registrar Orden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Orden": {
+      "main": [
+        [
+          {
+            "node": "Evento Order Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento Order Received": {
+      "main": [
+        [
+          {
+            "node": "Verificar Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Stock": {
+      "main": [
+        [
+          {
+            "node": "IF Stock Disponible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Stock Disponible": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Stock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar Sin Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Stock": {
+      "main": [
+        [
+          {
+            "node": "Orden a Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orden a Processing": {
+      "main": [
+        [
+          {
+            "node": "Evento Stock Checked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento Stock Checked": {
+      "main": [
+        [
+          {
+            "node": "Evento Stock Updated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento Stock Updated": {
+      "main": [
+        [
+          {
+            "node": "Verificar Stock Bajo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Stock Bajo": {
+      "main": [
+        [
+          {
+            "node": "Alerta Stock Bajo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Confirmar Orden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alerta Stock Bajo": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Orden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar Orden": {
+      "main": [
+        [
+          {
+            "node": "Evento Invoice Generated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento Invoice Generated": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Confirmación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Confirmación": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Notificación Confirmada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Notificación Confirmada": {
+      "main": [
+        [
+          {
+            "node": "Evento Email Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento Email Sent": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Confirmada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar Sin Stock": {
+      "main": [
+        [
+          {
+            "node": "Evento Sin Stock Checked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento Sin Stock Checked": {
+      "main": [
+        [
+          {
+            "node": "Evento No Stock Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evento No Stock Alert": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Sin Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Sin Stock": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Notificación Sin Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Notificación Sin Stock": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Sin Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ee151291-32d9-49d2-8737-19f727a2641e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1032b900dca140fb1368876951b28c8434a788af58483b82d796a8c595bbcafc"
+  },
+  "id": "naSQdOZYP95xNSbQ",
+  "tags": []
+}
