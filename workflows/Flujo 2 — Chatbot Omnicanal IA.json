@@ -1,0 +1,538 @@
+{
+  "updatedAt": "2026-04-23T00:29:04.750Z",
+  "createdAt": "2026-04-22T22:22:06.188Z",
+  "id": "3Rlb40Pn7pakI2Ta",
+  "name": "Flujo 2 — Chatbot Omnicanal IA",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "options": {}
+      },
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -1680,
+        208
+      ],
+      "id": "8a0f61d4-f43b-4af3-8ec2-e38d39039e31",
+      "typeVersion": 2.1,
+      "webhookId": "249eb75e-4134-4dcf-9cfc-c3ac1a2cb166",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $json.body || $json;\nreturn [{\n  json: {\n    user: data.user_id || data.from || data.phone || data.user || 'unknown',\n    nombre: data.name || data.nombre || 'Cliente',\n    message: data.message || data.text || '',\n    canal: 'whatsapp',\n    received_at: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Normalizar Mensaje",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1440,
+        208
+      ],
+      "id": "fcad898c-f6f1-4122-9957-2be18adb6682",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT question, answer, category\nFROM faq_responses\nWHERE enabled = TRUE\nORDER BY category, id;",
+        "options": {}
+      },
+      "name": "Buscar FAQ",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        -1200,
+        208
+      ],
+      "id": "d3206a45-5758-4e03-9afa-25e30e90fc82",
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const faqs = $input.all();\nconst originalData = $('Normalizar Mensaje').first().json;\n\nlet faqContext = '';\nif (faqs && faqs.length > 0 && faqs[0].json.question) {\n  faqContext = faqs.map(f =>\n    `P: ${f.json.question}\\nR: ${f.json.answer}`\n  ).join('\\n\\n');\n} else {\n  faqContext = '(No hay FAQ disponibles en este momento)';\n}\n\nreturn [{\n  ...originalData,\n  faq_context: faqContext\n}];"
+      },
+      "name": "Preparar Contexto FAQ",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -960,
+        208
+      ],
+      "id": "c0315b7a-158c-4bf5-a4dc-df784f312729",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.message }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "# --- START ---\n\nSos un asistente virtual de atención al cliente de \"TechStore\", un e-commerce argentino de tecnología.\n\n## IDENTIDAD\n- Nombre: Asistente TechStore\n- Tono: cálido, humano, profesional — como si fuera una persona real de atención al cliente\n- Idioma: respondé SIEMPRE en el mismo idioma que el cliente. Si escribe en inglés, respondé en inglés. Si escribe en español, usá español argentino (voseás: vos, tenés, podés)\n- NO sos un chatbot genérico — representás a TechStore con orgullo\n- Usá el nombre del cliente si está disponible — hace que la conversación se sienta más personal\n\n## TU TAREA\nAnalizá el mensaje del cliente, clasificá su intención, y generá una respuesta genuinamente útil y humana.\nRespondé ÚNICAMENTE con un JSON válido. Sin texto antes ni después del JSON. Sin markdown. Sin ```json```.\n\n## FORMATO DE RESPUESTA (JSON estricto)\n{\n  \"intent\": \"FAQ | ESTADO_PEDIDO | RECLAMO | GENERAL\",\n  \"order_id\": null,\n  \"urgente\": false,\n  \"respuesta\": \"texto cálido, claro y personalizado para el cliente\"\n}\n\n## REGLAS DE CLASIFICACIÓN\n\n### FAQ\nPreguntas sobre: métodos de pago, envíos, tiempos de entrega, devoluciones, garantía, facturación, soporte técnico, horarios de atención, políticas de la tienda.\n- Si el cliente hace MÚLTIPLES preguntas en un mismo mensaje, respondelas TODAS en la misma respuesta de forma organizada\n- Podés usar saltos de línea o numeración para que quede más claro\n\n### ESTADO_PEDIDO\nEl cliente pregunta por el estado de un pedido, envío o compra.\n- Si menciona un número con formato ORD-XXXX-NNN o similar → extraelo EXACTO en \"order_id\"\n- Si NO menciona número de pedido → \"order_id\": null y en la respuesta pedile amablemente el número\n- NUNCA inventes un número de pedido que el cliente no haya dicho\n\n### RECLAMO\nQuejas, insatisfacción, problemas con productos, demoras excesivas, productos dañados, cobros incorrectos.\n- Empezá SIEMPRE con empatía genuina — el cliente está frustrado, reconocé eso\n- Explicá brevemente los próximos pasos para que el cliente sepa qué va a pasar\n- Marcá \"urgente\": true SOLO si: menciona acción legal, DEFENSA DEL CONSUMIDOR, tono MUY agresivo, o problema de seguridad/salud\n\n### GENERAL\nSaludos, agradecimientos, despedidas, o consultas que no encajan en las otras categorías.\n\n## BASE DE CONOCIMIENTO FAQ\nUsá EXCLUSIVAMENTE esta información para responder FAQs. Si la pregunta no está cubierta acá, decí que vas a consultar con el equipo:\n\n{{ $json.faq_context }}\n\n## REGLAS CRÍTICAS (nunca las violes)\n1. SOLO JSON en la respuesta — nada más\n2. NUNCA inventes datos de pedidos, precios, estados, ni tracking. Si no tenés la info, decí \"Voy a consultar con el equipo y te respondo a la brevedad\"\n3. NUNCA reveles que sos una IA, modelo de lenguaje, ni mencionés \"inteligencia artificial\"\n4. NUNCA compartas información de otros clientes\n5. Si el mensaje es ambiguo entre FAQ y RECLAMO, clasificá como RECLAMO — es mejor pecar de cuidadoso\n6. El campo \"order_id\" SOLO contiene el código exacto que mencionó el cliente, o null\n7. Las respuestas deben sentirse humanas y cálidas — ni muy cortas (frías) ni muy largas (abrumadoras). Entre 2 y 5 oraciones según el caso\n8. Si es RECLAMO, SIEMPRE mostrá empatía genuina antes de cualquier otra cosa — el cliente necesita sentirse escuchado\n9. Usá el nombre del cliente cuando lo sepas — hace toda la diferencia\n10. Adaptá el idioma al cliente — si escribe en inglés, respondé en inglés\n\n## EJEMPLOS\n\nMensaje: \"hola che, quiero saber cómo va mi pedido ORD-TEST-003\" | Cliente: Carlos\n→ {\"intent\": \"ESTADO_PEDIDO\", \"order_id\": \"ORD-TEST-003\", \"urgente\": false, \"respuesta\": \"¡Hola Carlos! Ya te busco la info de tu pedido ORD-TEST-003, dame un segundo.\"}\n\nMensaje: \"cuánto tarda el envío a córdoba?\" | Cliente: Ana\n→ {\"intent\": \"FAQ\", \"order_id\": null, \"urgente\": false, \"respuesta\": \"¡Hola Ana! Los envíos a Córdoba tardan entre 3 y 5 días hábiles una vez despachado el pedido. Te avisamos por email ni bien sale de nuestro depósito. ¿Hay algo más en lo que te pueda ayudar?\"}\n\nMensaje: \"me llegó roto el producto, una vergüenza\" | Cliente: Pedro\n→ {\"intent\": \"RECLAMO\", \"order_id\": null, \"urgente\": false, \"respuesta\": \"Pedro, lamento muchísimo que hayas recibido el producto en esas condiciones, entiendo lo frustrante que es. Vamos a resolverlo cuanto antes — ¿me pasás el número de tu pedido para que pueda gestionar el cambio o reembolso de inmediato?\"}\n\nMensaje: \"quiero saber de mi pedido\" | Cliente: desconocido\n→ {\"intent\": \"ESTADO_PEDIDO\", \"order_id\": null, \"urgente\": false, \"respuesta\": \"¡Hola! Con gusto te ayudo a rastrear tu pedido. ¿Me pasás el número? Lo encontrás en el email de confirmación que te enviamos, tiene el formato ORD-XXXX-NNN.\"}\n\nMensaje: \"si no me solucionan esto voy a defensa del consumidor\" | Cliente: María\n→ {\"intent\": \"RECLAMO\", \"order_id\": null, \"urgente\": true, \"respuesta\": \"María, entiendo perfectamente tu frustración y te pido disculpas por la experiencia que tuviste. Tu caso es prioridad máxima para nosotros y lo vamos a resolver hoy mismo. ¿Me pasás tu número de pedido para escalarlo de inmediato con el equipo?\"}\n\nMensaje: \"hola, queria consultar los medios de pago, si hacen envios al interior y si tienen garantia en notebooks\" | Cliente: Roberto\n→ {\"intent\": \"FAQ\", \"order_id\": null, \"urgente\": false, \"respuesta\": \"¡Hola Roberto! Te respondo todo:\\n\\n1. **Medios de pago**: Aceptamos tarjeta de crédito, débito, transferencia bancaria y MercadoPago.\\n2. **Envíos al interior**: Sí, enviamos a todo el país. Los tiempos varían entre 3 y 7 días hábiles según la zona.\\n3. **Garantía en notebooks**: Todos nuestros productos tienen garantía oficial del fabricante, generalmente 12 meses. Guardá el comprobante de compra.\\n\\n¿Hay algo más que quieras saber?\"}\n\nMensaje: \"Hi! I bought a keyboard last week and I still haven't received any shipping confirmation\" | Cliente: John\n→ {\"intent\": \"ESTADO_PEDIDO\", \"order_id\": null, \"urgente\": false, \"respuesta\": \"Hi John! I'm sorry to hear you haven't received a shipping confirmation yet — that's definitely something we should sort out. Could you share your order number? It should be in your purchase confirmation email, in the format ORD-XXXX-NNN. I'll look into it right away!\"}\n\n## MENSAJE DEL CLIENTE\nCanal: {{ $json.canal }}\nCliente: {{ $json.nombre }}\nMensaje: {{ $json.message }}\n\n# --- END ---\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -720,
+        208
+      ],
+      "id": "90789351-5c16-4d93-9c6e-b0438adadcd0",
+      "name": "IA - Motor Decision"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -752,
+        400
+      ],
+      "id": "91765d22-621e-4182-aa3b-552e44553cdc",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "n9RZyW3lFimEdo4l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "try {\n  const raw = $json.text || $json.choices?.[0]?.message?.content || '';\n  const jsonMatch = raw.match(/\\{[\\s\\S]*\\}/);\n  if (!jsonMatch) throw new Error('No JSON found');\n  const data = JSON.parse(jsonMatch[0]);\n  const prev = $('Preparar Contexto FAQ').first().json;\n  return [{\n    intent: data.intent || 'GENERAL',\n    order_id: data.order_id || null,\n    urgente: data.urgente || false,\n    ai_respuesta: data.respuesta || 'No pude procesar tu consulta.',\n    respuesta: data.respuesta || 'No pude procesar tu consulta.',\n    canal: prev.canal,\n    user: prev.user,\n    nombre: prev.nombre || 'Cliente',\n    message: prev.message,\n    received_at: prev.received_at\n  }];\n} catch (e) {\n  const prev = $('Preparar Contexto FAQ').first().json;\n  return [{\n    intent: 'GENERAL', order_id: null, urgente: false,\n    ai_respuesta: 'Disculpá, hubo un error. ¿Podés reformularlo?',\n    respuesta: 'Disculpá, hubo un error. ¿Podés reformularlo?',\n    canal: prev.canal, user: prev.user, nombre: prev.nombre || 'Cliente',\n    message: prev.message, received_at: prev.received_at, _parse_error: e.message\n  }];\n}"
+      },
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -480,
+        208
+      ],
+      "id": "de78413e-7d1f-4964-b88c-ec6ff23a9b93",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "FAQ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "56800c01-edd4-450a-a6cf-7e11f1978d57"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "ESTADO_PEDIDO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "RECLAMO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "name": "Switch Intent",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -240,
+        208
+      ],
+      "id": "700b963b-581b-465f-af34-05dc2a9baaf2",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    o.order_number,\n    o.customer_name,\n    o.status,\n    o.quantity,\n    o.total_amount,\n    o.received_at,\n    o.processed_at,\n    p.name AS product_name\nFROM orders o\nLEFT JOIN products p ON o.product_id = p.id\nWHERE o.order_number = '{{ $json.order_id }}'\nORDER BY o.received_at DESC\nLIMIT 1;",
+        "options": {}
+      },
+      "name": "Buscar Pedido",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        0,
+        0
+      ],
+      "id": "e87af9ae-093f-44b6-ad98-b7a329f370de",
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const pedidos = $input.all();\nconst originalData = $('Parse JSON').first().json;\nif (!pedidos || pedidos.length === 0 || !pedidos[0].json.order_number) {\n  return [{\n    ...originalData,\n    respuesta: originalData.ai_respuesta || 'No encontré un pedido con ese número. ¿Podés verificarlo? (Ejemplo: ORD-TEST-001)'\n  }];\n}\nconst p = pedidos[0].json;\nconst statusMap = {\n  'pending':    'Pendiente de procesamiento',\n  'processing': 'En procesamiento',\n  'confirmed':  'Confirmado',\n  'shipped':    'Enviado — en camino',\n  'delivered':  'Entregado',\n  'no_stock':   'Sin stock disponible',\n  'cancelled':  'Cancelado'\n};\nconst detalles = `\\n\\n--- Detalle de tu pedido ---\\nOrden: ${p.order_number}\\nProducto: ${p.product_name}\\nCantidad: ${p.quantity}\\nTotal: $${p.total_amount}\\nEstado: ${statusMap[p.status] || p.status}\\nFecha: ${new Date(p.received_at).toLocaleDateString('es-AR')}`;\nconst aiIntro = originalData.ai_respuesta || '';\nconst respuesta = aiIntro + detalles;\nreturn [{ ...originalData, respuesta }];"
+      },
+      "name": "Preparar Respuesta Pedido",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        240,
+        0
+      ],
+      "id": "4f8496a3-9f3e-4400-a526-dc0b7a0ff601",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO tickets (channel, user_id, subject, status, priority, created_at)\nVALUES (\n    '{{ $json.canal }}',\n    '{{ $json.user }}',\n    '{{ $json.message }}',\n    'open',\n    CASE WHEN {{ $json.urgente }} THEN 'urgent' ELSE 'normal' END,\n    NOW()\n)\nRETURNING id, status, priority, created_at;",
+        "options": {}
+      },
+      "name": "Crear Ticket",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        0,
+        400
+      ],
+      "id": "066e00f8-a10a-4ac1-8598-07157e969cef",
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const ticket = $json;\nconst originalData = $('Parse JSON').first().json;\nconst prioridadLabel = {\n  'urgent': 'URGENTE',\n  'high': 'Alta',\n  'normal': 'Normal',\n  'low': 'Baja'\n};\nconst ticketInfo = `\\n\\n--- Ticket registrado ---\\nN. de caso: #${ticket.id}\\nEstado: Abierto\\nPrioridad: ${prioridadLabel[ticket.priority] || ticket.priority}\\nTe contactaremos a la brevedad.`;\nconst respuesta = (originalData.ai_respuesta || '') + ticketInfo;\nreturn [{ ...originalData, respuesta, ticket_id: ticket.id }];"
+      },
+      "name": "Preparar Respuesta Ticket",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        240,
+        400
+      ],
+      "id": "6ca0a05b-496b-4362-909f-11da0f18e97b",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fromEmail": "whatsapp-bot@ecommerce.local",
+        "toEmail": "={{ $json.user }}@whatsapp.sim",
+        "subject": "=Respuesta TechStore para {{ $json.user }}",
+        "emailFormat": "text",
+        "text": "={{ $json.respuesta }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        208
+      ],
+      "id": "c45ee425-0cfd-4189-a9ae-558c86614e59",
+      "name": "Enviar Respuesta (Simulado)",
+      "webhookId": "c95bd5d7-46bd-410e-8811-3ef1505150a3",
+      "credentials": {
+        "smtp": {
+          "id": "05ihlktQezmjllAa",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO interactions (\n    channel, user_id, message, intent, ai_response,\n    order_id, is_urgent, received_at, responded_at\n)\nVALUES (\n    '{{ $('Parse JSON').item.json.canal }}',\n    '{{ $('Parse JSON').item.json.user }}',\n    '{{ $('Parse JSON').item.json.message.replace(/'/g, \"''\") }}',\n    '{{ $('Parse JSON').item.json.intent }}',\n    '{{ $('Parse JSON').item.json.respuesta.replace(/'/g, \"''\") }}',\n    (SELECT id FROM orders WHERE order_number = '{{ $('Parse JSON').item.json.order_id }}'),\n    {{ $('Parse JSON').item.json.urgente === true || $('Parse JSON').item.json.urgente === 'true' ? 'true' : 'false' }},\n    '{{ $('Parse JSON').item.json.received_at }}'::TIMESTAMP,\n    NOW()\n);",
+        "options": {}
+      },
+      "name": "Registrar Interacción",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        960,
+        208
+      ],
+      "id": "6bcf8dba-1ecf-4850-975d-d742d9676cb5",
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Buscar FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar FAQ": {
+      "main": [
+        [
+          {
+            "node": "Preparar Contexto FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Contexto FAQ": {
+      "main": [
+        [
+          {
+            "node": "IA - Motor Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA - Motor Decision": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA - Motor Decision",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Switch Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Intent": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Respuesta (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Pedido": {
+      "main": [
+        [
+          {
+            "node": "Preparar Respuesta Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Respuesta Pedido": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Ticket": {
+      "main": [
+        [
+          {
+            "node": "Preparar Respuesta Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Respuesta Ticket": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Respuesta (Simulado)": {
+      "main": [
+        [
+          {
+            "node": "Registrar Interacción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "509a8b2e-225b-49d4-adbe-1f4d11eacf40",
+  "activeVersionId": "f8dd93ca-9bc0-4300-96cd-cbd958bb879f",
+  "versionCounter": 67,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-22T22:22:06.188Z",
+      "createdAt": "2026-04-22T22:22:06.188Z",
+      "role": "workflow:owner",
+      "workflowId": "3Rlb40Pn7pakI2Ta",
+      "projectId": "AAsiEYx80MD8KM3L",
+      "project": {
+        "updatedAt": "2026-04-21T23:22:33.508Z",
+        "createdAt": "2026-04-16T00:17:58.233Z",
+        "id": "AAsiEYx80MD8KM3L",
+        "name": "Admin Tesis <admin@tesis.local>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "f912f84b-a7f6-401f-ae0c-41b0ffc13665"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

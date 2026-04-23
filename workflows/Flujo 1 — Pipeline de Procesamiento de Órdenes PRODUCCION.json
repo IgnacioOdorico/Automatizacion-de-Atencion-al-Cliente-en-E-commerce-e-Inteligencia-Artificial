@@ -1,0 +1,466 @@
+{
+  "updatedAt": "2026-04-23T00:22:07.417Z",
+  "createdAt": "2026-04-22T02:52:08.453Z",
+  "id": null,
+  "name": "Flujo 1 � Pipeline de Procesamiento de �rdenes PRODUCCION",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "orden-nueva",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "075b8147-cbf9-46b5-9d3c-f366e54f0cd7",
+      "name": "Webhook - Recibir Orden",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2768,
+        512
+      ],
+      "webhookId": "orden-nueva",
+      "notes": "PRODUCCION: Reemplazar por WooCommerce Trigger / Shopify Trigger / MercadoLibre Webhook segun la plataforma"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO orders (\n  order_number,\n  customer_name,\n  customer_email,\n  customer_phone,\n  product_id,\n  quantity,\n  total_amount,\n  status,\n  received_at,\n  raw_payload\n)\nSELECT\n  '{{ $json.body.order_number }}',\n  '{{ $json.body.customer_name }}',\n  '{{ $json.body.customer_email }}',\n  '{{ $json.body.customer_phone }}',\n  p.id,\n  {{ $json.body.quantity }},\n  p.price * {{ $json.body.quantity }},\n  'pending',\n  NOW(),\n  '{{ JSON.stringify($json.body) }}'::jsonb\nFROM products p\nWHERE p.sku = '{{ $json.body.product_sku }}'\nRETURNING id AS order_id, order_number, total_amount, product_id;",
+        "options": {}
+      },
+      "id": "c9632b56-7ad7-4800-b900-4f23a3138a6d",
+      "name": "Registrar Orden",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -2528,
+        512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  p.id AS product_id,\n  p.sku,\n  p.name AS product_name,\n  p.price,\n  p.stock AS stock_actual,\n  p.stock_min,\n  {{ $('Webhook - Recibir Orden').item.json.body.quantity }} AS cantidad_solicitada,\n  CASE\n    WHEN p.stock >= {{ $('Webhook - Recibir Orden').item.json.body.quantity }} THEN true\n    ELSE false\n  END AS stock_disponible\nFROM products p\nWHERE p.sku = '{{ $('Webhook - Recibir Orden').item.json.body.product_sku }}';",
+        "options": {}
+      },
+      "id": "68705a80-480c-4c1a-b973-d28ab8047d7f",
+      "name": "Verificar Stock",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -2288,
+        512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-stock",
+              "leftValue": "={{ $json.stock_disponible }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c027c1f5-053b-4b45-ab13-acfed84a1074",
+      "name": "IF Stock Disponible",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2048,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE products\nSET stock = stock - {{ $json.cantidad_solicitada }}\nWHERE id = {{ $json.product_id }}\nRETURNING id AS product_id, sku, stock AS stock_nuevo, (SELECT stock_min FROM products WHERE id = {{ $json.product_id }}) AS stock_min;",
+        "options": {}
+      },
+      "id": "22ded743-84d2-4631-bdb6-cac417f8089d",
+      "name": "Actualizar Stock",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1808,
+        368
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET\n  status = 'confirmed',\n  processed_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, order_number, status, processed_at;",
+        "options": {}
+      },
+      "id": "fc2848d9-4dcd-4710-ac67-bdd0a460ab56",
+      "name": "Confirmar Orden",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1568,
+        368
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "tesis@ecommerce.local",
+        "toEmail": "={{ $('Webhook - Recibir Orden').item.json.body.customer_email }}",
+        "subject": "=Confirmaci├│n de Orden {{ $('Registrar Orden').item.json.order_number }}",
+        "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <h2 style=\"color: #2e7d32;\">┬íGracias por tu compra!</h2>\n\n  <p>Hola <strong>{{ $('Webhook - Recibir Orden').item.json.body.customer_name }}</strong>,</p>\n\n  <p>Tu orden ha sido confirmada exitosamente. Aqu├¡ est├ín los detalles:</p>\n\n  <table style=\"width: 100%; border-collapse: collapse; margin: 20px 0;\">\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>N├║mero de orden</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Registrar Orden').item.json.order_number }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Producto</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Verificar Stock').item.json.product_name }}</td>\n    </tr>\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Cantidad</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Webhook - Recibir Orden').item.json.body.quantity }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Total</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">${{ $('Registrar Orden').item.json.total_amount }}</td>\n    </tr>\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Estado</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">Confirmada</td>\n    </tr>\n  </table>\n\n  <p>Te notificaremos cuando tu pedido sea enviado.</p>\n\n  <p style=\"color: #888; font-size: 12px;\">\n    Este es un email autom├ítico del sistema de e-commerce ÔÇö Tesis UTN FRM 2026\n  </p>\n</div>",
+        "options": {}
+      },
+      "id": "4e8a4686-5cea-4c0c-bb35-09754b42efa9",
+      "name": "Enviar Email Confirmaci├│n",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -1328,
+        368
+      ],
+      "webhookId": "4765157b-2339-4111-b9b2-c40af38712e3",
+      "credentials": {
+        "smtp": {
+          "id": "05ihlktQezmjllAa",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, notified_at;",
+        "options": {}
+      },
+      "id": "4ecef653-b067-4d25-9347-d9e2bf84522d",
+      "name": "Registrar Notificaci├│n",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1088,
+        368
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"order_number\": \"{{ $('Registrar Orden').item.json.order_number }}\",\n  \"status\": \"confirmed\",\n  \"total_amount\": {{ $('Registrar Orden').item.json.total_amount }},\n  \"message\": \"Orden procesada y confirmada. Email de confirmaci├│n enviado.\"\n}",
+        "options": {}
+      },
+      "id": "910b3695-ac16-4797-8af3-da146169e033",
+      "name": "Respuesta Confirmada",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -848,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET\n  status = 'no_stock',\n  processed_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, order_number, status, processed_at;",
+        "options": {}
+      },
+      "id": "4c184a01-8d2b-46ed-9542-72226776b8f9",
+      "name": "Marcar Sin Stock",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1808,
+        672
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "3VBjtgn4ueU5ZLRx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "tesis@ecommerce.local",
+        "toEmail": "={{ $('Webhook - Recibir Orden').item.json.body.customer_email }}",
+        "subject": "=Orden {{ $('Registrar Orden').item.json.order_number }} ÔÇö Producto sin stock",
+        "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <h2 style=\"color: #c62828;\">Aviso sobre tu orden</h2>\n\n  <p>Hola <strong>{{ $('Webhook - Recibir Orden').item.json.body.customer_name }}</strong>,</p>\n\n  <p>Lamentamos informarte que el producto solicitado no tiene stock disponible en este momento.</p>\n\n  <table style=\"width: 100%; border-collapse: collapse; margin: 20px 0;\">\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>N├║mero de orden</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Registrar Orden').item.json.order_number }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Producto</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $('Verificar Stock').item.json.product_name }}</td>\n    </tr>\n    <tr style=\"background-color: #f5f5f5;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd;\"><strong>Estado</strong></td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">Sin stock</td>\n    </tr>\n  </table>\n\n  <p>Nos pondremos en contacto contigo cuando el producto est├® disponible nuevamente.</p>\n\n  <p style=\"color: #888; font-size: 12px;\">\n    Este es un email autom├ítico del sistema de e-commerce ÔÇö Tesis UTN FRM 2026\n  </p>\n</div>",
+        "options": {}
+      },
+      "id": "b88c00d2-6391-40f7-80ab-00379e11016a",
+      "name": "Enviar Email Sin Stock",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -1568,
+        672
+      ],
+      "webhookId": "61ebfd30-a304-4313-97b0-695deeca3b4a",
+      "credentials": {
+        "smtp": {
+          "id": "05ihlktQezmjllAa",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"order_number\": \"{{ $('Registrar Orden').item.json.order_number }}\",\n  \"status\": \"no_stock\",\n  \"total_amount\": {{ $('Registrar Orden').item.json.total_amount }},\n  \"message\": \"Producto sin stock disponible. Se notific├│ al cliente.\"\n}",
+        "options": {}
+      },
+      "id": "27d5b92a-853c-49b8-9de0-73d77db4a7d6",
+      "name": "Respuesta Sin Stock",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1328,
+        672
+      ]
+    },
+    {
+      "id": "prod-woo-001",
+      "name": "[PROD] WooCommerce Trigger",
+      "type": "n8n-nodes-base.wooCommerceTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        -200
+      ],
+      "disabled": true,
+      "parameters": {
+        "event": "order.created"
+      },
+      "notes": "PENDIENTE: Configurar credenciales WooCommerce (URL tienda, Consumer Key, Consumer Secret)"
+    },
+    {
+      "id": "prod-shopify-001",
+      "name": "[PROD] Shopify Trigger",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        -100
+      ],
+      "disabled": true,
+      "parameters": {
+        "topic": "orders/create"
+      },
+      "notes": "PENDIENTE: Configurar credenciales Shopify (Shop Name, API Key, Secret)"
+    },
+    {
+      "id": "prod-normalize-001",
+      "name": "[PROD] Normalizar Fuente",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        -150
+      ],
+      "disabled": true,
+      "parameters": {
+        "functionCode": "// PRODUCCION: Normalizar datos de distintas plataformas\n// Descomentar el bloque correspondiente a la plataforma usada\n\n// --- WooCommerce ---\n// const raw = \\;\n// return [{ json: {\n//   order_number: raw.order_key || raw.number,\n//   product_id: raw.line_items?.[0]?.product_id,\n//   product_name: raw.line_items?.[0]?.name,\n//   quantity: raw.line_items?.[0]?.quantity,\n//   total_amount: parseFloat(raw.total),\n//   customer_name: raw.billing?.first_name + ' ' + raw.billing?.last_name,\n//   customer_email: raw.billing?.email,\n//   source: 'woocommerce'\n// }}];\n\n// --- Shopify ---\n// const raw = \\;\n// return [{ json: {\n//   order_number: raw.order_number?.toString(),\n//   product_id: raw.line_items?.[0]?.product_id,\n//   product_name: raw.line_items?.[0]?.name,\n//   quantity: raw.line_items?.[0]?.quantity,\n//   total_amount: parseFloat(raw.total_price),\n//   customer_name: raw.customer?.first_name + ' ' + raw.customer?.last_name,\n//   customer_email: raw.customer?.email,\n//   source: 'shopify'\n// }}];\n\n// --- Webhook generico (default SIMPLE) ---\nconst raw = \\.body || \\;\nreturn [{ json: {\n  order_number: raw.order_number,\n  product_id: raw.product_id,\n  product_name: raw.product_name,\n  quantity: raw.quantity,\n  total_amount: raw.total_amount,\n  customer_name: raw.customer_name,\n  customer_email: raw.customer_email,\n  source: raw.source || 'webhook'\n}}];"
+      },
+      "notes": "PRODUCCION: Adaptar segun plataforma. Ver bloques comentados para WooCommerce y Shopify."
+    }
+  ],
+  "connections": {
+    "Webhook - Recibir Orden": {
+      "main": [
+        [
+          {
+            "node": "Registrar Orden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Orden": {
+      "main": [
+        [
+          {
+            "node": "Verificar Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Stock": {
+      "main": [
+        [
+          {
+            "node": "IF Stock Disponible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Stock Disponible": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Stock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar Sin Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Stock": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Orden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar Orden": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Confirmaci├│n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Confirmaci├│n": {
+      "main": [
+        [
+          {
+            "node": "Registrar Notificaci├│n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Notificaci├│n": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Confirmada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar Sin Stock": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Sin Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Sin Stock": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Sin Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "287b1a06-6f8e-49b7-9501-aec973a32b8e",
+  "activeVersionId": "287b1a06-6f8e-49b7-9501-aec973a32b8e",
+  "versionCounter": 13,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-22T02:52:08.453Z",
+      "createdAt": "2026-04-22T02:52:08.453Z",
+      "role": "workflow:owner",
+      "workflowId": "8BL61RdNdctnH0nn",
+      "projectId": "AAsiEYx80MD8KM3L",
+      "project": {
+        "updatedAt": "2026-04-21T23:22:33.508Z",
+        "createdAt": "2026-04-16T00:17:58.233Z",
+        "id": "AAsiEYx80MD8KM3L",
+        "name": "Admin Tesis <admin@tesis.local>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "f912f84b-a7f6-401f-ae0c-41b0ffc13665"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 287b1a06",
+    "description": ""
+  }
+}
