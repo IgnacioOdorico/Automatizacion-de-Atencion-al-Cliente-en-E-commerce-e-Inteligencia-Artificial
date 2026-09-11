@@ -172,8 +172,12 @@ check('R4  exactitud (global) y precision (por clase) diferenciadas',
 check('R5  el canal simulado ya no se llama canal WhatsApp a secas',
       'canal simulado en formato WhatsApp Cloud API' in TODO
       and 'simulación del canal WhatsApp' not in TODO)
-check('R6  salvedad sobre los nodos 5 y 6',
-      'no inciden en la salida del sistema en la configuración efectivamente medida' in TODO)
+# R6 se INVIERTE: la ablacion E7 establecio que el contexto de FAQ si llega al
+# prompt de la configuracion medida, de modo que los nodos 5 y 6 SI inciden en la
+# salida. Lo que se controla ahora es que el documento lo diga asi.
+check('R6  los nodos 5 y 6 se declaran como parte de la cadena medida',
+      'que sí inciden en la salida del sistema en la configuración medida' in TODO
+      and 'no inciden en la salida del sistema en la configuración efectivamente medida' not in TODO)
 check('R7a la Seccion 2.4 declara su funcion',
       'Corresponde declarar de antemano la función de esta sección' in TODO)
 check('R7b el Capitulo 6 retoma el marco teorico',
@@ -202,7 +206,7 @@ print(' INTEGRIDAD DEL ARCHIVO')
 print('=' * 78)
 check('Z1  zip integro', zipfile.ZipFile(RUTA).testzip() is None)
 check('Z2  11 imagenes', sum(1 for r in d.part.rels.values() if 'image' in r.reltype) == 11)
-check('Z3  36 tablas', len(d.tables) == 36)
+check('Z3  37 tablas (36 + la 5.10 de la ablacion)', len(d.tables) == 37)
 check('Z4  12 capitulos/encabezados de nivel 1',
       len([t for st, t in HEAD if st == 'Heading 1']) >= 11)
 

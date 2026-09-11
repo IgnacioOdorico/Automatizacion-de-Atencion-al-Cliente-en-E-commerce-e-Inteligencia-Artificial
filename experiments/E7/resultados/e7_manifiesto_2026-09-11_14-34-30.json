@@ -1,0 +1,18 @@
+﻿{
+    "experimento":  "E7 - ablacion sin contexto de FAQ",
+    "corpus":  "experiments/E2/corpus_intents.csv",
+    "mensajes":  150,
+    "prefijo_user_id":  "E7-",
+    "workflow":  "Flujo 2 ÔÇö Chatbot WhatsApp + Telegram",
+    "workflow_nodos":  19,
+    "prompt_caracteres":  1032,
+    "inyecta_faq":  false,
+    "tiene_ejemplos":  false,
+    "endpoint":  "http://localhost:5678/webhook/whatsapp-business",
+    "espaciado_seg":  3,
+    "inicio_utc":  "2026-09-11 17:34:31",
+    "fin_utc":  "2026-09-11 17:42:04",
+    "http_200":  150,
+    "filas_escritas":  150,
+    "commit_git":  "a2dbfb6"
+}

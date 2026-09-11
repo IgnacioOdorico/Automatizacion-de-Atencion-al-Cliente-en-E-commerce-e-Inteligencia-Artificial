@@ -81,8 +81,11 @@ check('B3  el diseño multi-operador está en el Capítulo 7',
       'varios operadores independientes' in CAP7)
 check('B4  el control de admisión está en el Capítulo 7',
       'Control de admisión y encolado' in CAP7)
-check('B5  el cableado del contexto de FAQ está en el Capítulo 7',
-      'cableado del contexto de FAQ' in CAP7)
+# El cableado del contexto de FAQ dejo de ser linea futura: se midio en E7
+# (§5.2.4). Lo que queda pendiente en el Capitulo 7 es la evaluacion de la
+# correccion del contenido, y eso es lo que se controla.
+check('B5  la evaluación de contenido pendiente está en el Capítulo 7',
+      'Evaluación de la corrección del contenido de las respuestas' in CAP7)
 
 print()
 print('=' * 78)

@@ -58,12 +58,14 @@ chk(8, 'MAY', 'Precisiones del texto alineadas con la Tabla 5.9',
     hay(r'FAQ \(97,8 ?%\)') and not hay(r'FAQ \(96,3 ?%\)'))
 chk(9, 'MAY', 'Omnicanalidad reencuadrada como multicanal',
     hay(r'2\.3 Comunicación multicanal') and hay(r'El sistema desarrollado es multicanal')
-    # se admite "Chatbot Omnicanal" SOLO como parte del nombre real del archivo versionado
-    and n(r'Chatbot Omnicanal') == n(r'Chatbot Omnicanal IA PRODUCCION\.json'))
+    # se admite "Chatbot Omnicanal" SOLO como parte del nombre real de un archivo
+    # versionado: el de PRODUCCION y el de la configuracion que corrio el corpus,
+    # que el Anexo H cita para que el prompt medido sea verificable.
+    and n(r'Chatbot Omnicanal') == n(r'Chatbot Omnicanal IA\.json') + n(r'Chatbot Omnicanal IA PRODUCCION\.json'))
 chk(10, 'MAY', 'Soberanía de datos acotada (no cubre la inferencia)',
     hay(r'no se extiende a la inferencia del Flujo 2'))
 chk(11, 'MAY', 'Prompt, corpus y datos crudos anexados',
-    hay(r'Anexo H: Prompt de sistema') and hay(r'Anexo J: Corpus de evaluación')
+    hay(r'Anexo H: Prompts? de sistema') and hay(r'Anexo J: Corpus de evaluación')
     and hay(r'Tabla I\.1') and hay(r'ORD-E4-003'))
 chk(12, 'MAY', 'WhatsApp: se retira la afirmación de sandbox',
     hay(r'no se ejecutó contra la API real ni contra su entorno sandbox')

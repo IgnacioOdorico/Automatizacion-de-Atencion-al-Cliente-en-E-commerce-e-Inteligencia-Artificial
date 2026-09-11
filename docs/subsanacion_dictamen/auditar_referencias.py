@@ -110,7 +110,10 @@ for nom, pat in CIFRAS.items():
     print('  %-20s %d ocurrencias' % (nom, len(re.findall(pat, TODO))))
 
 VIEJAS = {'1,79': r'\b1,79\b', '7,69': r'\b7,69\b', '2,38': r'\b2,38\b',
-          '90,7': r'\b90,7\b', '190x': r'190 veces', '31,6x': r'31,6',
+          # 90,7 salio de la lista negra: hoy es el limite superior del intervalo
+          # de Wilson de la condicion de ablacion (86,0 % [79,5 ; 90,7]) y no la
+          # cifra de una version vieja.
+          '190x': r'190 veces', '31,6x': r'31,6',
           '5 a 30 minutos': r'5 a 30 minutos', '107': r'\b107\b'}
 print()
 print('=== CIFRAS DE VERSIONES VIEJAS (deben ser 0) ===')
