@@ -61,8 +61,12 @@ check('3   Tabla 6.1 no invoca un compromiso numerico ausente de 1.5.2',
 # --- 4
 check('4a  la promesa incumplida de 3.2 ya no esta',
       'con evaluación cualitativa de coherencia de las respuestas' not in TODO)
-check('4b  se declara explicitamente lo no medido',
-      'No se evaluó la calidad del contenido de las respuestas' in TODO)
+# 4b se REFORMULA: E6 intento medir el contenido (Seccion 5.2.5). Lo que el
+# dictamen pedia sigue en pie: que 3.2 declare sin ambiguedad lo que el trabajo
+# NO puede afirmar. Ahora lo declara sobre lo intentado, no sobre lo omitido.
+check('4b  se declara explicitamente lo que no se puede afirmar',
+      'ninguna de las dos permite afirmar que las respuestas sean correctas' in TODO
+      and 'no puede afirmar que la respuesta entregada sea correcta' in TODO)
 check('4c  la triangulacion que se afirma es la que existe',
       'triangulación de fuentes de evidencia' in TODO and '51,28' in TODO)
 check('4d  el Capitulo 7 lleva la rubrica del procedimiento faltante',
@@ -206,7 +210,7 @@ print(' INTEGRIDAD DEL ARCHIVO')
 print('=' * 78)
 check('Z1  zip integro', zipfile.ZipFile(RUTA).testzip() is None)
 check('Z2  11 imagenes', sum(1 for r in d.part.rels.values() if 'image' in r.reltype) == 11)
-check('Z3  37 tablas (36 + la 5.10 de la ablacion)', len(d.tables) == 37)
+check('Z3  38 tablas (36 + la 5.10 de la ablacion + la K.1 de la verificacion de datos)', len(d.tables) == 38)
 check('Z4  12 capitulos/encabezados de nivel 1',
       len([t for st, t in HEAD if st == 'Heading 1']) >= 11)
 

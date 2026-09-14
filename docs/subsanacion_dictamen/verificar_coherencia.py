@@ -63,6 +63,18 @@ check('A4  no se afirma few-shot en ningún lado',
       and 'few-shot prompting con inyección' not in TODO)
 check('A5  no se afirma haber evaluado la calidad de las respuestas',
       'con evaluación cualitativa de coherencia de las respuestas' not in TODO)
+# E7 establecio que la base de conocimiento SI se inyecta en el prompt de la
+# configuracion medida. Estas frases sobrevivieron a aquella correccion en
+# cuatro lugares (3.2, 5.2.2, 6.4 y Anexo D) y en 4.4.3 quedo negada la
+# existencia de reglas de decision que el prompt medido si tiene.
+check('A6  ningún lugar niega que la base llegue al prompt',
+      'no llega al prompt' not in TODO and 'no llega al modelo' not in TODO
+      and 'conocimiento general del modelo' not in TODO)
+check('A7  §4.4.3 no niega las reglas de decisión del prompt medido',
+      'no incluye criterios de decisión' not in TODO)
+check('A8  no se niega haber medido lo que la §5.2.5 mide',
+      'lo segundo no se midió en este trabajo' not in TODO
+      and 'la dimensión que este trabajo no midió' not in TODO)
 
 print()
 print('=' * 78)
@@ -129,6 +141,82 @@ for rot, es, en in [('el contraste no paramétrico', 'Mann-Whitney', 'Mann-Whitn
                     ('el baseline', '49,13', '49.13')]:
     check('E  %-28s en ambos' % rot, es in res and en in abs_,
           'ES=%s EN=%s' % (es in res, en in abs_))
+
+print()
+print('=' * 78)
+print(' F — LA EVALUACIÓN DEL CONTENIDO (E6) ESTÁ COMPLETA Y ES ESPEJO')
+print('=' * 78)
+HEAD = [p.text.strip() for p in d.paragraphs if p.style.name.startswith('Heading')]
+
+
+def bloque_o_vacio(desde, hasta):
+    try:
+        return bloque(desde, hasta)
+    except StopIteration:
+        return ''
+
+
+check('F1  §3.5.7 declara el protocolo',
+      '3.5.7 Evaluación del contenido de las respuestas' in HEAD)
+check('F2  §5.2.5 reporta el resultado',
+      '5.2.5 Contenido de las respuestas de tipo FAQ' in HEAD)
+b525 = bloque_o_vacio('5.2.5', '5.3 ')
+check('F3  §5.2.5 reporta los dos pares válidos, no uno',
+      'κ = 0,167' in b525 and 'κ = 0,358' in b525)
+check('F4  §5.2.5 reporta el acuerdo intraevaluador', 'κ = 0,318' in b525)
+check('F5  §5.2.5 reporta la verificación automática',
+      '2 de las 18 respuestas con datos concretos' in b525 and 'de 3,1 % a 32,8 %' in b525)
+check('F6  §5.2.5 declara la cota inferior y el límite de contexto',
+      'cota inferior' in b525 and 'no controla el contexto' in b525)
+check('F7  §6.4 (v) retoma el resultado', '2 de las 18 respuestas de tipo FAQ' in bloque_o_vacio('6.4', 'CAPÍTULO 7'))
+check('F8  el Anexo K existe y su tabla está listada',
+      any(h.startswith('Anexo K: Verificación de datos concretos') for h in HEAD)
+      and 'Tabla K.1: Datos concretos afirmados' in TXT_P
+      and any(r.cells[0].text.strip() == 'Tabla K.1' for t in d.tables for r in t.rows))
+check('F9  resumen y abstract reportan el resultado',
+      '0,167' in res and '2 de las 18' in res and '0.167' in abs_ and '2 of the 18' in abs_)
+
+print()
+print('=' * 78)
+print(' G — CADA EPÍGRAFE DE TABLA TIENE SU TABLA DEBAJO')
+print('=' * 78)
+from docx.oxml.ns import qn
+hijos = list(d.element.body.iterchildren())
+huerfanos = []
+for i, el in enumerate(hijos):
+    if el.tag == qn('w:p'):
+        t = ''.join(x.text or '' for x in el.iter(qn('w:t'))).strip()
+        if t.startswith('Tabla ') and ':' in t[:12] and hijos[i + 1].tag != qn('w:tbl'):
+            huerfanos.append(t[:40])
+check('G1  ningún epígrafe separado de su tabla', not huerfanos, '; '.join(huerfanos))
+
+print()
+print('=' * 78)
+print(' H — LA NEGRITA MARCA LA ETIQUETA, NO EL PÁRRAFO')
+print('=' * 78)
+# Convención del documento: "(b) Entorno de prueba local:" en negrita y el
+# resto en redonda. Reescrituras anteriores volcaban el párrafo entero dentro
+# del run de la etiqueta y lo dejaban todo en negrita.
+extendidos = []
+for p in d.paragraphs:
+    if p.style.name.startswith('Heading') or not p.runs or not p.runs[0].bold:
+        continue
+    texto = p.text
+    dos_puntos = texto.find(':')
+    if not 0 <= dos_puntos <= 80:
+        continue
+    pos, sobra = 0, 0
+    for r in p.runs:
+        ini, fin = pos, pos + len(r.text)
+        if r.bold and fin > dos_puntos + 1:
+            tramo = fin - max(ini, dos_puntos + 1)
+            if ini <= dos_puntos or tramo > 100:
+                sobra += tramo
+        pos = fin
+    if sobra > 40:
+        extendidos.append(texto.strip()[:30])
+check('H1  ningún párrafo lleva en negrita más que su etiqueta', not extendidos,
+      '%d: %s' % (len(extendidos), ' | '.join(extendidos)))
 
 print()
 print('=' * 78)
