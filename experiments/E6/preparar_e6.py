@@ -126,6 +126,24 @@ const NIVELES   = __NIVELES__;
 
 const app = document.getElementById('app');
 let i = 0, res = [], t0 = 0;
+const CLAVE = 'e6_avance_' + EVALUADOR;
+const MITAD = Math.ceil(DATOS.length / 2);
+let pausaMostrada = false;
+
+function guardar(){
+  try { localStorage.setItem(CLAVE, JSON.stringify({i:i, res:res, pausa:pausaMostrada})); } catch(e){}
+}
+function leerAvance(){
+  try { const v = localStorage.getItem(CLAVE); return v ? JSON.parse(v) : null; } catch(e){ return null; }
+}
+function borrarAvance(){
+  try { localStorage.removeItem(CLAVE); } catch(e){}
+}
+function reanudar(){
+  const a = leerAvance();
+  if(!a){ return arrancar(); }
+  i = a.i; res = a.res; pausaMostrada = !!a.pausa; render();
+}
 
 function tablaFaqs(){
   return `<details><summary>Base de conocimiento de TechStore — las 23 entradas (consultala siempre que dudes)</summary>
@@ -156,13 +174,32 @@ function intro(){
     evaluación demasiado rápida se descarta por inválida.</p>
   </div>
   ${tablaFaqs()}
-  <button class="ini" onclick="arrancar()">Empezar</button>`;
+  ${(() => { const a = leerAvance();
+     return (a && a.i > 0 && a.i < DATOS.length)
+       ? `<div class="card"><p>Tenés una evaluación empezada: vas por la respuesta <b>${a.i + 1} de ${DATOS.length}</b>.
+          Tu avance quedó guardado.</p>
+          <button class="ini" onclick="reanudar()">Seguir desde la ${a.i + 1}</button></div>`
+       : `<button class="ini" onclick="arrancar()">Empezar</button>`; })()}`;
 }
 
-function arrancar(){ i=0; res=[]; render(); }
+function arrancar(){ i=0; res=[]; pausaMostrada=false; borrarAvance(); render(); }
 
 function render(){
   if(i>=DATOS.length) return fin();
+  if(i === MITAD && !pausaMostrada){
+    pausaMostrada = true; guardar();
+    app.innerHTML = `<h1>Llegaste a la mitad</h1>
+    <div class="card">
+      <p>Evaluaste <b>${i} de ${DATOS.length}</b>. <b>Es un buen momento para parar.</b></p>
+      <p>Cotejar respuestas contra la tabla cansa, y una evaluación cansada se nota en los
+      tiempos. Si querés, cerrá esta pestaña y seguí más tarde o mañana: tu avance quedó
+      guardado y vas a retomar exactamente desde la ${i + 1}.</p>
+      <p>Si preferís seguir ahora, tomate un par de minutos antes.</p>
+      <button class="ini" onclick="render()">Seguir con la ${i + 1}</button>
+    </div>`;
+    window.scrollTo(0,0);
+    return;
+  }
   const d = DATOS[i]; t0 = Date.now();
   app.innerHTML = `<h1>Evaluación de respuestas del chatbot</h1>
   <div class="sub">${NOMBRE} · ${i+1} de ${DATOS.length}</div>
@@ -181,7 +218,7 @@ function render(){
 
 function elegir(nivel){
   res.push({id:DATOS[i].id, nivel:nivel, segundos:((Date.now()-t0)/1000).toFixed(1)});
-  i++; render();
+  i++; guardar(); render();
 }
 
 function fin(){
@@ -193,7 +230,7 @@ function fin(){
   ${(tot/60).toFixed(1)} minutos (${(tot/res.length).toFixed(1)} s por respuesta en promedio).</p>
   <p>Descargá el archivo y pasáselo al equipo. <b>No lo compares con el del otro
   evaluador</b>: el acuerdo entre ambos es justamente lo que se mide.</p>
-  <a class="dl" href="${url}" download="e6_${EVALUADOR}.csv">Descargar resultado</a></div>`;
+  <a class="dl" href="${url}" download="e6_${EVALUADOR}.csv" onclick="setTimeout(borrarAvance, 1500)">Descargar resultado</a></div>`;
 }
 
 intro();
