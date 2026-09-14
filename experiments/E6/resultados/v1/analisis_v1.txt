@@ -1,0 +1,130 @@
+
+==========================================================================
+ 1. CONTROL DE VALIDEZ POR TIEMPOS
+==========================================================================
+  Maximo Muguruza      n=45   mediana  10.0 s  total   9.9 min  mínimo  2.3 s  <3 s: 3   VÁLIDO
+  Joaquin Maya         n=45   mediana   8.8 s  total  10.9 min  mínimo  0.1 s  <3 s: 5   VÁLIDO
+
+  Criterio: mediana ≥ 8 s por ítem. Las respuestas promedian 235 caracteres
+  y hay que cotejarlas contra 23 entradas: por debajo de ese piso no hubo lectura.
+
+==========================================================================
+ 2. DISTRIBUCIÓN POR NIVEL
+==========================================================================
+                                 Maximo Muguruza    Joaquin Maya      
+  A — Consistente con la política  31 ( 68.9 %)      30 ( 66.7 %)
+  B — Genérica, no contradictoria   9 ( 20.0 %)      12 ( 26.7 %)
+  C — Contradice la política       5 ( 11.1 %)       3 (  6.7 %)
+
+==========================================================================
+ 3. ACUERDO ENTRE EVALUADORES
+==========================================================================
+  n = 45 respuestas evaluadas por ambos
+  Acuerdo observado  Po = 0.6000  (27 de 45 coinciden)
+  Acuerdo esperado   Pe = 0.5200
+  κ de Cohen         κ  = 0.167   -> leve (Landis y Koch, 1977)
+
+  Matriz de confusión entre evaluadores (filas Maximo Muguruza, columnas Joaquin Maya):
+               A       B       C
+    A         24       6       1
+    B          4       3       2
+    C          2       3       0
+
+==========================================================================
+ 4. RESULTADO SUSTANTIVO
+==========================================================================
+  Respuestas que AMBOS juzgan apoyadas en la política (A y A):
+      24 de 45  (53.3 %)
+  Respuestas que AMBOS juzgan genéricas pero no contradictorias (B y B):
+      3 de 45  (6.7 %)
+  Respuestas que ALGUNO juzga contradictorias con la política (lectura conservadora):
+      8 de 45  (17.8 %)
+  Respuestas que AMBOS juzgan contradictorias (lectura estricta):
+      0 de 45  (0.0 %)
+
+==========================================================================
+ 5. DESACUERDOS, CASO POR CASO
+==========================================================================
+  18 de 45 (40.0 %). Son los casos frontera y van al capítulo.
+
+  [239]  Maximo Muguruza: C   |   Joaquin Maya: A
+        consulta : puedo pagar en cuotas?
+        respuesta: ¡Hola Anotador E2! Sí, podés pagar en cuotas con tarjetas de crédito Visa, Mastercard y American Express. Ofrecemos hast
+
+  [246]  Maximo Muguruza: A   |   Joaquin Maya: B
+        consulta : tienen garantia los productos?
+        respuesta: ¡Hola Anotador E2! Todos nuestros productos tienen garantía oficial del fabricante, generalmente 12 meses. Es importante
+
+  [269]  Maximo Muguruza: A   |   Joaquin Maya: B
+        consulta : hacen envios internacionales?
+        respuesta: ¡Hola Anotador E2! Por el momento, solo hacemos envíos dentro de Argentina. Estamos trabajando para expandir a países li
+
+  [273]  Maximo Muguruza: A   |   Joaquin Maya: B
+        consulta : es seguro pagar con tarjeta en la web?
+        respuesta: ¡Hola Anotador E2! Sí, es totalmente seguro pagar con tarjeta en nuestra web. Usamos encriptación SSL y procesamos los p
+
+  [277]  Maximo Muguruza: B   |   Joaquin Maya: A
+        consulta : tienen local fisico para retirar?
+        respuesta: ¡Hola! Actualmente somos una tienda 100% online y no contamos con un local físico para retiros. Todos los pedidos se des
+
+  [291]  Maximo Muguruza: C   |   Joaquin Maya: A
+        consulta : hasta cuantas cuotas sin interes hay?
+        respuesta: ¡Hola Anotador E2! Podés pagar en hasta 12 cuotas sin interés en productos seleccionados, utilizando tarjetas de crédito
+
+  [298]  Maximo Muguruza: A   |   Joaquin Maya: B
+        consulta : puedo cambiar la direccion de envio despues de comprar?
+        respuesta: ¡Hola Anotador E2! Una vez que el pedido ha sido realizado, no es posible cambiar la dirección de envío. Si te das cuent
+
+  [305]  Maximo Muguruza: A   |   Joaquin Maya: B
+        consulta : la garantia la cubre la marca o ustedes?
+        respuesta: ¡Hola Anotador E2! La garantía de nuestros productos es oficial del fabricante. Esto significa que si hay algún defecto 
+
+  [309]  Maximo Muguruza: C   |   Joaquin Maya: B
+        consulta : hacen descuento por pago en efectivo?
+        respuesta: ¡Hola Anotador E2! Actualmente no ofrecemos descuentos adicionales por pago en efectivo. Sin embargo, sí tenés la opción
+
+  [319]  Maximo Muguruza: A   |   Joaquin Maya: C
+        consulta : si el producto no me gusta lo puedo devolver?
+        respuesta: ¡Hola Anotador E2! Sí, podés devolver un producto si no te gusta. Tenés 30 días desde la recepción para iniciar la devol
+
+  [326]  Maximo Muguruza: C   |   Joaquin Maya: B
+        consulta : cual es el horario de atencion?
+        respuesta: ¡Hola Anotador E2! Nuestro horario de atención es de lunes a viernes de 9 a 18 hs. Si tenés alguna consulta o necesitas 
+
+  [330]  Maximo Muguruza: B   |   Joaquin Maya: A
+        consulta : emiten factura B?
+        respuesta: ¡Hola Anotador E2! Sí, emitimos factura B para nuestros clientes. Durante el proceso de compra, podés seleccionar el tip
+
+  [334]  Maximo Muguruza: B   |   Joaquin Maya: C
+        consulta : los envios son con seguro?
+        respuesta: ¡Hola Anotador E2! Los envíos que realizamos no incluyen seguro de manera automática. Sin embargo, podés optar por agreg
+
+  [357]  Maximo Muguruza: B   |   Joaquin Maya: C
+        consulta : buenas, se puede cancelar un pedido ya pagado?
+        respuesta: ¡Hola Anotador E2! Podés cancelar tu pedido sin costo dentro de las 2 horas de haberlo realizado, siempre que no haya si
+
+  [359]  Maximo Muguruza: A   |   Joaquin Maya: B
+        consulta : puedo pedir que lo dejen con el portero?
+        respuesta: ¡Hola Anotador E2! Sí, podés pedir que tu paquete sea dejado con el portero. Te sugerimos que lo especifiques en las obs
+
+  [365]  Maximo Muguruza: B   |   Joaquin Maya: A
+        consulta : buenas, cuando estiman que llega el pedido a mendoza?
+        respuesta: ¡Hola Anotador E2! Los envíos dentro de Mendoza tardan entre 1 y 3 días hábiles una vez despachado el pedido. Te notific
+
+  [370]  Maximo Muguruza: C   |   Joaquin Maya: B
+        consulta : cuanto tiempo de garantia tienen las notebooks?
+        respuesta: ¡Hola Anotador E2! Las notebooks tienen garantía oficial del fabricante, que generalmente es de 12 meses. Es importante 
+
+  [374]  Maximo Muguruza: B   |   Joaquin Maya: A
+        consulta : como se calcula el costo de envio?
+        respuesta: ¡Hola Anotador E2! El costo de envío se calcula en el checkout según tu código postal y el peso del paquete. Asegurate d
+
+
+==========================================================================
+ CIFRAS PARA EL DOCUMENTO
+==========================================================================
+  n evaluado ................. 45 respuestas de tipo FAQ
+  κ de Cohen ................. 0.167 (leve)
+  acuerdo observado .......... 60.0 %
+  apoyadas en la política .... 53.3 % (ambos evaluadores)
+  contradicen la política .... 17.8 % (al menos un evaluador)

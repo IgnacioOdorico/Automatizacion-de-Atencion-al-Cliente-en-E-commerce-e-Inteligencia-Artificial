@@ -2,7 +2,7 @@
 """E6 — Analisis de la evaluacion de correccion del contenido.
 
 Uso:
-    python analizar_e6.py resultados/e6_maximo_muguruza.csv resultados/e6_joaquin_maya.csv
+    python analizar_e6.py resultados/v1/e6_maximo_muguruza.csv resultados/v1/e6_joaquin_maya.csv
 
 Reporta, en este orden:
 
