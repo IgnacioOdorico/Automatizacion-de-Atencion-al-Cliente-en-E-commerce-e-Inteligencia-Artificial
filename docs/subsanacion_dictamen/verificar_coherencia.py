@@ -220,6 +220,46 @@ check('H1  ningún párrafo lleva en negrita más que su etiqueta', not extendid
 
 print()
 print('=' * 78)
+print(' I — RESIDUOS POSTERIORES A LA AUDITORÍA DE 2.ª INSTANCIA')
+print('=' * 78)
+# La auditoría verificó 15 y 18 nodos en tablas y canvas (M-09). La corrección
+# de E7 escribió "diecinueve", contando la nota adhesiva del workflow.
+check('I1  el workflow de Telegram tiene 18 nodos en todos lados', 'diecinueve nodos' not in TODO)
+
+# Figura 5: el diagrama rotulaba el modelo como zero-shot, que tras E7 solo vale
+# para la condición de ablación. Se controla la cadena SVG -> PNG -> docx.
+import hashlib
+import re as _re
+SVG = 'docs/figuras_v6/diagrama_flujo2.svg'
+PNG = 'docs/figuras_v6/diagrama_flujo2.png'
+svg_txt = open(SVG, encoding='utf-8').read()
+blob_f5 = None
+for _i, _p in enumerate(d.paragraphs):
+    if _p.text.strip().startswith('Figura 5:'):
+        _rid = _re.search(r'r:embed="(rId\d+)"', d.paragraphs[_i - 1]._element.xml).group(1)
+        blob_f5 = d.part.rels[_rid].target_part.blob
+png_bytes = open(PNG, 'rb').read()
+cadena = blob_f5 is not None and hashlib.md5(blob_f5).hexdigest() == hashlib.md5(png_bytes).hexdigest()
+try:
+    import io as _io
+    import cairosvg
+    from PIL import Image, ImageChops
+    render = Image.open(_io.BytesIO(cairosvg.svg2png(bytestring=svg_txt.encode('utf-8')))).convert('L')
+    actual = Image.open(_io.BytesIO(png_bytes)).convert('L')
+    cadena = cadena and render.size == actual.size and         max(ImageChops.difference(render, actual).getextrema()) <= 30
+except ImportError:
+    pass
+check('I2  la Figura 5 no rotula el modelo como zero-shot',
+      'zero-shot' not in svg_txt and cadena)
+
+fila17 = [[c.text.strip() for c in r.cells] for t in d.tables for r in t.rows
+          if r.cells[0].text.strip() == '17' and 'Enviar Respuesta' in r.cells[1].text]
+check('I3  B-08: la Tabla 4.7 usa el rótulo del canvas y lo aclara',
+      len(fila17) == 1 and fila17[0][1] == 'Enviar Respuesta (Producción)'
+      and 'no a los workflows de producción del Capítulo 7' in fila17[0][3], str(fila17)[:120])
+
+print()
+print('=' * 78)
 if fallos:
     print(' RESULTADO: %d/%d — %d FALLAS' % (n_ok, n_ok + len(fallos), len(fallos)))
     print('=' * 78)

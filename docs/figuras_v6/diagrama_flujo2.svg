@@ -46,7 +46,7 @@
 
 <rect class="box" x="810" y="416" width="200" height="50" rx="7" stroke="#a78bda" stroke-dasharray="4,3"/>
 <text class="n"  x="910" y="437">OpenAI Chat Model</text>
-<text class="ns" x="910" y="453">gpt-4o-mini · zero-shot</text>
+<text class="ns" x="910" y="453">gpt-4o-mini · prompts en el Anexo H</text>
 
 <rect class="box" x="465" y="502" width="215" height="40" rx="7" stroke="#7f86c8"/>
 <text class="n" x="572.5" y="527">Parse JSON</text>
