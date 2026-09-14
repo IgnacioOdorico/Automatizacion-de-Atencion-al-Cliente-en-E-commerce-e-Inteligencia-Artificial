@@ -1,0 +1,41 @@
+Base de conocimiento: 23 entradas, 11 datos concretos
+
+id    estado     dato                           entrada         consulta
+238   respaldado 3 y 7 días hábiles             2               cuanto tarda el envio? porque el mio ya lleva 8 
+238   eco        8 días                         —               cuanto tarda el envio? porque el mio ya lleva 8 
+239   respaldado 12 cuotas                      7               puedo pagar en cuotas?
+243   respaldado 30 días                        3|13            cual es la politica de cambios?
+246   respaldado 12 meses                       4               tienen garantia los productos?
+262   respaldado 1 y 3 días hábiles             2               cuanto tarda el envio normalmente?
+262   respaldado 3 y 7 días hábiles             2               cuanto tarda el envio normalmente?
+265   respaldado 5 días hábiles                 12              si no estoy en casa cuando llega el pedido que p
+277   respaldado 100%                           17|18           tienen local fisico para retirar?
+280   respaldado 30 días                        3|13            cuantos dias tengo para devolver algo?
+291   respaldado 12 cuotas                      7               hasta cuantas cuotas sin interes hay?
+316   respaldado 100%                           17|18           puedo retirar por sucursal?
+319   respaldado 30 días                        3|13            si el producto no me gusta lo puedo devolver?
+326   no respald 9 a 18 hs.                     —               cual es el horario de atencion?
+337   no respald 5 y 10 días hábiles            —               cuanto demora el reintegro de una devolucion?
+349   respaldado 100%                           17|18           venden productos usados o todos son nuevos?
+352   respaldado 24 horas hábiles               14              si pago con transferencia cuando despachan?
+357   respaldado 2 horas                        22              buenas, se puede cancelar un pedido ya pagado?
+357   respaldado 2 horas                        22              buenas, se puede cancelar un pedido ya pagado?
+365   respaldado 1 y 3 días hábiles             2               buenas, cuando estiman que llega el pedido a men
+370   respaldado 12 meses                       4               cuanto tiempo de garantia tienen las notebooks?
+
+Dígitos que no forman un dato (revisión de completitud):
+  marcador de lista                          4
+  parte de un identificador (p. ej. «E2»)    43
+  ninguna cifra quedó sin clasificar
+
+========================================================================
+ RESULTADO
+========================================================================
+  respuestas evaluadas ................... 45
+  respuestas con al menos un dato ........ 18
+  datos concretos ........................ 21  (respaldados 18 · eco 1 · no respaldados 2)
+  respuestas con algún dato no respaldado  2 de 18 (11.1 %; IC 95 % de Wilson 3.1 % a 32.8 %)
+  sobre las 45 respuestas ................ 2 de 45 (4.4 %; IC 95 % 1.2 % a 14.8 %)
+  ids con dato no respaldado ............. 326, 337
+
+Detalle por dato: resultados/verificacion_datos.csv

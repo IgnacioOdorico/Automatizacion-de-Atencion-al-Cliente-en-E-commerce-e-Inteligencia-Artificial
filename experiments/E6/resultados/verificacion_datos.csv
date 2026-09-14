@@ -1,0 +1,22 @@
+id,consulta,dato,unidad,estado,entradas,pregunta_entrada
+238,cuanto tarda el envio? porque el mio ya lleva 8 dias,3 y 7 días hábiles,días hábiles,respaldado,2,¿Cuánto tarda el envío?
+238,cuanto tarda el envio? porque el mio ya lleva 8 dias,8 días,días,eco,,
+239,puedo pagar en cuotas?,12 cuotas,cuotas,respaldado,7,¿Puedo pagar en cuotas?
+243,cual es la politica de cambios?,30 días,días,respaldado,3|13,¿Cómo puedo devolver un producto? / ¿Cuál es la política de cambios?
+246,tienen garantia los productos?,12 meses,meses,respaldado,4,¿Tienen garantía los productos?
+262,cuanto tarda el envio normalmente?,1 y 3 días hábiles,días hábiles,respaldado,2,¿Cuánto tarda el envío?
+262,cuanto tarda el envio normalmente?,3 y 7 días hábiles,días hábiles,respaldado,2,¿Cuánto tarda el envío?
+265,si no estoy en casa cuando llega el pedido que pasa?,5 días hábiles,días hábiles,respaldado,12,¿Qué pasa si no estoy en casa cuando llega el pedido?
+277,tienen local fisico para retirar?,100%,%,respaldado,17|18,¿Los productos son originales? / ¿Tienen stock en físico para retirar?
+280,cuantos dias tengo para devolver algo?,30 días,días,respaldado,3|13,¿Cómo puedo devolver un producto? / ¿Cuál es la política de cambios?
+291,hasta cuantas cuotas sin interes hay?,12 cuotas,cuotas,respaldado,7,¿Puedo pagar en cuotas?
+316,puedo retirar por sucursal?,100%,%,respaldado,17|18,¿Los productos son originales? / ¿Tienen stock en físico para retirar?
+319,si el producto no me gusta lo puedo devolver?,30 días,días,respaldado,3|13,¿Cómo puedo devolver un producto? / ¿Cuál es la política de cambios?
+326,cual es el horario de atencion?,9 a 18 hs.,horas,no respaldado,,
+337,cuanto demora el reintegro de una devolucion?,5 y 10 días hábiles,días hábiles,no respaldado,,
+349,venden productos usados o todos son nuevos?,100%,%,respaldado,17|18,¿Los productos son originales? / ¿Tienen stock en físico para retirar?
+352,si pago con transferencia cuando despachan?,24 horas hábiles,horas hábiles,respaldado,14,¿Cómo inicio una devolución?
+357,"buenas, se puede cancelar un pedido ya pagado?",2 horas,horas,respaldado,22,¿Puedo cancelar un pedido?
+357,"buenas, se puede cancelar un pedido ya pagado?",2 horas,horas,respaldado,22,¿Puedo cancelar un pedido?
+365,"buenas, cuando estiman que llega el pedido a mendoza?",1 y 3 días hábiles,días hábiles,respaldado,2,¿Cuánto tarda el envío?
+370,cuanto tiempo de garantia tienen las notebooks?,12 meses,meses,respaldado,4,¿Tienen garantía los productos?

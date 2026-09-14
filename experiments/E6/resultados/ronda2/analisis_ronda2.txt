@@ -1,0 +1,11 @@
+
+==========================================================================
+ 1. CONTROL DE VALIDEZ POR TIEMPOS
+==========================================================================
+  Maximo Muguruza      n=45   mediana   9.2 s  total  10.1 min  mínimo  2.3 s  <3 s: 2   VÁLIDO
+  Joaquin Maya         n=45   mediana   6.3 s  total  12.6 min  mínimo  1.0 s  <3 s: 12  INVÁLIDO
+
+  Criterio: mediana ≥ 8 s por ítem. Las respuestas promedian 235 caracteres
+  y hay que cotejarlas contra 23 entradas: por debajo de ese piso no hubo lectura.
+
+  >>> EVALUACIÓN INVÁLIDA. No se reporta el resto del análisis.

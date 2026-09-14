@@ -1,0 +1,23 @@
+
+============================================================================
+ 1. CORRIDAS Y CONTROL DE VALIDEZ (mediana >= 8 s por ítem)
+============================================================================
+  Máximo Muguruza  corrida 1  2026-09-11  n=45  mediana 10.0 s  <3 s: 3   VÁLIDA
+  Joaquín Maya     corrida 1  2026-09-11  n=45  mediana  4.0 s  <3 s: 16  inválida
+  Joaquín Maya     corrida 2  2026-09-11  n=45  mediana  5.0 s  <3 s: 5   inválida
+  Joaquín Maya     corrida 3  2026-09-14  n=45  mediana  8.8 s  <3 s: 5   VÁLIDA
+  Máximo Muguruza  corrida 2  2026-09-14  n=45  mediana  9.2 s  <3 s: 2   VÁLIDA
+  Joaquín Maya     corrida 4  2026-09-14  n=45  mediana  6.3 s  <3 s: 12  inválida
+
+  3 de 6 corridas válidas.
+
+============================================================================
+ 2. ACUERDO ENTRE EVALUADORES DISTINTOS (todas las combinaciones válidas)
+============================================================================
+  Máximo Muguruza 1 × Joaquín Maya 3: 27 de 45 coinciden  Po = 0.600  Pe = 0.520  κ = 0.167 (leve)
+  Joaquín Maya 3 × Máximo Muguruza 2: 31 de 45 coinciden  Po = 0.689  Pe = 0.516  κ = 0.358 (aceptable)
+
+============================================================================
+ 3. ACUERDO DE CADA EVALUADOR CONSIGO MISMO
+============================================================================
+  Máximo Muguruza, corridas 1 y 2: repite su nivel en 30 de 45  Po = 0.667  κ = 0.318 (aceptable)

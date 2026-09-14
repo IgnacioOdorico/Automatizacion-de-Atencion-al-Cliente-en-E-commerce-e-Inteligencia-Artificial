@@ -17,7 +17,8 @@ análisis: `analisis_v1.txt`.
 - Ninguna respuesta recibió C de los dos evaluadores.
 
 Con ese acuerdo el instrumento **no produce una cifra reportable** de respuestas
-correctas. Lo que sigue explica por qué y motiva el rediseño (`preparar_e6_v2.py`).
+correctas. Lo que sigue explica por qué. Una segunda ronda con el mismo instrumento
+no cambió la conclusión: ver `../rondas_e6.txt` y la Sección 5.2.5 de la tesis.
 
 ## Lo que no se hace con este resultado
 
@@ -26,7 +27,7 @@ correctas. Lo que sigue explica por qué y motiva el rediseño (`preparar_e6_v2.
 - No se modifica el umbral de 8 s.
 - No se reemplaza el κ por otro coeficiente de acuerdo (AC1, PABAK) elegido después
   de ver el resultado.
-- Este resultado se reporta en la tesis como la causa del rediseño, no se omite.
+- Este resultado se reporta en la tesis (Sección 5.2.5), no se omite.
 
 ## Causas
 
@@ -93,9 +94,13 @@ Ambos evaluadores asignaron A a respuestas con afirmaciones que la base no conti
 Cuando la consulta está cubierta por una entrada, la respuesta la reproduce casi
 textualmente. Cuando no lo está, el modelo completa con políticas plausibles que la
 tienda no tiene, y en al menos un caso contradice la base (326). Es un hallazgo sobre
-alucinación fuera de cobertura que el rediseño tiene que poder medir con acuerdo.
+alucinación fuera de cobertura que un instrumento corregido tendría que poder medir con
+acuerdo. La parte verificable sin juicio —los datos concretos— se midió con
+`verificar_datos_e6.py`.
 
-## Qué cambia en v2
+## Qué debería cambiar en un instrumento corregido
+
+Propuesta, recogida como línea futura en la Sección 7.2 de la tesis:
 
 1. Se descompone el juicio en tres preguntas verificables: qué entrada responde la
    consulta; si la respuesta afirma algo que la tabla no dice (y en qué frase); si algo
