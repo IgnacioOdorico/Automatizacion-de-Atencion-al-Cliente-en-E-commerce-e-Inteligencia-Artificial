@@ -191,7 +191,18 @@ Write-Host "`n=== Conciliación ===" -ForegroundColor Cyan
 Write-Host "  HTTP 200 ............ $okHttp de $($filas.Count)"
 Write-Host "  filas en interactions $escritas"
 Write-Host "  ejecuciones ......... $($ejecuciones.Count) (éxito $exitos; con el prompt de $Condicion $conMd5; con otro prompt $ajenas)"
-$valido = ($okHttp -eq $filas.Count) -and ($escritas -eq $filas.Count) -and ($ajenas -eq 0) -and ($conMd5 -ge $filas.Count)
+# Desvio declarado (tras el bloque 9): una fila que falta porque el modelo devolvio una
+# etiqueta fuera de vocabulario no invalida el bloque; se registra como prediccion erronea.
+# Cualquier otro error si lo invalida.
+$conError = ($ejecuciones | Where-Object { $_.estado -ne 'success' }).Count
+$prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+& python (Join-Path $PSScriptRoot 'fuera_de_vocabulario_e8.py') | Out-Null
+$ErrorActionPreference = $prev
+$oovBloque = @(Import-Csv -Path (Join-Path $DirSalida 'e8_fuera_de_vocabulario.csv') -Encoding UTF8 | Where-Object { $_.bloque -eq $Bloque })
+$fueraVoc  = ($oovBloque | Where-Object { $_.clase -eq 'fuera_de_vocabulario' }).Count
+$otrosErr  = ($oovBloque | Where-Object { $_.clase -ne 'fuera_de_vocabulario' }).Count
+Write-Host "  errores ............. $conError (fuera de vocabulario $fueraVoc; otros $otrosErr)"
+$valido = ($okHttp -eq $filas.Count) -and ($ajenas -eq 0) -and ($conMd5 -ge $filas.Count) -and ($otrosErr -eq 0) -and (($escritas + $fueraVoc) -eq $filas.Count)
 
 $commit = (git -C (Join-Path $PSScriptRoot '..\..') rev-parse --short HEAD 2>$null)
 [ordered]@{
@@ -203,6 +214,7 @@ $commit = (git -C (Join-Path $PSScriptRoot '..\..') rev-parse --short HEAD 2>$nu
     inicio_utc = $inicioUtc.ToString('yyyy-MM-dd HH:mm:ss'); fin_utc = $finUtc.ToString('yyyy-MM-dd HH:mm:ss')
     http_200 = $okHttp; filas_escritas = $escritas; ejecuciones = $ejecuciones.Count
     ejecuciones_con_prompt_de_la_condicion = $conMd5; ejecuciones_con_otro_prompt = $ajenas
+    ejecuciones_con_error = $conError; etiquetas_fuera_de_vocabulario = $fueraVoc; otros_errores = $otrosErr
     valido = $valido; commit_git = $commit
 } | ConvertTo-Json | Set-Content -Path (Join-Path $DirSalida "e8_manifiesto_$Bloque.json") -Encoding UTF8
 

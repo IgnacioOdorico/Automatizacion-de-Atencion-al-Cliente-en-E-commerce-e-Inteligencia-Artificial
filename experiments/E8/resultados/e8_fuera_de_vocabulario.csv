@@ -1,2 +1,3 @@
-bloque,id,etiqueta,execution_id,mensaje,referencia,fuente
-C3_R3,69,CAMBIO,3384,"queria cambiar un producto, cual es el procedimiento? me llego fallado",RECLAMO,"execution_data de n8n: salida del nodo IA - Motor Decision; el INSERT en interactions fallo por interactions_intent_check"
+bloque,id,etiqueta,execution_id,clase,referencia,mensaje,causa
+C3_R3,69,CAMBIO,3384,fuera_de_vocabulario,RECLAMO,"queria cambiar un producto, cual es el procedimiento? me llego fallado","new row for relation ""interactions"" violates check constraint ""interactions_intent_check"""
+C3_R3_i2,18,DEVOLUCION,3483,fuera_de_vocabulario,RECLAMO,quiero la devolucion de mi plata,"new row for relation ""interactions"" violates check constraint ""interactions_intent_check"""

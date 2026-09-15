@@ -1,0 +1,32 @@
+
+##### Bloque 9/12: C3 R3 intento 2  (12:12:44)
+============================================================
+ E8 - bloque C3_R3_i2  (prefijo E8-C3-R3i2-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C3 (md5 esperado ed36a93c8d1eb833168fadf55ba7afbf) ===
+  El prompt activo ya es el de esta condici¢n; no se reimporta.
+  [OK] versi¢n activa con el prompt de C3 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  29 ms
+  [ 50/150] HTTP 200  28 ms
+  [ 75/150] HTTP 200  27 ms
+  [100/150] HTTP 200  27 ms
+  [125/150] HTTP 200  28 ms
+  [150/150] HTTP 200  36 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 149
+  ejecuciones ......... 150 (‚xito 149; con el prompt de C3 150; con otro prompt 0)
+Bloque C3_R3_i2 INVµLIDO: revisar la conciliaci¢n antes de seguir.
+En C:\workspace\University\2026\tesis\Automatizacion-de-Atencion-al-Cliente-en-E-commerce-e-Inteligencia-Artificial\exp
+eriments\E8\run_e8.ps1: 209 Car cter: 21
++ ...  $valido) { throw "Bloque $Bloque INVµLIDO: revisar la conciliaci¢n a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Bloque C3_R3_i2...ntes de seguir.:String) [], RuntimeException
+    + FullyQualifiedErrorId : Bloque C3_R3_i2 INVµLIDO: revisar la conciliaci¢n antes de seguir.
+ 
+EXIT=1

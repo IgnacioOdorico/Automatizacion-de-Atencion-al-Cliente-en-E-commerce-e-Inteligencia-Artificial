@@ -35,12 +35,20 @@ Lo que NO se hace: no se descarta un bloque válido, no se cambia la medida
 primaria ni el ajuste de Holm, y un bloque inválido se vuelve a correr y se
 informa junto con el inválido.
 
-Aplicación de esa regla (agregado al reanudar, antes de correr los bloques 9 a
-12): para cada repetición se usa el intento válido de número más alto
-(e8_manifiesto_<C>_R<r>.json o e8_manifiesto_<C>_R<r>_i<n>.json). Los intentos
-inválidos se listan en la integridad y, si la invalidez se debe a una etiqueta
-fuera de vocabulario (resultados/e8_fuera_de_vocabulario.csv), la sección 12
-recalcula la condición usando ese intento y contando la etiqueta como error.
+DESVÍO DECLARADO (decidido tras el bloque 9 y su reintento, antes de correr los
+bloques 10 a 12 y sin haber visto ninguna exactitud): el bloque 9 (C3_R3) y su
+reintento quedaron con 149 filas porque el modelo devolvió etiquetas fuera de
+las cuatro admitidas («CAMBIO», «DEVOLUCION») y la restricción de la tabla
+rechazó el registro. Reintentar hasta obtener una etiqueta válida seleccionaría
+las salidas del modelo y sesgaría hacia arriba la exactitud de las condiciones
+sin reglas. Por eso:
+  - una etiqueta fuera de vocabulario cuenta como predicción errónea
+    (resultados/e8_fuera_de_vocabulario.csv, extraída de n8n);
+  - un bloque es utilizable si recibió las 150 respuestas, todas sus ejecuciones
+    llevan el prompt de su condición y cada fila faltante corresponde a una
+    etiqueta fuera de vocabulario; cualquier otro error lo invalida;
+  - para cada repetición se usa el PRIMER intento utilizable (el que ocupa la
+    posición pre-registrada); los demás se informan en la sección 12.
 
 Uso:
     python analizar_e8.py
@@ -153,45 +161,63 @@ def main():
     # ------------------------------------------------ 0. integridad
     titulo('0. INTEGRIDAD')
     pred, tmr, errores, problemas = {}, {}, {}, []
-    invalidos = []
+    ruta_oov = os.path.join(RESULTADOS, 'e8_fuera_de_vocabulario.csv')
+    oov = list(csv.DictReader(io.open(ruta_oov, encoding='utf-8-sig'))) if os.path.exists(ruta_oov) else []
+
+    def cargar(m):
+        """Devuelve (utilizable, motivo, predicciones, tmr, errores_parseo, n_fuera_de_vocabulario)."""
+        b, c = m['bloque'], m['condicion']
+        with io.open(os.path.join(RESULTADOS, 'e8_evidencia_%s.csv' % b), encoding='utf-8-sig') as f:
+            ev = list(csv.DictReader(f))
+        motivos = []
+        if int(m['http_200']) != int(m['mensajes']):
+            motivos.append('HTTP 200 en %s de %s' % (m['http_200'], m['mensajes']))
+        if any(e['md5_prompt'] != cond[c]['md5'] for e in ev) or len(ev) < int(m['mensajes']):
+            motivos.append('ejecuciones con otro prompt o faltantes')
+        prefijo = m['prefijo_user_id']
+        p, t, err = {}, [], 0
+        for uid, intent, resp, seg in psql("SELECT user_id, intent, ai_response, EXTRACT(epoch FROM responded_at - received_at) "
+                                           "FROM interactions WHERE user_id LIKE '%s%%' ORDER BY id;" % prefijo):
+            crudo = uid[len(prefijo):].replace('@whatsapp.sim', '')
+            if crudo in id_de_usr:
+                if id_de_usr[crudo] in p:
+                    motivos.append('mensaje %s duplicado' % id_de_usr[crudo])
+                p[id_de_usr[crudo]] = intent.strip()
+            if seg:
+                t.append(float(seg))
+            err += 'hubo un error' in resp
+        suyos = [o for o in oov if o['bloque'] == b]
+        if any(o['clase'] != 'fuera_de_vocabulario' for o in suyos):
+            motivos.append('errores que no son etiquetas fuera de vocabulario')
+        n_oov = 0
+        for o in suyos:
+            if o['clase'] == 'fuera_de_vocabulario' and o['id'] and o['id'] not in p:
+                p[o['id']] = o['etiqueta']
+                n_oov += 1
+        if set(p) != set(ids):
+            motivos.append('%d de %d mensajes con predicción' % (len(p), len(ids)))
+        return (not motivos, '; '.join(motivos), p, t, err, n_oov)
+
+    otros_intentos = []
     for c in CONDICIONES:
         for r in REPETICIONES:
             intentos = sorted(glob.glob(os.path.join(RESULTADOS, 'e8_manifiesto_%s_R%d.json' % (c, r))) +
                               glob.glob(os.path.join(RESULTADOS, 'e8_manifiesto_%s_R%d_i*.json' % (c, r))))
-            manifs = [json.load(io.open(x, encoding='utf-8-sig')) for x in intentos]
-            validos = [x for x in manifs if x.get('valido')]
-            invalidos += [x for x in manifs if not x.get('valido')]
-            if not validos:
-                problemas.append('%s_R%d: ningún intento válido' % (c, r))
-                continue
-            m = max(validos, key=lambda x: x.get('intento', 1))
-            b = m['bloque']
-            with io.open(os.path.join(RESULTADOS, 'e8_evidencia_%s.csv' % b), encoding='utf-8-sig') as f:
-                ev = list(csv.DictReader(f))
-            otros = [e for e in ev if e['md5_prompt'] != cond[c]['md5']]
-            if otros or len(ev) < 150:
-                problemas.append('%s: %d ejecuciones, %d con otro prompt' % (b, len(ev), len(otros)))
-            prefijo = m['prefijo_user_id']
-            filas = psql("SELECT user_id, intent, ai_response, EXTRACT(epoch FROM responded_at - received_at) "
-                         "FROM interactions WHERE user_id LIKE '%s%%' ORDER BY id;" % prefijo)
-            p, t, err = {}, [], 0
-            for uid, intent, resp, seg in filas:
-                crudo = uid[len(prefijo):].replace('@whatsapp.sim', '')
-                if crudo in id_de_usr:
-                    if id_de_usr[crudo] in p:
-                        problemas.append('%s: mensaje %s duplicado' % (b, id_de_usr[crudo]))
-                    p[id_de_usr[crudo]] = intent.strip()
-                if seg:
-                    t.append(float(seg))
-                err += 'hubo un error' in resp
-            if set(p) != set(ids):
-                problemas.append('%s: %d de 150 mensajes' % (b, len(p)))
-            pred[(c, r)], tmr[(c, r)], errores[(c, r)] = p, t, err
-            print('  %-7s filas %3d · ejecuciones %3d · con otro prompt %d · errores de parseo %d'
-                  % (b, len(p), len(ev), len(otros), err))
-    for x in invalidos:
-        print('  intento inválido %-9s filas %s de %s · ejecuciones %s (se informa; no entra al análisis primario)'
-              % (x['bloque'], x['filas_escritas'], x['mensajes'], x['ejecuciones']))
+            manifs = sorted((json.load(io.open(x, encoding='utf-8-sig')) for x in intentos),
+                            key=lambda x: x.get('intento', 1))
+            elegido = None
+            for m in manifs:
+                ok, motivo, p, t, err, n_oov = cargar(m)
+                if ok and elegido is None:
+                    elegido = m['bloque']
+                    pred[(c, r)], tmr[(c, r)], errores[(c, r)] = p, t, err
+                    print('  %-10s PRIMARIO · %d predicciones (%d fuera de vocabulario) · errores de parseo %d'
+                          % (m['bloque'], len(p), n_oov, err))
+                else:
+                    otros_intentos.append((m, ok, motivo, p))
+                    print('  %-10s %s · %s' % (m['bloque'], 'utilizable, no primario' if ok else 'NO utilizable', motivo or '-'))
+            if elegido is None:
+                problemas.append('%s_R%d: ningún intento utilizable' % (c, r))
     if problemas:
         print('\n  >>> INTEGRIDAD NO VERIFICADA. No se reporta el análisis:')
         for x in problemas:
@@ -303,33 +329,26 @@ def main():
         m, s = media_desvio(t)
         print('  %-40s %.2f s ± %.2f (n = %d) · prompt de %d caracteres' % (ROTULO[c], m, s, len(t), cond[c]['caracteres']))
 
-    titulo('12. INTENTOS INVÁLIDOS Y ETIQUETAS FUERA DE VOCABULARIO')
-    ruta_oov = os.path.join(RESULTADOS, 'e8_fuera_de_vocabulario.csv')
-    oov = list(csv.DictReader(io.open(ruta_oov, encoding='utf-8-sig'))) if os.path.exists(ruta_oov) else []
-    if not invalidos:
-        print('  ninguno')
-    for x in invalidos:
-        b, c, r = x['bloque'], x['condicion'], x['repeticion']
-        suyas = [o for o in oov if o['bloque'] == b]
-        print('  %s: %s filas; fuera de vocabulario: %s' % (
-            b, x['filas_escritas'], ', '.join('mensaje %s -> «%s»' % (o['id'], o['etiqueta']) for o in suyas) or 'ninguna registrada'))
-        alt = {}
-        for uid, intent in psql("SELECT user_id, intent FROM interactions WHERE user_id LIKE '%s%%';" % x['prefijo_user_id']):
-            crudo = uid[len(x['prefijo_user_id']):].replace('@whatsapp.sim', '')
-            if crudo in id_de_usr:
-                alt[id_de_usr[crudo]] = intent.strip()
-        for o in suyas:
-            alt[o['id']] = o['etiqueta']
+    titulo('12. ETIQUETAS FUERA DE VOCABULARIO E INTENTOS NO PRIMARIOS')
+    fv = [o for o in oov if o['clase'] == 'fuera_de_vocabulario']
+    print('  etiquetas fuera de vocabulario: %d' % len(fv))
+    for o in fv:
+        print('    %-10s mensaje %s «%s» -> «%s» (referencia %s)' % (o['bloque'], o['id'], o['mensaje'][:50], o['etiqueta'], o['referencia']))
+    por_condicion = Counter(o['bloque'].split('_')[0] for o in fv)
+    print('  por condición: %s' % (', '.join('%s %d' % (c, por_condicion.get(c, 0)) for c in CONDICIONES)))
+    if not otros_intentos:
+        print('  intentos no primarios: ninguno')
+    for x, ok, motivo, alt in otros_intentos:
+        c, r = x['condicion'], x['repeticion']
         if set(alt) != set(ids):
-            print('    no se puede recalcular: faltan %d mensajes sin etiqueta registrada' % (len(ids) - len(alt)))
+            print('  %s: no se puede recalcular (%s)' % (x['bloque'], motivo))
             continue
         ac_alt = {i: alt[i] == gt[i] for i in ids}
         may_alt = {i: mayoria([ac_alt[i] if rr == r else acierto[(c, rr)][i] for rr in REPETICIONES]) for i in ids}
         xa = sum(may_alt.values())
         lo, hi = wilson(xa, n)
-        print('    %s por mayoría con el intento inválido (fuera de vocabulario = error): %.1f %% [%.1f ; %.1f] · '
-              'con el intento válido: %.1f %% · exactitud del intento inválido: %.1f %%'
-              % (c, 100 * xa / n, 100 * lo, 100 * hi, 100 * acc_may[c], 100 * sum(ac_alt.values()) / n))
+        print('  %s en lugar del primario: %s por mayoría %.1f %% [%.1f ; %.1f] (primario %.1f %%) · exactitud de ese intento %.1f %%'
+              % (x['bloque'], c, 100 * xa / n, 100 * lo, 100 * hi, 100 * acc_may[c], 100 * sum(ac_alt.values()) / n))
 
     titulo('CIFRAS PARA EL DOCUMENTO')
     for c in CONDICIONES:

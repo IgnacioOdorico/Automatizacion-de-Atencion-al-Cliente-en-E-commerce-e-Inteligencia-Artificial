@@ -114,7 +114,34 @@ que no cambie nada más que el prompt.
 **Lo que no se hace:**
 - No se descarta un bloque válido.
 - No se cambia la medida primaria ni el ajuste de Holm.
-- Un bloque inválido se vuelve a correr y se informan los dos.
+- Un bloque inválido se vuelve a correr y se informan los dos (ver el desvío 2 para
+  las etiquetas fuera de vocabulario).
+
+## Desvíos del protocolo, declarados
+
+**1. Espera de conciliación (antes del bloque 2).** El webhook responde en unos 30 ms,
+antes de que termine el workflow. El runner pasó de esperar 6 s fijos a esperar que no
+quede ninguna ejecución en curso, con un máximo de 120 s. Es un cambio de procedimiento,
+no de medición.
+
+**2. Etiquetas fuera de vocabulario (tras el bloque 9, antes de los bloques 10 a 12 y sin
+haber visto ninguna exactitud).**
+- En C3_R3 el modelo devolvió «CAMBIO» para el mensaje 69, cuya referencia es RECLAMO.
+  El reintento que manda la regla pre-registrada devolvió «DEVOLUCION» para el
+  mensaje 18, también RECLAMO.
+- En los dos casos la restricción `interactions_intent_check` rechazó el registro y el
+  bloque quedó con 149 filas. El cliente sí recibió la respuesta: la interacción se
+  perdió en silencio.
+- Reintentar hasta que el modelo devuelva una etiqueta válida selecciona sus salidas y
+  sesga hacia arriba la exactitud de las condiciones sin reglas.
+- Desde ese punto:
+  - una etiqueta fuera de vocabulario cuenta como predicción errónea
+    (`fuera_de_vocabulario_e8.py` la extrae de la copia de la ejecución en n8n);
+  - un bloque es utilizable si recibió las 150 respuestas, todas sus ejecuciones llevan
+    el prompt de la condición y cada fila faltante corresponde a una etiqueta fuera de
+    vocabulario; cualquier otro error lo invalida;
+  - se usa el primer intento utilizable, que es el que ocupa la posición pre-registrada;
+  - el reintento C3_R3_i2 se informa como análisis de sensibilidad.
 
 ## Independencia entre prompt y corpus
 
