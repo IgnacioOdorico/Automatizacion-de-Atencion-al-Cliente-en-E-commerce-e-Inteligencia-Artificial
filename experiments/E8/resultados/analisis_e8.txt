@@ -1,0 +1,126 @@
+
+==============================================================================
+ 0. INTEGRIDAD
+==============================================================================
+  C1_R1      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C1_R2      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C1_R3      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C2_R1      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C2_R2      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C2_R3      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C3_R1      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C3_R2      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C3_R3      PRIMARIO · 150 predicciones (1 fuera de vocabulario) · errores de parseo 0
+  C3_R3_i2   utilizable, no primario · -
+  C4_R1      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C4_R2      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+  C4_R3      PRIMARIO · 150 predicciones (0 fuera de vocabulario) · errores de parseo 0
+
+==============================================================================
+ 1-2. EXACTITUD POR BLOQUE Y POR CONDICIÓN
+==============================================================================
+  C1 R1  140/150 =  93.3 %  IC 95 % [88.2 ; 96.3]
+  C1 R2  139/150 =  92.7 %  IC 95 % [87.3 ; 95.9]
+  C1 R3  140/150 =  93.3 %  IC 95 % [88.2 ; 96.3]
+  C1 base + reglas y ejemplos              media  93.1 % · desvío  0.4 · rango 92.7–93.3
+
+  C2 R1  142/150 =  94.7 %  IC 95 % [89.8 ; 97.3]
+  C2 R2  141/150 =  94.0 %  IC 95 % [89.0 ; 96.8]
+  C2 R3  141/150 =  94.0 %  IC 95 % [89.0 ; 96.8]
+  C2 reglas y ejemplos, sin base           media  94.2 % · desvío  0.4 · rango 94.0–94.7
+
+  C3 R1  113/150 =  75.3 %  IC 95 % [67.9 ; 81.5]
+  C3 R2  117/150 =  78.0 %  IC 95 % [70.7 ; 83.9]
+  C3 R3  115/150 =  76.7 %  IC 95 % [69.3 ; 82.7]
+  C3 base, sin reglas ni ejemplos          media  76.7 % · desvío  1.3 · rango 75.3–78.0
+
+  C4 R1  109/150 =  72.7 %  IC 95 % [65.0 ; 79.2]
+  C4 R2  111/150 =  74.0 %  IC 95 % [66.4 ; 80.4]
+  C4 R3  110/150 =  73.3 %  IC 95 % [65.7 ; 79.8]
+  C4 ni base ni reglas ni ejemplos         media  73.3 % · desvío  0.7 · rango 72.7–74.0
+
+
+==============================================================================
+ 3-4. EXACTITUD POR MAYORÍA (MEDIDA PRIMARIA) Y ESTABILIDAD
+==============================================================================
+  C1 base + reglas y ejemplos              140/150 =  93.3 %  IC 95 % [88.2 ; 96.3] · misma etiqueta en las 3:  98.0 %
+  C2 reglas y ejemplos, sin base           141/150 =  94.0 %  IC 95 % [89.0 ; 96.8] · misma etiqueta en las 3:  98.7 %
+  C3 base, sin reglas ni ejemplos          118/150 =  78.7 %  IC 95 % [71.4 ; 84.5] · misma etiqueta en las 3:  85.3 %
+  C4 ni base ni reglas ni ejemplos         111/150 =  74.0 %  IC 95 % [66.4 ; 80.4] · misma etiqueta en las 3:  92.0 %
+
+==============================================================================
+ 5. CONTRASTES POR PARES (McNemar exacto, Holm, alfa 0,05)
+==============================================================================
+  C1 vs C2  diferencia  -0.7 pp · solo C1  0 · solo C2  1 · p 1.0000 · p Holm 1.0000  
+  C1 vs C3  diferencia +14.7 pp · solo C1 24 · solo C3  2 · p 0.0000 · p Holm 0.0000  SIGNIFICATIVA
+  C1 vs C4  diferencia +19.3 pp · solo C1 33 · solo C4  4 · p 0.0000 · p Holm 0.0000  SIGNIFICATIVA
+  C2 vs C3  diferencia +15.3 pp · solo C2 24 · solo C3  1 · p 0.0000 · p Holm 0.0000  SIGNIFICATIVA
+  C2 vs C4  diferencia +20.0 pp · solo C2 34 · solo C4  4 · p 0.0000 · p Holm 0.0000  SIGNIFICATIVA
+  C3 vs C4  diferencia  +4.7 pp · solo C3 18 · solo C4 11 · p 0.2649 · p Holm 0.5299  
+
+==============================================================================
+ 6. EFECTOS DEL FACTORIAL (puntos porcentuales, exactitud por mayoría)
+==============================================================================
+  base con reglas y ejemplos (C1 − C2) ........  -0.7
+  base sin reglas ni ejemplos (C3 − C4) .......  +4.7
+  reglas y ejemplos con base (C1 − C3) ........ +14.7
+  reglas y ejemplos sin base (C2 − C4) ........ +20.0
+  EFECTO PRINCIPAL de la base .................  +2.0
+  EFECTO PRINCIPAL de reglas y ejemplos ....... +17.3
+  INTERACCIÓN (C1 − C2) − (C3 − C4) ...........  -5.3
+
+==============================================================================
+ 7. EXHAUSTIVIDAD POR CLASE (mayoría) Y MIGRACIÓN FAQ -> GENERAL (media por repetición)
+==============================================================================
+                       FAQ   ESTADO_PEDIDO         RECLAMO         GENERAL  FAQ->GENERAL
+  C1         45/48   93.8%   32/35   91.4%   38/42   90.5%   25/25  100.0%           1.3
+  C2         45/48   93.8%   32/35   91.4%   39/42   92.9%   25/25  100.0%           1.0
+  C3         31/48   64.6%   31/35   88.6%   31/42   73.8%   25/25  100.0%          17.3
+  C4         19/48   39.6%   34/35   97.1%   33/42   78.6%   25/25  100.0%          26.3
+
+==============================================================================
+ 8. H2b SOBRE C1 (regla fijada: límite inferior del IC 95 % >= 85 %)
+==============================================================================
+  C1 por mayoría: 140/150 = 93.3 % · IC 95 % [88.2 ; 96.3] · H2b SE SOSTIENE
+  C2 por mayoría: 94.0 % · límite inferior 89.0 % · lo alcanzaría
+  C3 por mayoría: 78.7 % · límite inferior 71.4 % · no lo alcanzaría
+  C4 por mayoría: 74.0 % · límite inferior 66.4 % · no lo alcanzaría
+
+==============================================================================
+ 9. SENSIBILIDAD: sin los mensajes parecidos a los ejemplos del prompt (similitud >= 0,80)
+==============================================================================
+  excluidos: 20 («cuanto sale el envio a cordoba?»)
+  C1  139/149 = 93.3 % (con todos: 93.3 %)
+  C2  140/149 = 94.0 % (con todos: 94.0 %)
+  C3  118/149 = 79.2 % (con todos: 78.7 %)
+  C4  111/149 = 74.5 % (con todos: 74.0 %)
+
+==============================================================================
+ 10. RÉPLICA: C1 por mayoría frente a la corrida del 12/08
+==============================================================================
+  12/08: 139/150 = 92.7 % · C1: 93.3 % · solo 12/08 1 · solo C1 2 · p exacto 1.0000
+
+==============================================================================
+ 11. TMR POR CONDICIÓN (secundario)
+==============================================================================
+  C1 base + reglas y ejemplos              1.57 s ± 0.29 (n = 450) · prompt de 6339 caracteres
+  C2 reglas y ejemplos, sin base           1.60 s ± 0.39 (n = 450) · prompt de 6151 caracteres
+  C3 base, sin reglas ni ejemplos          1.53 s ± 0.26 (n = 449) · prompt de 1343 caracteres
+  C4 ni base ni reglas ni ejemplos         1.55 s ± 0.34 (n = 450) · prompt de 1155 caracteres
+
+==============================================================================
+ 12. ETIQUETAS FUERA DE VOCABULARIO E INTENTOS NO PRIMARIOS
+==============================================================================
+  etiquetas fuera de vocabulario: 2
+    C3_R3      mensaje 69 «queria cambiar un producto, cual es el procedimien» -> «CAMBIO» (referencia RECLAMO)
+    C3_R3_i2   mensaje 18 «quiero la devolucion de mi plata» -> «DEVOLUCION» (referencia RECLAMO)
+  por condición: C1 0, C2 0, C3 2, C4 0
+  C3_R3_i2 en lugar del primario: C3 por mayoría 79.3 % [72.2 ; 85.0] (primario 78.7 %) · exactitud de ese intento 76.7 %
+
+==============================================================================
+ CIFRAS PARA EL DOCUMENTO
+==============================================================================
+  C1  mayoría 93.3 % · media de repeticiones 93.1 % ± 0.4 (rango 92.7–93.3)
+  C2  mayoría 94.0 % · media de repeticiones 94.2 % ± 0.4 (rango 94.0–94.7)
+  C3  mayoría 78.7 % · media de repeticiones 76.7 % ± 1.3 (rango 75.3–78.0)
+  C4  mayoría 74.0 % · media de repeticiones 73.3 % ± 0.7 (rango 72.7–74.0)

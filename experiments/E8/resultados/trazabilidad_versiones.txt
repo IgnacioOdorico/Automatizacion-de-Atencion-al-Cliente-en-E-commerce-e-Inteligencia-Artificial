@@ -8,7 +8,18 @@ E8 — Trazabilidad de los prompts del Flujo 2 (consultado sobre la base viva de
  Flujo 2 — Chatbot WhatsApp + Telegram | a4a57b19-dced-4fc2-95d9-990193dbdfd5 | 2026-08-25 14:58 |        19 |              1032 | f            | f            | f              | 77fab98a757a6b28c44f79f1920eccb4
  Flujo 2 — Chatbot WhatsApp + Telegram | 1115056c-0978-46cf-a47e-941fa3f3f904 | 2026-09-15 14:31 |        19 |              1155 | t            | f            | f              | 32c29bb6f042aac16f1813724c65b474
  Flujo 2 — Chatbot WhatsApp + Telegram | 2b1ff432-b7b8-4021-b831-6499064e310f | 2026-09-15 14:32 |        19 |              6339 | t            | t            | t              | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
-(4 rows)
+ Flujo 2 — Chatbot WhatsApp + Telegram | cf745f33-f44b-42bf-b874-3f5bb1ff5469 | 2026-09-15 14:40 |        19 |              6151 | t            | f            | t              | 64f3a3ab58dca4c1096e9c4c7f4d3a3c
+ Flujo 2 — Chatbot WhatsApp + Telegram | 07f0fa51-629b-4c2d-97b9-74f793899193 | 2026-09-15 14:43 |        19 |              1155 | t            | f            | f              | 32c29bb6f042aac16f1813724c65b474
+ Flujo 2 — Chatbot WhatsApp + Telegram | b90e652a-1e53-4c3d-bac5-0fec6bfc7b76 | 2026-09-15 14:46 |        19 |              1343 | t            | t            | f              | ed36a93c8d1eb833168fadf55ba7afbf
+ Flujo 2 — Chatbot WhatsApp + Telegram | b15bd792-ccbd-4fc2-bf5c-9901e968ea7f | 2026-09-15 14:50 |        19 |              6151 | t            | f            | t              | 64f3a3ab58dca4c1096e9c4c7f4d3a3c
+ Flujo 2 — Chatbot WhatsApp + Telegram | dca6bcb4-47c2-4afa-b1c9-fc59e640585e | 2026-09-15 14:53 |        19 |              1343 | t            | t            | f              | ed36a93c8d1eb833168fadf55ba7afbf
+ Flujo 2 — Chatbot WhatsApp + Telegram | 783edc48-c724-42aa-9582-177b313d1c88 | 2026-09-15 14:56 |        19 |              6339 | t            | t            | t              | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+ Flujo 2 — Chatbot WhatsApp + Telegram | 9e14b58c-ca14-4068-8cb6-38eea64cbcf3 | 2026-09-15 14:59 |        19 |              1155 | t            | f            | f              | 32c29bb6f042aac16f1813724c65b474
+ Flujo 2 — Chatbot WhatsApp + Telegram | 21af1722-a7d9-462a-aa96-1e4a0650f6d6 | 2026-09-15 15:02 |        19 |              1343 | t            | t            | f              | ed36a93c8d1eb833168fadf55ba7afbf
+ Flujo 2 — Chatbot WhatsApp + Telegram | e14ccb10-d0b6-49ba-8261-f0e788f8c61d | 2026-09-15 15:22 |        19 |              1155 | t            | f            | f              | 32c29bb6f042aac16f1813724c65b474
+ Flujo 2 — Chatbot WhatsApp + Telegram | e5452837-e480-411c-8190-d1173c9bd5ec | 2026-09-15 15:25 |        19 |              6151 | t            | f            | t              | 64f3a3ab58dca4c1096e9c4c7f4d3a3c
+ Flujo 2 — Chatbot WhatsApp + Telegram | e4d386e3-d2b2-4946-9732-7990daf2b8cd | 2026-09-15 15:28 |        19 |              6339 | t            | t            | t              | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+(15 rows)
 
 
 2. Publicaciones (activaciones y desactivaciones)
@@ -19,7 +30,18 @@ E8 — Trazabilidad de los prompts del Flujo 2 (consultado sobre la base viva de
  Flujo 2 — Chatbot Omnicanal IA        | 4e2d3bc4-37c9-4e7b-be63-9d4b9d913739 | deactivated | 2026-08-26 19:39:18
  Flujo 2 — Chatbot WhatsApp + Telegram | a4a57b19-dced-4fc2-95d9-990193dbdfd5 | deactivated | 2026-09-15 14:31:17
  Flujo 2 — Chatbot WhatsApp + Telegram | 1115056c-0978-46cf-a47e-941fa3f3f904 | deactivated | 2026-09-15 14:32:19
-(5 rows)
+ Flujo 2 — Chatbot WhatsApp + Telegram | 2b1ff432-b7b8-4021-b831-6499064e310f | deactivated | 2026-09-15 14:40:44
+ Flujo 2 — Chatbot WhatsApp + Telegram | cf745f33-f44b-42bf-b874-3f5bb1ff5469 | deactivated | 2026-09-15 14:43:49
+ Flujo 2 — Chatbot WhatsApp + Telegram | 07f0fa51-629b-4c2d-97b9-74f793899193 | deactivated | 2026-09-15 14:46:56
+ Flujo 2 — Chatbot WhatsApp + Telegram | b90e652a-1e53-4c3d-bac5-0fec6bfc7b76 | deactivated | 2026-09-15 14:50:01
+ Flujo 2 — Chatbot WhatsApp + Telegram | b15bd792-ccbd-4fc2-bf5c-9901e968ea7f | deactivated | 2026-09-15 14:53:09
+ Flujo 2 — Chatbot WhatsApp + Telegram | dca6bcb4-47c2-4afa-b1c9-fc59e640585e | deactivated | 2026-09-15 14:56:13
+ Flujo 2 — Chatbot WhatsApp + Telegram | 783edc48-c724-42aa-9582-177b313d1c88 | deactivated | 2026-09-15 14:59:18
+ Flujo 2 — Chatbot WhatsApp + Telegram | 9e14b58c-ca14-4068-8cb6-38eea64cbcf3 | deactivated | 2026-09-15 15:02:23
+ Flujo 2 — Chatbot WhatsApp + Telegram | 21af1722-a7d9-462a-aa96-1e4a0650f6d6 | deactivated | 2026-09-15 15:22:20
+ Flujo 2 — Chatbot WhatsApp + Telegram | e14ccb10-d0b6-49ba-8261-f0e788f8c61d | deactivated | 2026-09-15 15:25:31
+ Flujo 2 — Chatbot WhatsApp + Telegram | e5452837-e480-411c-8190-d1173c9bd5ec | deactivated | 2026-09-15 15:28:44
+(16 rows)
 
 
 2b. Qué workflows del Flujo 2 tienen disparador de Telegram y con qué prompt (estado actual)
@@ -27,7 +49,7 @@ E8 — Trazabilidad de los prompts del Flujo 2 (consultado sobre la base viva de
 -------------------------------------------+---------------------+---------------+--------------------------------------
  Flujo 2 — Chatbot Omnicanal IA            | f                   |             2 | 6339
  Flujo 2 — Chatbot Omnicanal IA PRODUCCIÓN | t                   |             0 | 1032
- Flujo 2 — Chatbot WhatsApp + Telegram     | t                   |             3 | 1032
+ Flujo 2 — Chatbot WhatsApp + Telegram     | t                   |            14 | 1032
 (3 rows)
 
 
@@ -41,7 +63,7 @@ E8 — Trazabilidad de los prompts del Flujo 2 (consultado sobre la base viva de
  Corpus del Capitulo 5 (12/08) |   150 | 2026-08-12 23:45:26 | 2026-08-12 23:53:00
  Telegram real (25/08)         |    45 | 2026-08-25 14:30:57 | 2026-08-25 15:17:27
  E7 ablacion (11/09)           |   150 | 2026-09-11 17:34:31 | 2026-09-11 17:42:04
- E8                            |     6 | 2026-09-15 14:31:35 | 2026-09-15 14:32:39
+ E8                            |  1954 | 2026-09-15 14:31:35 | 2026-09-15 15:31:40
 (5 rows)
 
 
@@ -50,8 +72,19 @@ E8 — Trazabilidad de los prompts del Flujo 2 (consultado sobre la base viva de
 ------------------+------------------+-------------+--------------------------------------+----------------------------------
  2026-09-11 17:32 | 2026-09-11 17:42 |         152 | a4a57b19-dced-4fc2-95d9-990193dbdfd5 | 77fab98a757a6b28c44f79f1920eccb4
  2026-09-15 14:31 | 2026-09-15 14:31 |           3 | 1115056c-0978-46cf-a47e-941fa3f3f904 | 32c29bb6f042aac16f1813724c65b474
- 2026-09-15 14:32 | 2026-09-15 14:32 |           3 | 2b1ff432-b7b8-4021-b831-6499064e310f | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
-(3 rows)
+ 2026-09-15 14:32 | 2026-09-15 14:40 |         153 | 2b1ff432-b7b8-4021-b831-6499064e310f | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+ 2026-09-15 14:41 | 2026-09-15 14:43 |         150 | cf745f33-f44b-42bf-b874-3f5bb1ff5469 | 64f3a3ab58dca4c1096e9c4c7f4d3a3c
+ 2026-09-15 14:44 | 2026-09-15 14:46 |         150 | 07f0fa51-629b-4c2d-97b9-74f793899193 | 32c29bb6f042aac16f1813724c65b474
+ 2026-09-15 14:47 | 2026-09-15 14:49 |         150 | b90e652a-1e53-4c3d-bac5-0fec6bfc7b76 | ed36a93c8d1eb833168fadf55ba7afbf
+ 2026-09-15 14:50 | 2026-09-15 14:52 |         150 | b15bd792-ccbd-4fc2-bf5c-9901e968ea7f | 64f3a3ab58dca4c1096e9c4c7f4d3a3c
+ 2026-09-15 14:53 | 2026-09-15 14:56 |         150 | dca6bcb4-47c2-4afa-b1c9-fc59e640585e | ed36a93c8d1eb833168fadf55ba7afbf
+ 2026-09-15 14:56 | 2026-09-15 14:59 |         150 | 783edc48-c724-42aa-9582-177b313d1c88 | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+ 2026-09-15 14:59 | 2026-09-15 15:02 |         150 | 9e14b58c-ca14-4068-8cb6-38eea64cbcf3 | 32c29bb6f042aac16f1813724c65b474
+ 2026-09-15 15:02 | 2026-09-15 15:15 |         300 | 21af1722-a7d9-462a-aa96-1e4a0650f6d6 | ed36a93c8d1eb833168fadf55ba7afbf
+ 2026-09-15 15:22 | 2026-09-15 15:25 |         150 | e14ccb10-d0b6-49ba-8261-f0e788f8c61d | 32c29bb6f042aac16f1813724c65b474
+ 2026-09-15 15:25 | 2026-09-15 15:28 |         150 | e5452837-e480-411c-8190-d1173c9bd5ec | 64f3a3ab58dca4c1096e9c4c7f4d3a3c
+ 2026-09-15 15:29 | 2026-09-15 15:31 |         150 | e4d386e3-d2b2-4946-9732-7990daf2b8cd | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+(14 rows)
 
 
 5. El prompt medido en el repositorio
