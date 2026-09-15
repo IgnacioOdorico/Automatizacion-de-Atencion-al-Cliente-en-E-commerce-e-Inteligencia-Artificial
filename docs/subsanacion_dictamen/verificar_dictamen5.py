@@ -126,8 +126,9 @@ seccion('4. TRAZABILIDAD DEL ARTEFACTO MEDIDO')
 b522 = bloque('5.2.2', '5.2.3')
 check('4b  §5.2.2 no atribuye la diferencia a la red', 'por la latencia de red real' not in TODO)
 check('4c  §5.2.2 declara que Telegram corrió con el prompt reducido', 'prompt reducido' in b522)
-check('4d  §4.6 lo cuenta entre los factores de no comparabilidad',
-      'prompt reducido' in bloque('4.6 Testing', '4.6.1'))
+# 15/09: la discusión de la no comparabilidad entre canales pasó de §4.6 a §5.2.2.
+check('4d  §5.2.2 cuenta el prompt entre los factores de no comparabilidad',
+      'no son apareadas' in bloque('5.2.2', '5.2.3') and 'en el prompt con que corrieron' in bloque('5.2.2', '5.2.3'))
 oe2 = [f for f in filas(tabla_con_epigrafe('Tabla 6.1:')) if f and f[0] == 'OE2']
 check('4e  Tabla 6.1 OE2 dice sobre qué configuración se cumple',
       bool(oe2) and 'configuración vigente' in oe2[0][2] and '93,3 %' in oe2[0][2], str(oe2)[:120])
@@ -224,19 +225,19 @@ check('11c §5.1.4 CV frente a r',
       and 'piso y no como un valor central' not in TODO)
 check('11d Tabla 3.3 sin «Tasa de resolución autónoma»', 'Tasa de resolución autónoma' not in TODO)
 check('11e §2.1.3 MTTR coherente con §4.3.3', 'hasta que el cliente recibe la notificación' not in TODO)
-check('11f §2.5 criterio de preprints coherente',
+check('11f §2.4 criterio de preprints coherente',   # 15/09: el estado del arte pasó de §2.5 a §2.4
       'preprints de laboratorios o conferencias reconocidas' not in TODO
-      and 'excepción declarada' in bloque('2.5 Estado del arte', '2.5.1'))
+      and 'excepción declarada' in bloque('2.4 Estado del arte', '2.4.1'))
 check('11g Tabla 5.3 y Figura 8 coherentes',
       '3 de verificación)' not in TODO and 'ORD-AUDIT-ALERT' in CELDAS
       and 'no integran el total de la Tabla 5.3' in TXT_P)
 check('11h §5.1.1 sin «eventos»', '(emails, eventos)' not in TODO)
-t49 = filas(tabla_con_epigrafe('Tabla 4.9:'))
-t410 = filas(tabla_con_epigrafe('Tabla 4.10:'))
+t49 = filas(tabla_con_epigrafe('Tabla 3.4:'))    # 15/09: las Tablas 4.9 y 4.10 pasaron a §3.5.8
+t410 = filas(tabla_con_epigrafe('Tabla 3.5:'))
 check('11i identificadores de pruebas unificados',
       [f[0] for f in t49[1:]] == ['PF-01', 'PF-02', 'PF-03', 'PF-04', 'PF-05']
       and [f[0] for f in t410[1:]] == ['PC-01', 'PC-02', 'PC-03', 'PC-04', 'PC-05'])
-check('11j sin «e ejemplos»', not re.search(r'e ejemplos', TODO))   # «siete ejemplos» no cuenta
+check('11j sin «e ejemplos»', not re.search(r'\be ejemplos', TODO))   # «siete ejemplos» no cuenta
 check('11k §2.3.2 sin «varios órdenes de magnitud respecto al estándar manual»',
       'varios órdenes de magnitud respecto al estándar manual' not in TODO)
 check('11l sin la alerta inexistente low_stock_alert', 'low_stock_alert' not in TODO)

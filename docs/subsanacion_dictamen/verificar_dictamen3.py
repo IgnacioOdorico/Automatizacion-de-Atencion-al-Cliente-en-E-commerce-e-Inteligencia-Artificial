@@ -154,8 +154,9 @@ print('=' * 78)
 print(' RECOMENDADAS')
 print('=' * 78)
 
-check('R1a estado del arte con 13 antecedentes',
-      len([t for t in d.tables if t.rows[0].cells[0].text.strip() == 'Antecedente'][0].rows) - 2 == 13)
+# 15/09: la actualización 2024-2026 suma Larsen et al., Arora et al. y Magesh et al.
+check('R1a estado del arte con 16 antecedentes',
+      len([t for t in d.tables if t.rows[0].cells[0].text.strip() == 'Antecedente'][0].rows) - 2 == 16)
 check('R1b literatura arbitrada argentina incorporada',
       'Alderete, M. V., Jones, C., & Motta, J. J. (2017)' in TXT_P
       and 'Alderete, M. V., & Porris, M. S. (2023)' in TXT_P)
@@ -165,8 +166,8 @@ check('R1c literatura arbitrada latinoamericana incorporada',
 check('R1d bases regionales declaradas en el procedimiento',
       'SciELO, Redalyc, Dialnet' in TODO)
 check('R1e nueva subseccion regional',
-      any(t.startswith('2.5.4 Antecedentes latinoamericanos') for _, t in HEAD)
-      and any(t.startswith('2.5.5 Vacío identificado') for _, t in HEAD))
+      any(t.startswith('2.4.5 Antecedentes latinoamericanos') for _, t in HEAD)   # 15/09: renumerada
+      and any(t.startswith('2.4.6 Contribución de este trabajo') for _, t in HEAD))
 check('R2  operacionalizacion del MTTD declarada',
       'no la capa HTTP que lo recibe' in TODO)
 check('R3  IC del factor por Fieller, con la simplificacion declarada',
@@ -182,8 +183,10 @@ check('R5  el canal simulado ya no se llama canal WhatsApp a secas',
 check('R6  los nodos 5 y 6 se declaran como parte de la cadena medida',
       'que sí inciden en la salida del sistema en la configuración medida' in TODO
       and 'no inciden en la salida del sistema en la configuración efectivamente medida' not in TODO)
-check('R7a la Seccion 2.4 declara su funcion',
-      'Corresponde declarar de antemano la función de esta sección' in TODO)
+# 15/09: el dictamen pidió pasar la §2.4 al Capítulo 3; la función de la sección ya no necesita declararse.
+check('R7a la infraestructura está en el Capítulo 3 con su función explícita',
+      any(t.startswith('3.4.1 Contenedores Docker') for _, t in HEAD)
+      and 'Las Secciones 3.4.1 a 3.4.3 desarrollan los fundamentos' in TODO)
 check('R7b el Capitulo 6 retoma el marco teorico',
       'escala de madurez de proceso que la Sección 2.1.1 propone como marco analítico propio' in TODO   # 14/09
       and 'capacidad de respuesta (responsiveness)' in TXT_P.split('CAPÍTULO 6')[-1])

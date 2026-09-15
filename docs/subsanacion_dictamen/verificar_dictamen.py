@@ -39,8 +39,8 @@ chk(4, 'BLOQ', 'H1 comparativa; H2a y H2b declaradas en §1.4.2',
     and hay(r'H2a: El chatbot') and hay(r'H2b: El chatbot'))
 
 # --- MAYORES ---
-chk(5, 'MAY', '§2.5 Estado del arte con procedimiento y tabla comparativa',
-    hay(r'2\.5 Estado del arte') and hay(r'Procedimiento de búsqueda')
+chk(5, 'MAY', '§2.4 Estado del arte con procedimiento y tabla comparativa',   # 15/09: renumerada
+    hay(r'2\.4 Estado del arte') and hay(r'Procedimiento de búsqueda')
     and hay(r'Tabla 2\.1') and hay(r'Parikh') and hay(r'Ngai'))
 # Dictamen del 14/09: [88,2; 96,3] es ahora un intervalo legítimo, el de C1 (140/150) en el
 # diseño factorial. Lo que se sigue controlando es que no aparezca como IC del 92,7 %.
@@ -72,8 +72,8 @@ chk(11, 'MAY', 'Prompt, corpus y datos crudos anexados',
 chk(12, 'MAY', 'WhatsApp: se retira la afirmación de sandbox',
     hay(r'no se ejecutó contra la API real ni contra su entorno sandbox')
     and hay(r'canal simulado vía SMTP local'))
-chk(13, 'MAY', '§2.6 Ley 25.326 con artículos y deber de informar',
-    hay(r'2\.6 Tratamiento de datos personales') and hay(r'Ley 25\.326')
+chk(13, 'MAY', '§2.5 Ley 25.326 con artículos y deber de informar',   # 15/09: renumerada
+    hay(r'2\.5 Tratamiento de datos personales') and hay(r'Ley 25\.326')
     and hay(r'artículo 12') and hay(r'artículo 5'))
 chk(14, 'MAY', 'v_chatbot_corpus documentada en Tabla 4.3 y en el DDL',
     n(r'v_chatbot_corpus') >= 7 and hay(r'CREATE OR REPLACE VIEW v_chatbot_corpus'))
