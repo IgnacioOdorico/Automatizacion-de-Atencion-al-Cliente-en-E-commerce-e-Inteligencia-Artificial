@@ -1,0 +1,240 @@
+
+##### Bloque 1/12: C1 R1  (11:37:53)
+============================================================
+ E8 - bloque C1_R1  (prefijo E8-C1-R1-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C1 (md5 esperado c11c2fe1cdd4f5c2eedd7e8f9b013c3c) ===
+  El prompt activo ya es el de esta condici¢n; no se reimporta.
+  [OK] versi¢n activa con el prompt de C1 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  28 ms
+  [ 50/150] HTTP 200  28 ms
+  [ 75/150] HTTP 200  28 ms
+  [100/150] HTTP 200  28 ms
+  [125/150] HTTP 200  38 ms
+  [150/150] HTTP 200  45 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 150
+  ejecuciones ......... 150 (‚xito 150; con el prompt de C1 150; con otro prompt 0)
+
+  Bloque C1_R1 v lido.
+
+##### Bloque 2/12: C2 R1  (11:40:36)
+============================================================
+ E8 - bloque C2_R1  (prefijo E8-C2-R1-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C2 (md5 esperado 64f3a3ab58dca4c1096e9c4c7f4d3a3c) ===
+C2 md5 64f3a3ab58dca4c1096e9c4c7f4d3a3c -> C:\Users\santiago\AppData\Local\Temp\e8_2026-09-15_11-40-36\wf.json
+  importado y publicado; reiniciando n8n...
+  [OK] versi¢n activa con el prompt de C2 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  29 ms
+  [ 50/150] HTTP 200  29 ms
+  [ 75/150] HTTP 200  28 ms
+  [100/150] HTTP 200  30 ms
+  [125/150] HTTP 200  28 ms
+  [150/150] HTTP 200  27 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 150
+  ejecuciones ......... 150 (‚xito 150; con el prompt de C2 150; con otro prompt 0)
+
+  Bloque C2_R1 v lido.
+
+##### Bloque 3/12: C4 R1  (11:43:41)
+============================================================
+ E8 - bloque C4_R1  (prefijo E8-C4-R1-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C4 (md5 esperado 32c29bb6f042aac16f1813724c65b474) ===
+C4 md5 32c29bb6f042aac16f1813724c65b474 -> C:\Users\santiago\AppData\Local\Temp\e8_2026-09-15_11-43-41\wf.json
+  importado y publicado; reiniciando n8n...
+  [OK] versi¢n activa con el prompt de C4 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  27 ms
+  [ 50/150] HTTP 200  29 ms
+  [ 75/150] HTTP 200  28 ms
+  [100/150] HTTP 200  27 ms
+  [125/150] HTTP 200  27 ms
+  [150/150] HTTP 200  26 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 150
+  ejecuciones ......... 150 (‚xito 150; con el prompt de C4 150; con otro prompt 0)
+
+  Bloque C4_R1 v lido.
+
+##### Bloque 4/12: C3 R1  (11:46:48)
+============================================================
+ E8 - bloque C3_R1  (prefijo E8-C3-R1-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C3 (md5 esperado ed36a93c8d1eb833168fadf55ba7afbf) ===
+C3 md5 ed36a93c8d1eb833168fadf55ba7afbf -> C:\Users\santiago\AppData\Local\Temp\e8_2026-09-15_11-46-48\wf.json
+  importado y publicado; reiniciando n8n...
+  [OK] versi¢n activa con el prompt de C3 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  28 ms
+  [ 50/150] HTTP 200  28 ms
+  [ 75/150] HTTP 200  27 ms
+  [100/150] HTTP 200  27 ms
+  [125/150] HTTP 200  28 ms
+  [150/150] HTTP 200  28 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 150
+  ejecuciones ......... 150 (‚xito 150; con el prompt de C3 150; con otro prompt 0)
+
+  Bloque C3_R1 v lido.
+
+##### Bloque 5/12: C2 R2  (11:49:53)
+============================================================
+ E8 - bloque C2_R2  (prefijo E8-C2-R2-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C2 (md5 esperado 64f3a3ab58dca4c1096e9c4c7f4d3a3c) ===
+C2 md5 64f3a3ab58dca4c1096e9c4c7f4d3a3c -> C:\Users\santiago\AppData\Local\Temp\e8_2026-09-15_11-49-53\wf.json
+  importado y publicado; reiniciando n8n...
+  [OK] versi¢n activa con el prompt de C2 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  29 ms
+  [ 50/150] HTTP 200  31 ms
+  [ 75/150] HTTP 200  29 ms
+  [100/150] HTTP 200  28 ms
+  [125/150] HTTP 200  29 ms
+  [150/150] HTTP 200  28 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 150
+  ejecuciones ......... 150 (‚xito 150; con el prompt de C2 150; con otro prompt 0)
+
+  Bloque C2_R2 v lido.
+
+##### Bloque 6/12: C3 R2  (11:53:01)
+============================================================
+ E8 - bloque C3_R2  (prefijo E8-C3-R2-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C3 (md5 esperado ed36a93c8d1eb833168fadf55ba7afbf) ===
+C3 md5 ed36a93c8d1eb833168fadf55ba7afbf -> C:\Users\santiago\AppData\Local\Temp\e8_2026-09-15_11-53-01\wf.json
+  importado y publicado; reiniciando n8n...
+  [OK] versi¢n activa con el prompt de C3 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  28 ms
+  [ 50/150] HTTP 200  28 ms
+  [ 75/150] HTTP 200  28 ms
+  [100/150] HTTP 200  28 ms
+  [125/150] HTTP 200  26 ms
+  [150/150] HTTP 200  26 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 150
+  ejecuciones ......... 150 (‚xito 150; con el prompt de C3 150; con otro prompt 0)
+
+  Bloque C3_R2 v lido.
+
+##### Bloque 7/12: C1 R2  (11:56:06)
+============================================================
+ E8 - bloque C1_R2  (prefijo E8-C1-R2-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C1 (md5 esperado c11c2fe1cdd4f5c2eedd7e8f9b013c3c) ===
+C1 md5 c11c2fe1cdd4f5c2eedd7e8f9b013c3c -> C:\Users\santiago\AppData\Local\Temp\e8_2026-09-15_11-56-06\wf.json
+  importado y publicado; reiniciando n8n...
+  [OK] versi¢n activa con el prompt de C1 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  28 ms
+  [ 50/150] HTTP 200  28 ms
+  [ 75/150] HTTP 200  28 ms
+  [100/150] HTTP 200  28 ms
+  [125/150] HTTP 200  28 ms
+  [150/150] HTTP 200  30 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 150
+  ejecuciones ......... 150 (‚xito 150; con el prompt de C1 150; con otro prompt 0)
+
+  Bloque C1_R2 v lido.
+
+##### Bloque 8/12: C4 R2  (11:59:10)
+============================================================
+ E8 - bloque C4_R2  (prefijo E8-C4-R2-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C4 (md5 esperado 32c29bb6f042aac16f1813724c65b474) ===
+C4 md5 32c29bb6f042aac16f1813724c65b474 -> C:\Users\santiago\AppData\Local\Temp\e8_2026-09-15_11-59-10\wf.json
+  importado y publicado; reiniciando n8n...
+  [OK] versi¢n activa con el prompt de C4 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  29 ms
+  [ 50/150] HTTP 200  28 ms
+  [ 75/150] HTTP 200  28 ms
+  [100/150] HTTP 200  28 ms
+  [125/150] HTTP 200  26 ms
+  [150/150] HTTP 200  27 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 150
+  ejecuciones ......... 150 (‚xito 150; con el prompt de C4 150; con otro prompt 0)
+
+  Bloque C4_R2 v lido.
+
+##### Bloque 9/12: C3 R3  (12:02:15)
+============================================================
+ E8 - bloque C3_R3  (prefijo E8-C3-R3-)
+============================================================
+  [OK] contenedores, credencial y corpus (150 mensajes)
+
+=== Condici¢n C3 (md5 esperado ed36a93c8d1eb833168fadf55ba7afbf) ===
+C3 md5 ed36a93c8d1eb833168fadf55ba7afbf -> C:\Users\santiago\AppData\Local\Temp\e8_2026-09-15_12-02-15\wf.json
+  importado y publicado; reiniciando n8n...
+  [OK] versi¢n activa con el prompt de C3 y webhook registrado
+
+=== Env¡o ===
+  [ 25/150] HTTP 200  29 ms
+  [ 50/150] HTTP 200  27 ms
+  [ 75/150] HTTP 200  28 ms
+  [100/150] HTTP 200  28 ms
+  [125/150] HTTP 200  27 ms
+  [150/150] HTTP 200  27 ms
+
+=== Conciliaci¢n ===
+  HTTP 200 ............ 150 de 150
+  filas en interactions 149
+  ejecuciones ......... 150 (‚xito 149; con el prompt de C3 150; con otro prompt 0)
+Bloque C3_R3 INVµLIDO: revisar la conciliaci¢n antes de seguir.
+En C:\workspace\University\2026\tesis\Automatizacion-de-Atencion-al-Cliente-en-E-commerce-e-Inteligencia-Artificial\exp
+eriments\E8\run_e8.ps1: 204 Car cter: 21
++ ...  $valido) { throw "Bloque $Bloque INVµLIDO: revisar la conciliaci¢n a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Bloque C3_R3 IN...ntes de seguir.:String) [], RuntimeException
+    + FullyQualifiedErrorId : Bloque C3_R3 INVµLIDO: revisar la conciliaci¢n antes de seguir.
+ 
+EXIT=1

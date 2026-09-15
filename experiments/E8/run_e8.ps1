@@ -18,6 +18,9 @@
 
 .PARAMETER Condicion   C1, C2, C3 o C4 (ver condiciones_e8.py).
 .PARAMETER Repeticion  1, 2 o 3.
+.PARAMETER Intento     1 por defecto. Un bloque inválido se vuelve a correr con Intento 2, 3...:
+                       prefijo E8-<condición>-R<repetición>i<intento>- y los datos del intento
+                       anterior quedan intactos (regla pre-registrada: se informan ambos).
 .PARAMETER Prueba      Envía solo N mensajes con prefijo E8-PRUEBA- (no entran al análisis).
 .PARAMETER EspaciadoSeg Segundos entre envíos (por defecto 1).
 .PARAMETER Force       Sin confirmación interactiva.
@@ -26,6 +29,7 @@
 param(
     [Parameter(Mandatory)][ValidateSet('C1','C2','C3','C4')][string]$Condicion,
     [ValidateRange(1,3)][int]$Repeticion = 1,
+    [ValidateRange(1,9)][int]$Intento = 1,
     [int]$Prueba = 0,
     [int]$EspaciadoSeg = 1,
     [switch]$Force
@@ -41,8 +45,9 @@ $Corpus     = Join-Path $PSScriptRoot '..\E2\corpus_intents.csv'
 $DirSalida  = Join-Path $PSScriptRoot 'resultados'
 $Sello      = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
 $Nombre     = 'Anotador E2'          # el mismo nombre que la corrida del 12/08
-$Prefijo    = if ($Prueba -gt 0) { "E8-PRUEBA-$Condicion-" } else { "E8-$Condicion-R$Repeticion-" }
-$Bloque     = if ($Prueba -gt 0) { "prueba_$Condicion" } else { "$Condicion`_R$Repeticion" }
+$SufijoInt  = if ($Intento -gt 1) { "i$Intento" } else { '' }
+$Prefijo    = if ($Prueba -gt 0) { "E8-PRUEBA-$Condicion-" } else { "E8-$Condicion-R$Repeticion$SufijoInt-" }
+$Bloque     = if ($Prueba -gt 0) { "prueba_$Condicion" } else { "$Condicion`_R$Repeticion" + $(if ($Intento -gt 1) { "_i$Intento" } else { '' }) }
 
 $condiciones = Get-Content (Join-Path $PSScriptRoot 'condiciones_e8.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $Md5Esperado = $condiciones.condiciones.$Condicion.md5
@@ -152,11 +157,19 @@ $finUtc = (Get-Date).ToUniversalTime()
 $envios | Export-Csv -Path (Join-Path $DirSalida "e8_envios_$Bloque.csv") -NoTypeInformation -Encoding UTF8
 
 # ------------------------------------------------------------ 4. conciliación y evidencia
-Start-Sleep -Seconds 6
-$okHttp   = ($envios | Where-Object { $_.http -eq 200 }).Count
-$escritas = [int](Get-Escalar -Sql "SELECT COUNT(*) FROM interactions WHERE user_id LIKE '$Prefijo%';")
+# El webhook responde al recibir, antes de que termine el workflow: se espera a que no
+# quede ninguna ejecucion en curso (hasta 120 s) en lugar de un tiempo fijo.
+$okHttp = ($envios | Where-Object { $_.http -eq 200 }).Count
 $desde = $inicioUtc.AddSeconds(-5).ToString('yyyy-MM-dd HH:mm:ss')
-$hasta = $finUtc.AddSeconds(90).ToString('yyyy-MM-dd HH:mm:ss')
+for ($espera = 0; $espera -lt 60; $espera++) {
+    Start-Sleep -Seconds 2
+    $enCurso  = [int](Get-Escalar -Sql "SELECT COUNT(*) FROM execution_entity WHERE ""workflowId"" = '$WfId' AND ""startedAt"" >= '$desde'::timestamp AND status IN ('new','running','waiting');")
+    $escritas = [int](Get-Escalar -Sql "SELECT COUNT(*) FROM interactions WHERE user_id LIKE '$Prefijo%';")
+    if ($enCurso -eq 0 -and $escritas -ge $filas.Count) { break }
+}
+Start-Sleep -Seconds 2
+$escritas = [int](Get-Escalar -Sql "SELECT COUNT(*) FROM interactions WHERE user_id LIKE '$Prefijo%';")
+$hasta = (Get-Date).ToUniversalTime().AddSeconds(5).ToString('yyyy-MM-dd HH:mm:ss')
 $evid = Invoke-Psql -Tuplas -Sql @"
 SELECT e.id, to_char(e."startedAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.MS'), e.status, d."workflowVersionId",
        md5((SELECT n->'parameters'->'messages'->'messageValues'->0->>'message'
@@ -183,7 +196,7 @@ $valido = ($okHttp -eq $filas.Count) -and ($escritas -eq $filas.Count) -and ($aj
 $commit = (git -C (Join-Path $PSScriptRoot '..\..') rev-parse --short HEAD 2>$null)
 [ordered]@{
     experimento = 'E8 - factorial 2x2 base x reglas-y-ejemplos'; bloque = $Bloque; condicion = $Condicion
-    repeticion = $Repeticion; prueba = ($Prueba -gt 0); prefijo_user_id = $Prefijo; mensajes = $filas.Count
+    repeticion = $Repeticion; intento = $Intento; prueba = ($Prueba -gt 0); prefijo_user_id = $Prefijo; mensajes = $filas.Count
     md5_prompt = $Md5Esperado; caracteres_prompt = $condiciones.condiciones.$Condicion.caracteres
     workflow_id = $WfId; endpoint = $UrlChatbot; espaciado_seg = $EspaciadoSeg; nombre_cliente = $Nombre
     temperatura = 'no fijada en el nodo: rige el valor por defecto de la API de OpenAI (1)'

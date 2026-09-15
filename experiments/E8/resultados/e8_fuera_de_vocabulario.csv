@@ -1,0 +1,2 @@
+bloque,id,etiqueta,execution_id,mensaje,referencia,fuente
+C3_R3,69,CAMBIO,3384,"queria cambiar un producto, cual es el procedimiento? me llego fallado",RECLAMO,"execution_data de n8n: salida del nodo IA - Motor Decision; el INSERT en interactions fallo por interactions_intent_check"
