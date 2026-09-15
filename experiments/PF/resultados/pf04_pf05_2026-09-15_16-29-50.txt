@@ -1,0 +1,14 @@
+﻿PF-04 y PF-05 — 2026-09-15 19:29:50Z
+commit: d9d1d3b
+
+PF-04 · esperado: Rechazo con error controlado
+  HTTP 200 · cuerpo: ''
+  ejecución 4069 | success · nodos ejecutados: Registrar Orden, Verificar Stock
+  error registrado: (ninguno)
+
+PF-05 · esperado: Rechazo por restricción de unicidad
+  HTTP 200 · cuerpo: ''
+  ejecución 4070 | error · nodos ejecutados: Registrar Orden
+  error registrado: duplicate key value violates unique constraint \
+
+órdenes antes: 218 · después: 218 · filas escritas: 0
