@@ -133,8 +133,8 @@ i_res = P.index('RESUMEN')
 i_abs = P.index('ABSTRACT')
 res = '\n'.join(P[i_res:i_abs])
 abs_ = '\n'.join(P[i_abs:i_abs + 6])
+# Dictamen del 14/09: resumen de 250 a 300 palabras. La t de Welch queda en la §5.3.
 for rot, es, en in [('el contraste no paramétrico', 'Mann-Whitney', 'Mann-Whitney'),
-                    ('la t de Welch', 'Welch', 'Welch'),
                     ('el IC por Fieller', 'Fieller', 'Fieller'),
                     ('el accuracy', '92,7 %', '92.7 %'),
                     ('el MTTD', '0,009', '0.009'),
@@ -173,8 +173,9 @@ check('F8  el Anexo K existe y su tabla está listada',
       any(h.startswith('Anexo K: Verificación de datos concretos') for h in HEAD)
       and 'Tabla K.1: Datos concretos afirmados' in TXT_P
       and any(r.cells[0].text.strip() == 'Tabla K.1' for t in d.tables for r in t.rows))
+# Los κ de cada par quedan en la §5.2.5: el resumen de 300 palabras reporta la conclusión.
 check('F9  resumen y abstract reportan el resultado',
-      '0,167' in res and '2 de las 18' in res and '0.167' in abs_ and '2 of the 18' in abs_)
+      'acuerdo suficiente' in res and '2 de las 18' in res and 'sufficient agreement' in abs_ and '2 of the 18' in abs_)
 
 print()
 print('=' * 78)

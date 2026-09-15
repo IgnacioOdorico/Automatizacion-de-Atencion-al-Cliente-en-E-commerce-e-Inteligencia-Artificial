@@ -185,7 +185,7 @@ check('R6  los nodos 5 y 6 se declaran como parte de la cadena medida',
 check('R7a la Seccion 2.4 declara su funcion',
       'Corresponde declarar de antemano la función de esta sección' in TODO)
 check('R7b el Capitulo 6 retoma el marco teorico',
-      'escala de madurez de proceso de van der Aalst' in TODO
+      'escala de madurez de proceso que la Sección 2.1.1 propone como marco analítico propio' in TODO   # 14/09
       and 'capacidad de respuesta (responsiveness)' in TXT_P.split('CAPÍTULO 6')[-1])
 check('R8a locator de CACE preciso',
       'Estudio Anual de Comercio Electrónico 2024' in TODO

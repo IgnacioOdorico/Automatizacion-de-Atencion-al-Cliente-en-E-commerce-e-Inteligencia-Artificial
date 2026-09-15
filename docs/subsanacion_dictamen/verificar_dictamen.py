@@ -42,14 +42,16 @@ chk(4, 'BLOQ', 'H1 comparativa; H2a y H2b declaradas en §1.4.2',
 chk(5, 'MAY', '§2.5 Estado del arte con procedimiento y tabla comparativa',
     hay(r'2\.5 Estado del arte') and hay(r'Procedimiento de búsqueda')
     and hay(r'Tabla 2\.1') and hay(r'Parikh') and hay(r'Ngai'))
+# Dictamen del 14/09: [88,2; 96,3] es ahora un intervalo legítimo, el de C1 (140/150) en el
+# diseño factorial. Lo que se sigue controlando es que no aparezca como IC del 92,7 %.
 chk(6, 'MAY', 'IC de Wilson corregido a [87,3; 95,9] en TODAS sus ocurrencias',
-    n(r'87,3 ?%') >= 3 and not hay(r'88,2') and not hay(r'96,3 ?%'))
+    n(r'87,3 ?%') >= 3 and not re.search(r'92,7[^.;]{0,60}88,2', TXT) and not re.search(r'92,7[^.;]{0,60}96,3', TXT))
 # El rotulo del apartado cambio en la 4ta ronda ('Ausencia de contraste inferencial'
 # -> 'Ausencia de grupo de control...') porque negaba el contraste que la §5.3 ejecuta.
 # El control se ancla ahora en la INTENCION y no en el titulo, y ademas exige que (d)
 # reconozca explicitamente el analisis realizado.
 chk(7, 'MAY', '§5.4.1(d) no niega el análisis realizado y reconoce el contraste',
-    hay(r'\(d\) Ausencia de grupo de control')
+    hay(r'\(g\) Ausencia de grupo de control')   # (d) -> (g): §5.4.1 sin bis ni ter (dictamen del 14/09)
     and not hay(r'No se calcularon intervalos de confianza')
     and not hay(r'no ejecuta un contraste formal')
     and hay(r'el contraste de H1 se ejecutó')
@@ -104,7 +106,7 @@ chk(25, 'MEN', 'CACE: el 181 % se declara nominal',
     hay(r'facturación nominal del sector, medida en pesos corrientes'))
 chk(26, 'MEN', 'Ortografía y Resumen contiguo',
     not hay(r'notificaciónes') and not hay(r'restricciónes')
-    and hay(r'Estos valores permiten confirmar la hipótesis'))
+    and hay(r'Las tres hipótesis se sostienen dentro de los alcances declarados'))   # resumen de 300 palabras (14/09)
 
 # --- extra: hallazgo propio ---
 chk('X', 'PROP', 'Afirmación falsa de few-shot corregida a zero-shot',
