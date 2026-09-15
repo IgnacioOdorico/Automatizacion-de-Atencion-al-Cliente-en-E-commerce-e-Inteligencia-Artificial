@@ -1,0 +1,73 @@
+E8 — Trazabilidad de los prompts del Flujo 2 (consultado sobre la base viva de n8n)
+==============================================================================
+
+1. Versiones guardadas por n8n de los dos workflows del Flujo 2
+               workflow                |               version                |    creada_utc    | elementos | caracteres_prompt | es_expresion | inyecta_base | tiene_ejemplos |            md5_prompt            
+---------------------------------------+--------------------------------------+------------------+-----------+-------------------+--------------+--------------+----------------+----------------------------------
+ Flujo 2 — Chatbot Omnicanal IA        | 4e2d3bc4-37c9-4e7b-be63-9d4b9d913739 | 2026-08-12 23:38 |        14 |              6339 | t            | t            | t              | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+ Flujo 2 — Chatbot WhatsApp + Telegram | a4a57b19-dced-4fc2-95d9-990193dbdfd5 | 2026-08-25 14:58 |        19 |              1032 | f            | f            | f              | 77fab98a757a6b28c44f79f1920eccb4
+ Flujo 2 — Chatbot WhatsApp + Telegram | 1115056c-0978-46cf-a47e-941fa3f3f904 | 2026-09-15 14:31 |        19 |              1155 | t            | f            | f              | 32c29bb6f042aac16f1813724c65b474
+ Flujo 2 — Chatbot WhatsApp + Telegram | 2b1ff432-b7b8-4021-b831-6499064e310f | 2026-09-15 14:32 |        19 |              6339 | t            | t            | t              | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+(4 rows)
+
+
+2. Publicaciones (activaciones y desactivaciones)
+               workflow                |               version                |   evento    |     momento_utc     
+---------------------------------------+--------------------------------------+-------------+---------------------
+ Flujo 2 — Chatbot Omnicanal IA        | 4e2d3bc4-37c9-4e7b-be63-9d4b9d913739 | activated   | 2026-08-12 23:41:37
+ Flujo 2 — Chatbot WhatsApp + Telegram | a4a57b19-dced-4fc2-95d9-990193dbdfd5 | activated   | 2026-08-25 15:14:48
+ Flujo 2 — Chatbot Omnicanal IA        | 4e2d3bc4-37c9-4e7b-be63-9d4b9d913739 | deactivated | 2026-08-26 19:39:18
+ Flujo 2 — Chatbot WhatsApp + Telegram | a4a57b19-dced-4fc2-95d9-990193dbdfd5 | deactivated | 2026-09-15 14:31:17
+ Flujo 2 — Chatbot WhatsApp + Telegram | 1115056c-0978-46cf-a47e-941fa3f3f904 | deactivated | 2026-09-15 14:32:19
+(5 rows)
+
+
+2b. Qué workflows del Flujo 2 tienen disparador de Telegram y con qué prompt (estado actual)
+                 workflow                  | disparador_telegram | publicaciones | largos_de_prompt_antes_de_septiembre 
+-------------------------------------------+---------------------+---------------+--------------------------------------
+ Flujo 2 — Chatbot Omnicanal IA            | f                   |             2 | 6339
+ Flujo 2 — Chatbot Omnicanal IA PRODUCCIÓN | t                   |             0 | 1032
+ Flujo 2 — Chatbot WhatsApp + Telegram     | t                   |             3 | 1032
+(3 rows)
+
+
+   Nota: la variante PRODUCCIÓN no guarda historial; su prompt actual tiene 1032 caracteres
+   y nunca fue publicada.
+
+3. Ventanas temporales de cada población medida del Flujo 2 (UTC)
+           poblacion           | filas |        desde        |        hasta        
+-------------------------------+-------+---------------------+---------------------
+ otras mediciones              |   126 | 2026-07-02 03:52:32 | 2026-08-27 15:32:57
+ Corpus del Capitulo 5 (12/08) |   150 | 2026-08-12 23:45:26 | 2026-08-12 23:53:00
+ Telegram real (25/08)         |    45 | 2026-08-25 14:30:57 | 2026-08-25 15:17:27
+ E7 ablacion (11/09)           |   150 | 2026-09-11 17:34:31 | 2026-09-11 17:42:04
+ E8                            |     6 | 2026-09-15 14:31:35 | 2026-09-15 14:32:39
+(5 rows)
+
+
+4. Copias del workflow guardadas por ejecución (solo sobreviven las recientes)
+    desde_utc     |    hasta_utc     | ejecuciones |               version                |            md5_prompt            
+------------------+------------------+-------------+--------------------------------------+----------------------------------
+ 2026-09-11 17:32 | 2026-09-11 17:42 |         152 | a4a57b19-dced-4fc2-95d9-990193dbdfd5 | 77fab98a757a6b28c44f79f1920eccb4
+ 2026-09-15 14:31 | 2026-09-15 14:31 |           3 | 1115056c-0978-46cf-a47e-941fa3f3f904 | 32c29bb6f042aac16f1813724c65b474
+ 2026-09-15 14:32 | 2026-09-15 14:32 |           3 | 2b1ff432-b7b8-4021-b831-6499064e310f | c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+(3 rows)
+
+
+5. El prompt medido en el repositorio
+   f297c9e (10/08)    6338 caracteres · empieza con "=": False · md5 56ee3cf49a795974c642d54f973cbc53
+   f68da9d (14/08)    6339 caracteres · empieza con "=": True · md5 c11c2fe1cdd4f5c2eedd7e8f9b013c3c
+   En n8n, un parámetro que no empieza con "=" es texto literal: en f297c9e la
+   expresión {{ $json.faq_context }} no se reemplaza. La versión que corrió el 12/08
+   (4e2d3bc4) coincide byte a byte con f68da9d.
+
+6. Lectura
+   - El corpus del Capítulo 5 (12/08, 23:45 a 23:53 UTC) corrió 4 minutos después de
+     publicarse la versión 4e2d3bc4: prompt de 6339 caracteres con base, reglas y ejemplos.
+   - Las 45 interacciones de Telegram (25/08, 14:30 a 15:17 UTC) corrieron con el prompt
+     reducido. Solo dos workflows tienen disparador de Telegram y ambos llevan el prompt de
+     1032 caracteres; el único con el prompt principal (4e2d3bc4) no tiene ese disparador.
+     La versión a4a57b19 cubre la segunda mitad (desde su publicación, 15:14 UTC); la que
+     atendió la primera mitad no se conserva. Las respuestas de ambas mitades no reproducen
+     la base, lo que es consistente con el prompt reducido.
+   - E7 (11/09) corrió con la versión a4a57b19, verificado por la copia de cada ejecución.

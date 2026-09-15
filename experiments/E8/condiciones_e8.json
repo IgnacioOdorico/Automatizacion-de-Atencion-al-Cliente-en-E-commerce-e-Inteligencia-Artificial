@@ -1,0 +1,66 @@
+{
+  "prompt_medido": {
+    "commit": "f68da9d",
+    "version_n8n": "4e2d3bc4",
+    "md5": "c11c2fe1cdd4f5c2eedd7e8f9b013c3c",
+    "caracteres": 6339
+  },
+  "condiciones": {
+    "C1": {
+      "base": true,
+      "reglas_y_ejemplos": true,
+      "bloques": [
+        "## IDENTIDAD",
+        "## TU TAREA",
+        "## FORMATO DE RESPUESTA (JSON estricto)",
+        "## REGLAS DE CLASIFICACIÓN",
+        "## BASE DE CONOCIMIENTO FAQ",
+        "## REGLAS CRÍTICAS (nunca las violes)",
+        "## EJEMPLOS",
+        "## MENSAJE DEL CLIENTE"
+      ],
+      "caracteres": 6339,
+      "md5": "c11c2fe1cdd4f5c2eedd7e8f9b013c3c"
+    },
+    "C2": {
+      "base": false,
+      "reglas_y_ejemplos": true,
+      "bloques": [
+        "## IDENTIDAD",
+        "## TU TAREA",
+        "## FORMATO DE RESPUESTA (JSON estricto)",
+        "## REGLAS DE CLASIFICACIÓN",
+        "## REGLAS CRÍTICAS (nunca las violes)",
+        "## EJEMPLOS",
+        "## MENSAJE DEL CLIENTE"
+      ],
+      "caracteres": 6151,
+      "md5": "64f3a3ab58dca4c1096e9c4c7f4d3a3c"
+    },
+    "C3": {
+      "base": true,
+      "reglas_y_ejemplos": false,
+      "bloques": [
+        "## IDENTIDAD",
+        "## TU TAREA",
+        "## FORMATO DE RESPUESTA (JSON estricto)",
+        "## BASE DE CONOCIMIENTO FAQ",
+        "## MENSAJE DEL CLIENTE"
+      ],
+      "caracteres": 1343,
+      "md5": "ed36a93c8d1eb833168fadf55ba7afbf"
+    },
+    "C4": {
+      "base": false,
+      "reglas_y_ejemplos": false,
+      "bloques": [
+        "## IDENTIDAD",
+        "## TU TAREA",
+        "## FORMATO DE RESPUESTA (JSON estricto)",
+        "## MENSAJE DEL CLIENTE"
+      ],
+      "caracteres": 1155,
+      "md5": "32c29bb6f042aac16f1813724c65b474"
+    }
+  }
+}
