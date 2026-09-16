@@ -1,0 +1,5 @@
+Desde la base de datos; aciertos por repetición verificados contra analisis_e8.txt.
+C1   media 93.1 % · IC 95 % exacto [89.1 ; 97.2] · conservador [89.1 ; 97.2]
+C2   media 94.2 % · IC 95 % exacto [90.5 ; 97.9] · conservador [90.5 ; 97.9]
+C3   media 76.7 % · IC 95 % exacto [70.4 ; 83.0] · conservador [70.1 ; 83.3]
+C4   media 73.3 % · IC 95 % exacto [66.5 ; 80.2] · conservador [66.3 ; 80.4]

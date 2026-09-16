@@ -67,8 +67,9 @@ check('4a  la promesa incumplida de 3.2 ya no esta',
 check('4b  se declara explicitamente lo que no se puede afirmar',
       'ninguna de las dos permite afirmar que las respuestas sean correctas' in TODO
       and 'no puede afirmar que la respuesta entregada sea correcta' in TODO)
-check('4c  la triangulacion que se afirma es la que existe',
-      'triangulación de fuentes de evidencia' in TODO and '51,28' in TODO)
+# 16/09: el dictamen del 15/09 pidió dejar de llamar «triangulación» a dos instrumentos sobre una misma sesión.
+check('4c  el acuerdo entre instrumentos que se afirma es el que existe',
+      'acuerdo entre dos instrumentos sobre una misma sesión' in TODO and '51,28' in TODO)
 check('4d  el Capitulo 7 lleva la rubrica del procedimiento faltante',
       'rúbrica de tres niveles' in TODO)
 

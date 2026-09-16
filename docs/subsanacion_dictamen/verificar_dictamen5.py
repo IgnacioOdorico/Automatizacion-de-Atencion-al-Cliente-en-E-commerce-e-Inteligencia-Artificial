@@ -94,7 +94,9 @@ check('1e  §5.2.4 con título nuevo',
       '5.2.4 Aporte de la base de conocimiento y de las reglas y ejemplos' in HEAD)
 t510 = filas(tabla_con_epigrafe('Tabla 5.10:'))
 check('1f  la Tabla 5.10 tiene las cuatro condiciones y la exactitud por mayoría',
-      len(t510) == 6 and all(c in ' '.join(t510[0]) for c in ('C1', 'C2', 'C3', 'C4'))
+      # 16/09: el dictamen del 15/09 pidió sumar la media por repetición, en una séptima fila
+      len(t510) == 7 and t510[6][0].startswith('Media por repetición')
+      and all(c in ' '.join(t510[0]) for c in ('C1', 'C2', 'C3', 'C4'))
       and '140 (93,3 %)' in ' '.join(t510[5]) and '111 (74,0 %)' in ' '.join(t510[5]), str(t510[:1])[:160])
 check('1g  §5.2.4 reporta efectos, interacción, réplica y variabilidad',
       all(x in b524 for x in ('17,3 puntos', '2,0 puntos', '−5,3', 'p exacto = 1,0', '98,0 %')))

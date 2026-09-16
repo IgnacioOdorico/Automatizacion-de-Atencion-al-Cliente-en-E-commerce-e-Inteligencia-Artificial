@@ -170,3 +170,29 @@ powershell -File run_e8_todo.ps1        # 12 bloques; deja C1 como configuració
 python analizar_e8.py > resultados/analisis_e8.txt
 python trazabilidad_e8.py
 ```
+
+## Exactitud media por repetición (agregado el 16/09/2026, no pre-registrado)
+
+El sistema desplegado hace una sola llamada por mensaje; la exactitud por mayoría
+describe un clasificador por votación. `media_por_repeticion_e8.py` informa la
+exactitud media por repetición con un intervalo calculado sobre la proporción de
+aciertos de cada mensaje en sus tres repeticiones (t de Student, 149 gl). No cambia
+ninguna regla de decisión.
+
+Por defecto calcula desde los recuentos de `resultados/analisis_e8.txt`, sin base de
+datos: esos recuentos fijan la distribución por mensaje salvo pocas alternativas, y se
+informa el intervalo más amplio entre ellas. Con `--base` lee las predicciones,
+verifica los aciertos contra el análisis, guarda `resultados/e8_aciertos_por_mensaje.csv`
+y comprueba que el intervalo exacto caiga dentro del informado.
+
+| | por mayoría | media por repetición · IC 95 % |
+|---|---|---|
+| C1 | 93,3 % | 93,1 % [89,1; 97,2] |
+| C2 | 94,0 % | 94,2 % [90,5; 97,9] |
+| C3 | 78,7 % | 76,7 % [70,1; 83,3] |
+| C4 | 74,0 % | 73,3 % [66,3; 80,4] |
+
+```
+python media_por_repeticion_e8.py --pruebas
+python media_por_repeticion_e8.py > resultados/media_por_repeticion_e8.txt
+```

@@ -1,0 +1,9 @@
+Ejemplos del prompt de la configuración vigente: 7
+Ejemplos con al menos un dato concreto: 2
+
+estado         dato                     entrada de la base     mensaje del ejemplo
+no respaldado  3 y 5 días hábiles       —                      cuánto tarda el envío a córdoba?
+respaldado     3 y 7 días hábiles       ¿Cuánto tarda el envío hola, queria consultar los medios de pago, si hacen envios a
+respaldado     12 meses                 ¿Tienen garantía los p hola, queria consultar los medios de pago, si hacen envios a
+
+datos concretos: 3 (respaldados 2 · eco 0 · no respaldados 1)

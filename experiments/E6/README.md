@@ -98,3 +98,18 @@ publica con sus pruebas.
 | `resultados/ronda2/` | segunda ronda: corridas y análisis |
 | `resultados/rondas_e6.txt` | salida de `analizar_rondas_e6.py` |
 | `resultados/verificacion_datos.{txt,csv}` | salida de `verificar_datos_e6.py` (el CSV es la Tabla K.1) |
+| `verificar_ejemplos_prompt.py` | la misma regla aplicada a los siete ejemplos del prompt medido, con `--pruebas` |
+| `resultados/verificacion_ejemplos_prompt.txt` | salida: 3 datos concretos, 1 no respaldado (el ejemplo de Córdoba) |
+
+## Los ejemplos del prompt frente a la base (16/09/2026)
+
+`verificar_ejemplos_prompt.py` aplica la misma regla a las siete respuestas de ejemplo
+del prompt de la configuración vigente (`experiments/E8/prompts/C1.txt`). Encuentra
+tres datos concretos: dos respaldados (3 y 7 días hábiles; 12 meses) y uno no: el
+ejemplo de envío a Córdoba afirma «entre 3 y 5 días hábiles», y la base fija entre
+3 y 7 para el resto del país. El dato no aparece en ninguna de las 45 respuestas.
+
+```
+python verificar_ejemplos_prompt.py --pruebas
+python verificar_ejemplos_prompt.py > resultados/verificacion_ejemplos_prompt.txt
+```

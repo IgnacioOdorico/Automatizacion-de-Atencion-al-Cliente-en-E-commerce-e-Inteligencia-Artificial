@@ -1,0 +1,8 @@
+Desde los recuentos de resultados/analisis_e8.txt (sin base de datos).
+Intervalo: el más amplio entre las distribuciones por mensaje compatibles con los recuentos.
+
+     por mayoría  estables   media rep. IC 95 % conservador    distribuciones compatibles
+C1   93.3 %       147        93.1 %     [89.1 ; 97.2]          2
+C2   94.0 %       148        94.2 %     [90.5 ; 97.9]          1
+C3   78.7 %       128        76.7 %     [70.1 ; 83.3]          7
+C4   74.0 %       138        73.3 %     [66.3 ; 80.4]          5
