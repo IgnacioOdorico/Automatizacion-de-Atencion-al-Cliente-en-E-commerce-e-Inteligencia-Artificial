@@ -146,6 +146,40 @@ services:
     networks:
       - tesis_network
 
+  # ----------------------------------------------------------
+  # Dashboard API — Backend FastAPI del portal del cliente
+  # Lee las tablas y vistas de la BD (no las modifica).
+  # Acceso: http://localhost:8000 (docs en /docs)
+  # Variables: ver .env.example (DASHBOARD_*); los defaults son de demo.
+  # ----------------------------------------------------------
+  dashboard-api:
+    build: ./dashboard-api
+    container_name: tesis_dashboard_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Dentro de la red Docker el host de Postgres es "postgres", no localhost.
+      - DATABASE_URL=postgresql+psycopg://n8n_user:n8n_pass@postgres:5432/ecommerce_tesis
+      - DASHBOARD_JWT_SECRET=${DASHBOARD_JWT_SECRET:-demo-dashboard-jwt-secret-cambiar}
+      - DASHBOARD_ENC_KEY=${DASHBOARD_ENC_KEY:-}
+      - DASHBOARD_N8N_SECRET=${DASHBOARD_N8N_SECRET:-demo-n8n-secret-cambiar}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - "CMD"
+        - "python"
+        - "-c"
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tesis_network
+
 # ----------------------------------------------------------
 # Volúmenes persistentes
 # ----------------------------------------------------------

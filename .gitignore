@@ -29,6 +29,9 @@ backups/
 # --- Python (scripts de analisis de experimentos) ------------
 __pycache__/
 *.pyc
+.venv/
+.venv*/
+.pytest_cache/
 
 # --- Claude Code --------------------------------------------
 # Worktrees, settings locales y todo lo de .claude: nunca se versiona.
