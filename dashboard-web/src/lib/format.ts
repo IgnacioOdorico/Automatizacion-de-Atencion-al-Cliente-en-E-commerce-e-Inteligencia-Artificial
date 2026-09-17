@@ -49,3 +49,42 @@ export function formatDateTime(iso: string | null | undefined): string {
     minute: '2-digit',
   });
 }
+
+/**
+ * Duración legible a partir de segundos: "12s", "1m 30s", "2h 5m", "1d 4h".
+ * La API devuelve promedios en segundos (v_metrics_summary), a veces como
+ * string ("90.00") porque son columnas NUMERIC — acá se tolera ambas formas.
+ */
+export function formatDuration(seconds: string | number | null | undefined): string {
+  if (seconds === null || seconds === undefined || seconds === '') return '—';
+  const n = typeof seconds === 'string' ? Number(seconds) : seconds;
+  if (Number.isNaN(n)) return '—';
+  const s = Math.round(Math.abs(n));
+  if (s < 60) return `${s}s`;
+
+  const m = Math.floor(s / 60);
+  const restS = s % 60;
+  if (m < 60) return restS ? `${m}m ${restS}s` : `${m}m`;
+
+  const h = Math.floor(m / 60);
+  const restM = m % 60;
+  if (h < 24) return restM ? `${h}h ${restM}m` : `${h}h`;
+
+  const d = Math.floor(h / 24);
+  const restH = h % 24;
+  return restH ? `${d}d ${restH}h` : `${d}d`;
+}
+
+/**
+ * Monedas en "$ X,XX" con separador de miles es-AR. La API serializa DECIMAL
+ * como string ("349.99"), así que acepta ambas formas.
+ */
+export function formatCurrency(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === '') return '—';
+  const n = typeof value === 'string' ? Number(value) : value;
+  if (Number.isNaN(n)) return '—';
+  return `$${n.toLocaleString('es-AR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}

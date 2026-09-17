@@ -43,10 +43,11 @@ export interface Paginated<T> {
 export interface Summary {
   total_orders: number;
   orders_confirmed: number;
-  avg_mttd_seg: number;
-  avg_mttr_seg: number;
+  /** Segundos; la API los serializa como number (0) o string ("90.00"). */
+  avg_mttd_seg: string | number;
+  avg_mttr_seg: string | number;
   total_interactions: number;
-  avg_tmr_seg: number;
+  avg_tmr_seg: string | number;
   total_tickets: number;
   tickets_resolved: number;
   orders_today: number;
@@ -61,7 +62,7 @@ export interface Order {
   customer_email: string;
   customer_phone: string | null;
   quantity: number;
-  total_amount: number;
+  total_amount: string | number;
   status: string;
   received_at: string | null;
   processed_at: string | null;
@@ -84,21 +85,27 @@ export interface OrderDetail extends Order {
 
 export interface Ticket {
   id: number;
+  interaction_id: number | null;
+  order_id: number | null;
   channel: Channel;
-  customer_identifier: string | null;
+  user_id: string | null;
   subject: string | null;
   status: string;
+  priority: string;
   created_at: string | null;
   resolved_at: string | null;
+  data_source: string | null;
 }
 
 export interface Product {
   id: number;
   sku: string;
   name: string;
-  description: string | null;
-  price: number;
+  price: string | number;
   stock: number;
+  stock_min: number;
+  category: string | null;
+  created_at: string | null;
 }
 
 export interface ApiErrorPayload {

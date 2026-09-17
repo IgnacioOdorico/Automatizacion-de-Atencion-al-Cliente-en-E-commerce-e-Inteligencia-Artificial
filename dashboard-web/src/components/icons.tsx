@@ -92,6 +92,15 @@ export const MessengerIcon = (props: IconProps) => (
   </svg>
 );
 
+export const RefreshIcon = (props: IconProps) => (
+  <svg {...base(props)}>
+    <path d="M3 12a9 9 0 0 1 15.4-6.4" />
+    <path d="M21 12a9 9 0 0 1-15.4 6.4" />
+    <path d="M4 2v4h4" />
+    <path d="M20 22v-4h-4" />
+  </svg>
+);
+
 /** Marca "TS" del portal */
 export const BrandMark = ({ size = 34 }: { size?: number }) => (
   <span className="brand__mark" style={{ width: size, height: size }}>
