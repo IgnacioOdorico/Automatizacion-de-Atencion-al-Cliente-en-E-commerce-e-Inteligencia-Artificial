@@ -120,7 +120,7 @@ check('1l  el Anexo H explica C1 a C4 y cita f68da9d',
 check('1m  f297c9e solo aparece como cita corregida',
       all('en un primer momento se citó' in p for p in P if 'f297c9e' in p))
 check('1n  resumen y abstract reportan el factorial',
-      '17,3' in bloque('RESUMEN', 'ABSTRACT') and '17.3' in bloque('ABSTRACT', 'Listado de Figuras'))
+      '17,3' in bloque('RESUMEN', 'ABSTRACT') and '17.3' in bloque('ABSTRACT', 'Listado de figuras'))   # 17/09: título en minúscula
 
 seccion('3. INDEPENDENCIA ENTRE PROMPT Y CORPUS')
 b36 = bloque('3.6 Amenazas', 'CAPÍTULO 4')
@@ -208,7 +208,8 @@ check('8g  sin escala de madurez atribuida ni propia',
       'van der Aalst' not in TODO and 'escala de madurez' not in TODO and 'automatizar un proceso y gestionarlo' in TODO)
 
 seccion('9. FACTOR 780×')
-b54 = bloque('5.4 Análisis', '5.4.1')
+# 17/09 (revisión de estructura): 5.4.1 pasó a ser 5.5.
+b54 = bloque('5.4 Análisis', '5.5 ')
 check('9a  ningún lugar lee el factor como cota superior', 'cota superior' not in TODO and 'upper bound' not in TODO)
 check('9b  los sesgos operan en direcciones opuestas', 'direcciones opuestas' in b54)
 check('9c  significación práctica en tiempo absoluto', '41 minutos' in b54)
@@ -277,7 +278,7 @@ narr = [m for p in P[:i_ref] for m in re.findall(r'[A-ZÁÉÍÓÚ][\w-]+ & [A-Z�
 check('R4  APA: et al. desde la primera cita y «y» en citas narrativas',
       not narr and 'Alderete, Jones y Motta' not in CUERPO and 'Fondevila-Gascón, Huamanchumo' not in CUERPO
       and 'Pachas-Santos, Calderón-Vilca' not in CUERPO and 'Bravo Maruri, Ramírez Reina' not in CUERPO, str(narr))
-b541 = bloque('5.4.1', 'CAPÍTULO 6')
+b541 = bloque('5.5 ', 'CAPÍTULO 6')   # 17/09: 5.4.1 pasó a ser 5.5
 etiquetas = re.findall(r'^\(([a-z])(?:-\w+)?\)', b541, re.M)
 check('R5  §5.4.1 sin bis ni ter y en orden',
       '-bis)' not in TODO and '-ter)' not in TODO

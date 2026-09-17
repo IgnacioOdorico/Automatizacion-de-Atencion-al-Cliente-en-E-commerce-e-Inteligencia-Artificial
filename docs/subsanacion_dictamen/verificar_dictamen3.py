@@ -137,8 +137,9 @@ check('9f  no quedan encabezados sin numerar',
       str([t for st, t in HEAD if st == 'Heading 3' and not t[:1].isdigit()]))
 check('9g  5.1.1 a 5.1.4 completos',
       all(any(t.startswith(x) for _, t in HEAD) for x in ('5.1.1', '5.1.2', '5.1.3', '5.1.4')))
-check('9h  4.1.1 y 4.5.1 numerados',
-      all(any(t.startswith(x) for _, t in HEAD) for x in ('4.1.1', '4.5.1')))
+# 17/09 (revisión de estructura): 4.1.1 y 4.5.1 eran subsecciones únicas y se integraron a 4.1 y 4.5.
+check('9h  4.1 y 4.5 sin subsecciones únicas',
+      not any(t.startswith(('4.1.1', '4.5.1')) for _, t in HEAD) and any(t.startswith('4.5 Configuración de Grafana') for _, t in HEAD))
 check('9i  las figuras del cuerpo tienen una sola numeracion',
       'Figura A1' not in TODO and 'Figura A2' not in TODO
       and 'Figura 10:' in TODO and 'Figura 11:' in TODO)

@@ -72,7 +72,7 @@ b32 = bloque('3.2 ', '3.3 ')
 b24 = bloque('2.4 Estado del arte', '2.5 ')
 b25 = bloque('2.5 Tratamiento', 'CAPÍTULO 3')
 b521 = bloque('5.2.1', '5.2.2')
-b54 = bloque('5.4 Análisis', '5.4.1')
+b54 = bloque('5.4 Análisis', '5.5 ')   # 17/09 (revisión de estructura): 5.4.1 pasó a ser 5.5
 b63 = bloque('6.3', '6.4')
 b64 = bloque('6.4', 'CAPÍTULO 7')
 b71 = bloque('7.1', '7.2')
@@ -147,8 +147,8 @@ check('B7e §5.2.1 declara los tickets sin vínculo con la interacción', 'clave
 
 # ============================================================================
 seccion('B8. VERSIÓN')
-check('B8a el documento cita la etiqueta entrega-2026-09-r3', TODO.count('entrega-2026-09-r3') == 2
-      and not re.search(r'entrega-2026-09(?!-r3)', TODO))
+check('B8a el documento cita la etiqueta entrega-2026-09-r4', TODO.count('entrega-2026-09-r4') == 2
+      and not re.search(r'entrega-2026-09(?!-r4)', TODO))
 
 print()
 print('=' * 78)

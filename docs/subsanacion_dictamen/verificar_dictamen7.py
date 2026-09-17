@@ -79,7 +79,7 @@ b514 = bloque('5.1.4', '5.2 Resultados')
 b524 = bloque('5.2.4', '5.2.5')
 b525 = bloque('5.2.5', '5.3 ')
 b53 = bloque('5.3 ', '5.4 ')
-b54 = bloque('5.4 Análisis', '5.4.1')
+b54 = bloque('5.4 Análisis', '5.5 ')   # 17/09 (revisión de estructura): 5.4.1 pasó a ser 5.5
 b61 = bloque('6.1', '6.2')
 b62 = bloque('6.2', '6.3')
 b63 = bloque('6.3', '6.4')
@@ -213,9 +213,9 @@ check('C1  ya no se afirma que el equipo escribió los 150 mensajes',
 check('C2  §3.5.3 declara la redacción asistida por un modelo de lenguaje', 'Claude' in b353 and 'modelo de lenguaje' in b353)
 check('C3  §3.6.2 lo trata como amenaza', 'más regular' in bloque('3.6.2', '3.6.3'))
 check('C4  la Declaración de originalidad lo declara', 'corpus' in bloque('DECLARACIÓN', 'RESUMEN'))
-# 17/09 (dictamen del 15/09, grupo B): cada revisión lleva etiqueta nueva; la vigente es -r3.
-check('C5  la etiqueta de la versión citada es la nueva', TODO.count('entrega-2026-09-r3') == 2
-      and not re.search(r'entrega-2026-09(?!-r3)', TODO))
+# 17/09 (dictamen del 15/09, grupo B): cada revisión lleva etiqueta nueva; la vigente es -r4 (revisión de estructura del 17/09).
+check('C5  la etiqueta de la versión citada es la nueva', TODO.count('entrega-2026-09-r4') == 2
+      and not re.search(r'entrega-2026-09(?!-r4)', TODO))
 
 print()
 print('=' * 78)
