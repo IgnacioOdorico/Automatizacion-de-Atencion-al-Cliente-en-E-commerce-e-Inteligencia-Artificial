@@ -1,0 +1,12 @@
+Comprobación de humo del Flujo 1 con las consultas parametrizadas · 2026-09-17 23:25:02Z
+orden de prueba: ORD-SMOKE-20260917202501 · producto PROD-018 · órdenes antes: 218 · stock antes: 72
+
+HTTP 200 · cuerpo: {"success":true,"order_number":"ORD-SMOKE-20260917202501","status":"confirmed","total_amount":9.99,"message":"Orden procesada y confirmada. Email de confirmació
+orden registrada · estado confirmed · marcas: received t, processed t, notified t
+MTTD 0.042 s · MTTR 0.097 s · nombre guardado: Prueba de humo
+stock del producto: 72 -> 71
+resultado: CAMINO COMPLETO OK
+
+limpieza: la orden de prueba se borró y el stock se repuso
+órdenes: 218 antes, 218 después · stock: 72 antes, 72 después
+estado de la base: sin cambios

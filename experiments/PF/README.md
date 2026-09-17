@@ -159,3 +159,18 @@ un identificador con resolución de minutos, de modo que la segunda escribió so
 usuario que la primera. Se corrigieron las dos cosas y se volvió a correr. Dejaron en la base
 las interacciones 2543 y 2544 y los tickets 636 y 637; la corrida válida es la de las 15:23,
 con la interacción 2545 y el ticket 638.
+
+## Comprobación de humo del camino completo
+
+PF-06 ejercita solo el primer nodo del Flujo 1: la orden se rechaza por unicidad. Para
+que la parametrización no rompa la demostración, `verificar_camino_completo.py` recorre
+la rama con stock de punta a punta —registrar, verificar, descontar, confirmar, notificar—
+y comprueba las tres marcas temporales y el correo.
+
+```
+python verificar_camino_completo.py    # deja resultados/camino_completo_<fecha>.txt
+```
+
+La orden que escribe se borra al terminar y el stock del producto se repone: una orden con
+la marca de los datos medidos alteraría los totales del Capítulo 5. El guion informa los
+recuentos antes y después, de modo que si algo queda en la base se ve en su salida.
