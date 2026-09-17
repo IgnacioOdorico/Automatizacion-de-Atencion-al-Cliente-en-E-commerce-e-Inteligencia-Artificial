@@ -1,0 +1,54 @@
+/* ============================================================
+   Design tokens — Portal del cliente
+   Dark mode, 1 color de marca (indigo) + escala de grises, Inter.
+   ============================================================ */
+:root {
+  /* Tipografía */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Superficies (azul-negro, no gris puro) */
+  --bg-canvas: #0a0c12;
+  --bg-sidebar: #0d1018;
+  --bg-surface: #121623;
+  --bg-surface-2: #171c2b;
+  --bg-hover: rgba(153, 168, 190, 0.05);
+  --bg-active: rgba(153, 168, 190, 0.08);
+
+  /* Bordes */
+  --border: rgba(153, 168, 190, 0.13);
+  --border-strong: rgba(153, 168, 190, 0.24);
+  --border-focus: rgba(99, 102, 241, 0.5);
+
+  /* Texto */
+  --text-1: #e9edf4;
+  --text-2: #a7b0bf;
+  --text-3: #697285;
+
+  /* Marca — Indigo */
+  --brand: #6366f1;
+  --brand-hover: #5458ee;
+  --brand-active: #4f46e5;
+  --brand-soft: rgba(99, 102, 241, 0.13);
+  --brand-soft-strong: rgba(99, 102, 241, 0.22);
+  --brand-ring: rgba(99, 102, 241, 0.45);
+
+  /* Feedback */
+  --danger: #f0878b;
+  --danger-strong: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --success: #4ade80;
+  --success-soft: rgba(74, 222, 128, 0.12);
+  --warning: #fbbf24;
+
+  /* Radios */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* Sombras (profundidad sutil, nada de neón) */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px rgba(0, 0, 0, 0.16);
+  --shadow-pop: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  /* Layout */
+  --sidebar-w: 264px;
+}

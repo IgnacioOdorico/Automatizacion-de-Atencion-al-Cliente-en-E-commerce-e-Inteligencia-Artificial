@@ -1,0 +1,115 @@
+import { useQuery } from '@tanstack/react-query';
+
+import { authApi } from '@/api/endpoints';
+import { MessengerIcon } from '@/components/icons';
+import { Badge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import {
+  CHANNEL_LABELS,
+  CONNECTION_STATUS,
+  formatDate,
+  initials,
+} from '@/lib/format';
+
+/**
+ * Perfil: datos de identidad de la cuenta (GET /me).
+ * Nivel auth/shell: business_name, email, alta y estado de canales. El resto
+ * de las secciones llegan en Fases 5-6 (ver pages/* placeholder).
+ */
+export function PerfilPage() {
+  const { data: me, isPending, isError } = useQuery({
+    queryKey: ['me'],
+    queryFn: authApi.me,
+    staleTime: 60_000,
+  });
+
+  if (isPending) {
+    return (
+      <div className="page">
+        <div className="skeleton" style={{ height: 132, borderRadius: 16 }} />
+        <div className="skeleton" style={{ height: 160, borderRadius: 16, marginTop: 16 }} />
+      </div>
+    );
+  }
+
+  if (isError || !me) {
+    return (
+      <EmptyState
+        icon={<MessengerIcon width={24} height={24} />}
+        title="No se pudieron cargar los datos"
+        text="Intentá de nuevo desde la navegación. Si persiste, revisá la conexión con la API."
+      />
+    );
+  }
+
+  const channels = me.connections ?? [];
+
+  return (
+    <div className="page">
+      <header className="page__head">
+        <h1>Perfil</h1>
+        <p className="page__sub">
+          Los datos de tu cuenta y el estado de los canales de atención.
+        </p>
+      </header>
+
+      <div className="grid grid--profile">
+        <div className="card profile-card">
+          <div className="profile-card__top">
+            <div className="profile-card__avatar">{initials(me.business_name)}</div>
+            <div>
+              <div className="profile-card__name">{me.business_name}</div>
+              <div className="profile-card__email">{me.email}</div>
+            </div>
+          </div>
+          <div className="profile-card__meta">
+            <div>
+              <div className="profile-card__meta-label">Alta del portal</div>
+              <div className="profile-card__meta-value">{formatDate(me.created_at)}</div>
+            </div>
+            <div>
+              <div className="profile-card__meta-label">ID de cuenta</div>
+              <div className="profile-card__meta-value">#{me.id}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card profile-card">
+          <h3 style={{ fontSize: 15, marginBottom: 16 }}>Canales de atención</h3>
+          {channels.length === 0 ? (
+            <EmptyState
+              icon={<MessengerIcon width={20} height={20} />}
+              title="Sin canales conectados"
+              text="Los canales de contacto aparecen acá cuando los vincules."
+            />
+          ) : (
+            <div className="channel-list">
+              {channels.map((connection) => {
+                const status = CONNECTION_STATUS[connection.status] ?? {
+                  label: connection.status,
+                  tone: 'neutral' as const,
+                };
+                return (
+                  <div key={connection.channel} className="channel-row">
+                    <div className="channel-row__icon">
+                      <MessengerIcon width={17} height={17} />
+                    </div>
+                    <div>
+                      <div className="channel-row__name">
+                        {CHANNEL_LABELS[connection.channel] ?? connection.channel}
+                      </div>
+                      {connection.external_reference && (
+                        <div className="channel-row__ref">{connection.external_reference}</div>
+                      )}
+                    </div>
+                    <Badge tone={status.tone}>{status.label}</Badge>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

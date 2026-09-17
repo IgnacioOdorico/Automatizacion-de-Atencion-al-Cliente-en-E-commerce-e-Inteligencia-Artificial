@@ -195,6 +195,22 @@ services:
       - tesis_network
 
 # ----------------------------------------------------------
+  # Dashboard Web — Frontend del portal del cliente (React Vite + nginx)
+  # Sirve el build estático y proxya /api -> dashboard-api:8000.
+  # Acceso: http://localhost:8080
+  # ----------------------------------------------------------
+  dashboard-web:
+    build: ./dashboard-web
+    container_name: tesis_dashboard_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - dashboard-api
+    networks:
+      - tesis_network
+
+# ----------------------------------------------------------
 # Volúmenes persistentes
 # ----------------------------------------------------------
 volumes:
