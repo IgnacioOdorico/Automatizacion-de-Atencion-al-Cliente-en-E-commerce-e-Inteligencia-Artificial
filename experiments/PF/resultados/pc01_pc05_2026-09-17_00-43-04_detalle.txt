@@ -1,0 +1,24 @@
+Detalle de la corrida PC-202609170043- — consultado el 2026-09-17 03:44:54Z
+
+PC-01 · interacción 2538 · intent=FAQ · is_urgent=f · order_id=—
+  respuesta registrada: ¡Hola Prueba PC! Aceptamos los siguientes métodos de pago:  1. **Tarjeta de crédito** 2. **Tarjeta de débito** 3. **Transferencia bancaria** 4. **MercadoPago**  Todos los pagos son procesados de forma segura. ¿Hay algo más en lo que te pueda ayudar?
+  correo entregado: ¡Hola Prueba PC! Aceptamos los siguientes métodos de pago: /  / 1. **Tarjeta de crédito** / 2. **Tarjeta de débito** / 3. **Transferencia bancaria** / 4. **MercadoPago** /  / Todos los pagos son procesados de forma segura. ¿Hay algo más en lo que te pueda ayudar? /  / --- / This email was sent automatically with n8n / https://n8n.io
+
+PC-02 · interacción 2539 · intent=ESTADO_PEDIDO · is_urgent=f · order_id=1
+  respuesta registrada: ¡Hola Prueba PC! Ya busco la información de tu pedido ORD-HIST-001, dame un momento.
+  correo entregado: ¡Hola Prueba PC! Ya busco la información de tu pedido ORD-HIST-001, dame un momento. /  / --- Detalle de tu pedido --- / Orden: ORD-HIST-001 / Producto: Memoria RAM Kingston 16GB DDR4 / Cantidad: 3 / Total: $362.36 / Estado: Entregado / Fecha: 19/6/2026 /  / --- / This email was sent automatically with n8n / https://n8n.io
+
+PC-03 · interacción 2540 · intent=RECLAMO · is_urgent=f · order_id=—
+  respuesta registrada: Lamento mucho que hayas recibido el producto roto, entiendo lo frustrante que es. Vamos a resolverlo lo más pronto posible. ¿Podrías compartir el número de tu pedido para que pueda gestionarlo de inmediato?
+  ticket 634 · interaction_id vacío · prioridad normal · estado open
+  correo entregado: Lamento mucho que hayas recibido el producto roto, entiendo lo frustrante que es. Vamos a resolverlo lo más pronto posible. ¿Podrías compartir el número de tu pedido para que pueda gestionarlo de inmediato? /  / --- Ticket registrado --- / N. de caso: #634 / Estado: Abierto / Prioridad: Normal / Te contactaremos a la brevedad. /  / --- / This email was sent automatically with n8n / https://n8n.io
+
+PC-04 · interacción 2541 · intent=RECLAMO · is_urgent=t · order_id=—
+  respuesta registrada: Entiendo tu frustración, Prueba PC, y lamento muchísimo que tu pedido no haya llegado. Vamos a resolver este inconveniente de inmediato. ¿Podrías proporcionarme tu número de pedido para poder hacer el seguimiento y ofrecerte una solución urgente?
+  ticket 635 · interaction_id vacío · prioridad urgent · estado open
+  correo entregado: Entiendo tu frustración, Prueba PC, y lamento muchísimo que tu pedido no haya llegado. Vamos a resolver este inconveniente de inmediato. ¿Podrías proporcionarme tu número de pedido para poder hacer el seguimiento y ofrecerte una solución urgente? /  / --- Ticket registrado --- / N. de caso: #635 / Estado: Abierto / Prioridad: URGENTE / Te contactaremos a la brevedad. /  / --- / This email was sent automatically with n8n / https://n8n.io
+
+PC-05 · interacción 2542 · intent=FAQ · is_urgent=f · order_id=—
+  respuesta registrada: ¡Hola! Actualmente somos una tienda 100% online y no contamos con locales físicos. Todos los pedidos se despachan desde nuestro depósito en Mendoza. Si tenés alguna otra consulta, no dudes en preguntar.
+  correo entregado: ¡Hola! Actualmente somos una tienda 100% online y no contamos con locales físicos. Todos los pedidos se despachan desde nuestro depósito en Mendoza. Si tenés alguna otra consulta, no dudes en preguntar. /  / --- / This email was sent automatically with n8n / https://n8n.io
+

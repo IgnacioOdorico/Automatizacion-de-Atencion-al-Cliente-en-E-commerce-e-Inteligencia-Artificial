@@ -156,8 +156,9 @@ print(' RECOMENDADAS')
 print('=' * 78)
 
 # 15/09: la actualización 2024-2026 suma Larsen et al., Arora et al. y Magesh et al.
-check('R1a estado del arte con 16 antecedentes',
-      len([t for t in d.tables if t.rows[0].cells[0].text.strip() == 'Antecedente'][0].rows) - 2 == 16)
+# 17/09 (dictamen del 15/09, grupo B): suma Amir y Atif (2026) y Tang et al. (2026).
+check('R1a estado del arte con 18 antecedentes',
+      len([t for t in d.tables if t.rows[0].cells[0].text.strip() == 'Antecedente'][0].rows) - 2 == 18)
 check('R1b literatura arbitrada argentina incorporada',
       'Alderete, M. V., Jones, C., & Motta, J. J. (2017)' in TXT_P
       and 'Alderete, M. V., & Porris, M. S. (2023)' in TXT_P)
@@ -171,8 +172,9 @@ check('R1e nueva subseccion regional',
       and any(t.startswith('2.4.6 Contribución de este trabajo') for _, t in HEAD))
 check('R2  operacionalizacion del MTTD declarada',
       'no la capa HTTP que lo recibe' in TODO)
-check('R3  IC del factor por Fieller, con la simplificacion declarada',
-      'Fieller' in TODO and '686× a 875×' in TODO and 'inferior al 0,4 %' in TODO)
+# 17/09 (dictamen del 15/09, grupo B): la comparación con la propagación simplificada se quitó por redundante.
+check('R3  IC del factor por Fieller',
+      'Fieller' in TODO and '686× a 875×' in TODO)
 check('R4  exactitud (global) y precision (por clase) diferenciadas',
       'se reserva «exactitud (accuracy)» para esta métrica global' in TODO)
 check('R5  el canal simulado ya no se llama canal WhatsApp a secas',
@@ -189,7 +191,7 @@ check('R7a la infraestructura está en el Capítulo 3 con su función explícita
       any(t.startswith('3.4.1 Contenedores Docker') for _, t in HEAD)
       and 'Las Secciones 3.4.1 a 3.4.3 desarrollan los fundamentos' in TODO)
 check('R7b el Capitulo 6 retoma el marco teorico',
-      'escala de madurez de proceso que la Sección 2.1.1 propone como marco analítico propio' in TODO   # 14/09
+      'automatizar un proceso y gestionarlo' in TODO   # 17/09: la escala propia se retiró
       and 'capacidad de respuesta (responsiveness)' in TXT_P.split('CAPÍTULO 6')[-1])
 check('R8a locator de CACE preciso',
       'Estudio Anual de Comercio Electrónico 2024' in TODO
@@ -201,8 +203,9 @@ print()
 print('=' * 78)
 print(' EXTRA: defectos detectados por cuenta propia')
 print('=' * 78)
+# 17/09 (dictamen del 15/09, grupo B): §6.4 abreviada, sigue enumerando.
 check('E1  6.4 enuncia sus limitaciones, no las delega',
-      'Se enuncian aquí, para que el lector' in TODO)
+      'aquí se enuncian: (i)' in TODO and '(ix)' in TODO)
 check('E2  sin residuos de la afirmacion de few-shot',
       'ampliar los ejemplos de few-shot' not in TODO)
 check('E3  el trabajo se autodenomina de una sola manera',

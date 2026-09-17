@@ -78,7 +78,9 @@ seccion('1-2. ABLACIÓN FACTORIAL (E8) Y VARIABILIDAD')
 b356 = bloque('3.5.6', '3.5.7')
 check('1a  §3.5.6 se titula como diseño factorial',
       '3.5.6 Diseño factorial del prompt: base de conocimiento, reglas y ejemplos' in HEAD)
-check('1b  §3.5.6 declara que E7 quitaba cinco de los ocho bloques', 'cinco de los ocho bloques' in b356)
+# 17/09 (dictamen del 15/09, grupo B): la historia de E7 pasó al Anexo L.
+check('1b  E7 quitaba cinco de los ocho bloques (Anexo L, con remisión desde §3.5.6)',
+      'cinco de los ocho bloques' in TODO and 'Anexo L' in b356)
 check('1c  §3.5.6 declara mayoría de tres repeticiones, McNemar y Holm',
       'exactitud por mayoría' in b356 and 'McNemar, 1947' in b356 and 'Holm (1979)' in b356)
 check('2a  §3.5.6 declara la temperatura y las repeticiones',
@@ -87,8 +89,9 @@ b443 = bloque('4.4.3', '4.4.4')
 check('1d  §4.4.3 describe los ocho bloques del prompt medido',
       'ocho bloques' in b443 and 'diez reglas críticas' in b443)
 check('2b  §4.4.3 declara alias del modelo y temperatura', 'alias' in b443 and 'que es 1' in b443)
+# 17/09 (dictamen del 15/09, grupo B): la reconstrucción pasó al Anexo L.
 check('4a  §4.4.3 remite a la evidencia de trazabilidad',
-      'experiments/E8/resultados/trazabilidad_versiones.txt' in b443 and 'f68da9d' in b443)
+      'experiments/E8/resultados/trazabilidad_versiones.txt' in TODO and 'f68da9d' in b443 and 'Anexo L' in b443)
 b524 = bloque('5.2.4', '5.2.5')
 check('1e  §5.2.4 con título nuevo',
       '5.2.4 Aporte de la base de conocimiento y de las reglas y ejemplos' in HEAD)
@@ -156,8 +159,9 @@ check('6i  §6.1 y el objetivo general citan la pregunta vigente',
       bool(preg) and preg in bloque('6.1', '6.2') and 'reduce los tiempos operativos del ciclo post-venta' not in TODO
       and 'con umbrales absolutos' in bloque('1.5.1', '1.5.2'))
 h1 = next((p for p in P if p.startswith('H1:')), '')
+# 17/09 (dictamen del 15/09, grupo B): H1 se presenta como objetivo de estimación.
 check('6b  H1 operacionaliza la magnitud y declara cuándo',
-      'al menos un orden de magnitud' in h1 and 'resultado ya conocido' in h1)
+      'objetivo de estimación' in h1 and 'orden de magnitud' in h1 and 'resultado conocido' in h1)
 h2a = next((p for p in P if p.startswith('H2a:')), '')
 check('6c  H2a coincide con el contraste (cuatro categorías)', 'cada una de las cuatro categorías' in h2a)
 h2b = next((p for p in P if p.startswith('H2b:')), '')
@@ -199,8 +203,9 @@ check('8d  §5.4 no afirma manejo de errores ortográficos sin datos',
 check('8e  §5.4.1 no habla de dominio «entrenado»', 'dominio diferente al entrenado' not in TODO)
 check('8f  §6.3 separa validez estructural y semántica',
       'validez estructural' in b63 and 'resultó operativamente válida' not in TODO)
-check('8g  la escala de madurez se presenta como marco propio',
-      'van der Aalst' not in TODO and 'marco analítico propio' in TODO)
+# 17/09 (dictamen del 15/09, grupo B): la escala propia se retiró; queda la distinción de Dumas et al.
+check('8g  sin escala de madurez atribuida ni propia',
+      'van der Aalst' not in TODO and 'escala de madurez' not in TODO and 'automatizar un proceso y gestionarlo' in TODO)
 
 seccion('9. FACTOR 780×')
 b54 = bloque('5.4 Análisis', '5.4.1')

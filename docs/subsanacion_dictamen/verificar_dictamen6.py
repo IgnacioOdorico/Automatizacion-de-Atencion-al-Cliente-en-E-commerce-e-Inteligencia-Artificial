@@ -116,9 +116,10 @@ b522 = bloque('5.2.2', '5.2.3')
 check('B4  la no comparabilidad entre canales se discute en §5.2.2', 'no son apareadas' in b522 and 'prompt reducido' in b522)
 b36 = bloque('3.6 Amenazas', 'CAPÍTULO 4')
 b443 = bloque('4.4.3', '4.4.4')
-check('B5  la narración de la auditoría pasó a amenazas a la validez',
-      'La auditoría fue correcta en su método' in b36 and 'La auditoría fue correcta en su método' not in b443
-      and 'trazabilidad_versiones.txt' in b443)
+# 17/09 (dictamen del 15/09, grupo B): la narración pasó al Anexo L; §3.6.4 y §4.4.3 remiten a él.
+check('B5  la narración de la auditoría pasó al anexo de desvíos',
+      'La auditoría fue correcta en su método' in TODO and 'La auditoría fue correcta en su método' not in b443
+      and 'Anexo L' in b36 and 'Anexo L' in b443 and 'trazabilidad_versiones.txt' in TODO)
 b71 = bloque('7.1 ', '7.2 ')
 b72 = bloque('7.2 ', 'CAPÍTULO 8')
 check('B6  §7.1 contiene solo recomendaciones de producción',

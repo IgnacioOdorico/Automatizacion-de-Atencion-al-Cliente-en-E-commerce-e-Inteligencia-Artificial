@@ -35,7 +35,7 @@ chk(2, 'BLOQ', 'Residuo "9.48 segundos" eliminado', not hay(r'9[.,]48'))
 chk(3, 'BLOQ', 'Carga reconciliada: E1.a (50) y E1.b (120) diferenciadas',
     hay(r'E1\.a') and hay(r'E1\.b') and hay(r'6 × 20 = 120') and hay(r'40,8 ?%'))
 chk(4, 'BLOQ', 'H1 comparativa; H2a y H2b declaradas en §1.4.2',
-    hay(r'H1: El pipeline automatizado.{0,200}respecto del tiempo')
+    hay(r'H1: El pipeline automatizado.{0,200}respecto del')   # 17/09: H1 como objetivo de estimación
     and hay(r'H2a: El chatbot') and hay(r'H2b: El chatbot'))
 
 # --- MAYORES ---

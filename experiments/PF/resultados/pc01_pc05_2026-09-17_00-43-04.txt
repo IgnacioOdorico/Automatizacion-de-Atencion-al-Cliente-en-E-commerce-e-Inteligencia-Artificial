@@ -1,0 +1,48 @@
+PC-01 a PC-05 — 2026-09-17 03:43:05Z
+commit: 687965d · workflow GyT06kIZgB5Kmw4P · prefijo PC-202609170043-
+
+PC-01 · mensaje: ¿Cuáles son los métodos de pago?
+  esperado: Respuesta de FAQ + intent=FAQ
+  HTTP 200 · cuerpo: {"message":"Workflow was started"}
+  ejecución n8n: 4076 success
+  interacción 2538 · intent=FAQ · is_urgent=f · pedido asociado: — · TMR 2.32 s
+  respuesta: ¡Hola Prueba PC! Aceptamos los siguientes métodos de pago:
+  ticket: (ninguno)
+  correo de respuesta en Mailpit: «Respuesta TechStore para Prueba PC»
+
+PC-02 · mensaje: ¿Dónde está mi pedido ORD-HIST-001?
+  esperado: Consulta a orders + respuesta con estado
+  HTTP 200 · cuerpo: {"message":"Workflow was started"}
+  ejecución n8n: 4077 success
+  interacción 2539 · intent=ESTADO_PEDIDO · is_urgent=f · pedido asociado: ORD-HIST-001 (delivered) · TMR 1.63 s
+  respuesta: ¡Hola Prueba PC! Ya busco la información de tu pedido ORD-HIST-001, dame un momento.
+  ticket: (ninguno)
+  correo de respuesta en Mailpit: «Respuesta TechStore para Prueba PC»
+
+PC-03 · mensaje: Quiero hacer un reclamo, el producto llegó roto
+  esperado: Ticket creado + intent=RECLAMO
+  HTTP 200 · cuerpo: {"message":"Workflow was started"}
+  ejecución n8n: 4078 success
+  interacción 2540 · intent=RECLAMO · is_urgent=f · pedido asociado: — · TMR 1.65 s
+  respuesta: Lamento mucho que hayas recibido el producto roto, entiendo lo frustrante que es. Vamos a resolverlo lo más pronto posible. ¿Podrías compartir el número de tu pedido para que pueda gestionarlo de inmediato?
+  ticket: (ninguno)
+  correo de respuesta en Mailpit: «Respuesta TechStore para Prueba PC»
+
+PC-04 · mensaje: URGENTE: el pedido nunca llegó y necesito solución YA
+  esperado: Ticket creado + is_urgent=true + respuesta al cliente por el canal de origen
+  HTTP 200 · cuerpo: {"message":"Workflow was started"}
+  ejecución n8n: 4079 success
+  interacción 2541 · intent=RECLAMO · is_urgent=t · pedido asociado: — · TMR 1.86 s
+  respuesta: Entiendo tu frustración, Prueba PC, y lamento muchísimo que tu pedido no haya llegado. Vamos a resolver este inconveniente de inmediato. ¿Podrías proporcionarme tu número de pedido para poder hacer el seguimiento y ofrecerte una solución urgente?
+  ticket: (ninguno)
+  correo de respuesta en Mailpit: «Respuesta TechStore para Prueba PC»
+
+PC-05 · mensaje: ¿Tienen tiendas físicas?
+  esperado: Respuesta de IA + intent=GENERAL
+  HTTP 200 · cuerpo: {"message":"Workflow was started"}
+  ejecución n8n: 4080 success
+  interacción 2542 · intent=FAQ · is_urgent=f · pedido asociado: — · TMR 1.79 s
+  respuesta: ¡Hola! Actualmente somos una tienda 100% online y no contamos con locales físicos. Todos los pedidos se despachan desde nuestro depósito en Mendoza. Si tenés alguna otra consulta, no dudes en preguntar.
+  ticket: (ninguno)
+  correo de respuesta en Mailpit: «Respuesta TechStore para Prueba PC»
+
