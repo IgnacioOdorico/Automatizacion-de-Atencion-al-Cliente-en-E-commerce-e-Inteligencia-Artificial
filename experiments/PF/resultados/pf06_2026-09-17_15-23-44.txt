@@ -1,0 +1,27 @@
+PF-06 y PC-06 — apóstrofo en el dato del cliente · 2026-09-17 18:23:44Z
+commit: b64099b · Flujo 1 xICbeLNSWYt89Zxg · Flujo 2 GyT06kIZgB5Kmw4P
+
+control · la sentencia que armaba el nodo antes de parametrizar, con el nombre «Mar O'Brien, S.A.»
+  resultado: RECHAZADA por PostgreSQL
+  ERROR:  syntax error at or near "',
+  (se ejecutó dentro de una transacción revertida: no escribió nada)
+
+PF-06 · Flujo 1 — orden con «Mar O'Brien, S.A.» y número ya registrado (ORD-DEMO-01)
+  esperado: la sentencia es válida y la rechaza la restricción de unicidad, no la sintaxis
+  HTTP 200 · cuerpo: ''
+  ejecución 4085 · error · error de sintaxis: no · violación de unicidad: sí
+  órdenes en la tabla: 218 antes, 218 después
+
+PC-06 · Flujo 2 — reclamo en inglés con dos contracciones y dos comas
+  mensaje: I haven't received my order yet, and it's been two weeks. I'd like a refund, please.
+  esperado: se clasifica, se crea el ticket con el texto íntegro y el cliente recibe respuesta
+  HTTP 200 · cuerpo: {"message":"Workflow was started"}
+  ejecución 4086 · success · error de sintaxis: no
+  interacción 2545 · intent=RECLAMO · is_urgent=t
+  mensaje registrado: I haven't received my order yet, and it's been two weeks. I'd like a refund, please.
+  texto íntegro: sí
+  respuesta: Prueba PF-06, entiendo tu frustración por la demora en la entrega de tu pedido y lamento mucho la experiencia que estás teniendo. Vamos a resolver esto de inmediato. ¿Me podés pasar el número de tu pedido para que pueda gestionar el reembolso rápidamente?
+  ticket 638 · prioridad urgent
+  asunto registrado: I haven't received my order yet, and it's been two weeks. I'd like a refund, please.
+  texto íntegro: sí
+  correo de respuesta en Mailpit: «Respuesta TechStore para Prueba PF-06»

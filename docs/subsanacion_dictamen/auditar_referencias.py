@@ -115,10 +115,14 @@ VIEJAS = {'1,79': r'\b1,79\b', '7,69': r'\b7,69\b', '2,38': r'\b2,38\b',
           # cifra de una version vieja.
           '190x': r'190 veces', '31,6x': r'31,6',
           '5 a 30 minutos': r'5 a 30 minutos', '107': r'\b107\b'}
+# 107 tiene desde el 17/09 un uso legítimo (M-08): la §3.5.2 declara que ese tamaño
+# de muestra se evaluó y se descartó al fijar el del corpus. Cualquier otra aparición
+# de la cifra se sigue marcando.
+EXCEPCIONES = {'107': r'Con 107 el contraste no alcanzaba'}
 print()
 print('=== CIFRAS DE VERSIONES VIEJAS (deben ser 0) ===')
 for nom, pat in VIEJAS.items():
-    n = len(re.findall(pat, TODO))
+    n = len(re.findall(pat, TODO)) - len(re.findall(EXCEPCIONES.get(nom, r'(?!x)x'), TODO))
     print('  %-16s %d %s' % (nom, n, '' if n == 0 else '  <-- REVISAR'))
     if n:
         problemas.append('Cifra vieja "%s" aparece %d vez/veces' % (nom, n))

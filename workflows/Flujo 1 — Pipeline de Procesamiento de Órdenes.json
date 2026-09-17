@@ -27,8 +27,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO orders (\n  order_number,\n  customer_name,\n  customer_email,\n  customer_phone,\n  product_id,\n  quantity,\n  total_amount,\n  status,\n  received_at,\n  raw_payload\n)\nSELECT\n  '{{ $json.body.order_number }}',\n  '{{ $json.body.customer_name }}',\n  '{{ $json.body.customer_email }}',\n  '{{ $json.body.customer_phone }}',\n  p.id,\n  {{ $json.body.quantity }},\n  p.price * {{ $json.body.quantity }},\n  'pending',\n  NOW(),\n  '{{ JSON.stringify($json.body) }}'::jsonb\nFROM products p\nWHERE p.sku = '{{ $json.body.product_sku }}'\nRETURNING id AS order_id, order_number, total_amount, product_id;",
-        "options": {}
+        "query": "INSERT INTO orders (\n  order_number,\n  customer_name,\n  customer_email,\n  customer_phone,\n  product_id,\n  quantity,\n  total_amount,\n  status,\n  received_at,\n  raw_payload\n)\nSELECT\n  $1,\n  $2,\n  $3,\n  $4,\n  p.id,\n  $5::int,\n  p.price * $5::int,\n  'pending',\n  NOW(),\n  $6::jsonb\nFROM products p\nWHERE p.sku = $7\nRETURNING id AS order_id, order_number, total_amount, product_id;",
+        "options": {
+          "queryReplacement": "={{ [$json.body.order_number, $json.body.customer_name, $json.body.customer_email, $json.body.customer_phone, $json.body.quantity, JSON.stringify($json.body), $json.body.product_sku] }}"
+        }
       },
       "id": "416e5cdd-22e9-418e-8f09-d4491367ff37",
       "name": "Registrar Orden",
@@ -48,8 +50,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  p.id AS product_id,\n  p.sku,\n  p.name AS product_name,\n  p.price,\n  p.stock AS stock_actual,\n  p.stock_min,\n  {{ $('Webhook - Recibir Orden').item.json.body.quantity }} AS cantidad_solicitada,\n  CASE\n    WHEN p.stock >= {{ $('Webhook - Recibir Orden').item.json.body.quantity }} THEN true\n    ELSE false\n  END AS stock_disponible\nFROM products p\nWHERE p.sku = '{{ $('Webhook - Recibir Orden').item.json.body.product_sku }}';",
-        "options": {}
+        "query": "SELECT\n  p.id AS product_id,\n  p.sku,\n  p.name AS product_name,\n  p.price,\n  p.stock AS stock_actual,\n  p.stock_min,\n  $1::int AS cantidad_solicitada,\n  CASE\n    WHEN p.stock >= $1::int THEN true\n    ELSE false\n  END AS stock_disponible\nFROM products p\nWHERE p.sku = $2;",
+        "options": {
+          "queryReplacement": "={{ [$('Webhook - Recibir Orden').item.json.body.quantity, $('Webhook - Recibir Orden').item.json.body.product_sku] }}"
+        }
       },
       "id": "b56eafd6-2b55-49b6-b051-235c14dd9597",
       "name": "Verificar Stock",
@@ -101,8 +105,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE products\nSET stock = stock - {{ $json.cantidad_solicitada }}\nWHERE id = {{ $json.product_id }}\nRETURNING id AS product_id, sku, stock AS stock_nuevo, (SELECT stock_min FROM products WHERE id = {{ $json.product_id }}) AS stock_min;",
-        "options": {}
+        "query": "UPDATE products\nSET stock = stock - $1::int\nWHERE id = $2::int\nRETURNING id AS product_id, sku, stock AS stock_nuevo, (SELECT stock_min FROM products WHERE id = $2::int) AS stock_min;",
+        "options": {
+          "queryReplacement": "={{ [$json.cantidad_solicitada, $json.product_id] }}"
+        }
       },
       "id": "3b617ede-dc1d-4037-a663-a5da9b95c851",
       "name": "Actualizar Stock",
@@ -122,8 +128,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders\nSET\n  status = 'confirmed',\n  processed_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, order_number, status, processed_at;",
-        "options": {}
+        "query": "UPDATE orders\nSET\n  status = 'confirmed',\n  processed_at = NOW()\nWHERE id = $1::int\nRETURNING id AS order_id, order_number, status, processed_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Registrar Orden').item.json.order_id] }}"
+        }
       },
       "id": "00253d41-53da-485c-9f70-61adece52092",
       "name": "Confirmar Orden",
@@ -167,8 +175,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, notified_at;",
-        "options": {}
+        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = $1::int\nRETURNING id AS order_id, notified_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Registrar Orden').item.json.order_id] }}"
+        }
       },
       "id": "2d9a444f-3b87-4100-9da1-ad1580dd8b4f",
       "name": "Registrar Notificación",
@@ -203,8 +213,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders\nSET\n  status = 'no_stock',\n  processed_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, order_number, status, processed_at;",
-        "options": {}
+        "query": "UPDATE orders\nSET\n  status = 'no_stock',\n  processed_at = NOW()\nWHERE id = $1::int\nRETURNING id AS order_id, order_number, status, processed_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Registrar Orden').item.json.order_id] }}"
+        }
       },
       "id": "733610fb-35cd-48b8-b0ad-e1027c7846b7",
       "name": "Marcar Sin Stock",
@@ -263,8 +275,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, notified_at;",
-        "options": {}
+        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = $1::int\nRETURNING id AS order_id, notified_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Registrar Orden').item.json.order_id] }}"
+        }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -317,8 +331,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO stock_alerts (product_id, order_id, sku, stock_actual, stock_min)\nVALUES (\n  {{ $json.product_id }},\n  {{ $('Registrar Orden').item.json.order_id }},\n  '{{ $json.sku }}',\n  {{ $json.stock_nuevo }},\n  {{ $json.stock_min }}\n)\nRETURNING id AS alert_id, sku, stock_actual, stock_min;",
-        "options": {}
+        "query": "INSERT INTO stock_alerts (product_id, order_id, sku, stock_actual, stock_min)\nVALUES (\n  $1::int,\n  $2::int,\n  $3,\n  $4::int,\n  $5::int\n)\nRETURNING id AS alert_id, sku, stock_actual, stock_min;",
+        "options": {
+          "queryReplacement": "={{ [$json.product_id, $('Registrar Orden').item.json.order_id, $json.sku, $json.stock_nuevo, $json.stock_min] }}"
+        }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,

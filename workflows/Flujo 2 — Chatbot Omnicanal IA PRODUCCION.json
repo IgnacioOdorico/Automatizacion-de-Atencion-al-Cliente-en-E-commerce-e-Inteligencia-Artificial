@@ -293,8 +293,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT o.order_number, o.customer_name, o.status, o.quantity, o.total_amount, o.received_at, o.processed_at, p.name AS product_name\nFROM orders o\nLEFT JOIN products p ON o.product_id = p.id\nWHERE o.order_number = '{{ $json.order_id }}'\nORDER BY o.received_at DESC\nLIMIT 1;",
-        "options": {}
+        "query": "SELECT\n    o.order_number,\n    o.customer_name,\n    o.status,\n    o.quantity,\n    o.total_amount,\n    o.received_at,\n    o.processed_at,\n    p.name AS product_name\nFROM (SELECT $1::varchar AS oid) q\nLEFT JOIN orders   o ON o.order_number = q.oid\nLEFT JOIN products p ON o.product_id  = p.id\nORDER BY o.received_at DESC NULLS LAST\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$json.order_id] }}"
+        }
       },
       "name": "Buscar Pedido",
       "type": "n8n-nodes-base.postgres",
@@ -327,8 +329,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO tickets (channel, user_id, subject, status, priority, created_at)\nVALUES (\n    '{{ $json.canal }}',\n    '{{ $json.user }}',\n    '{{ $json.message }}',\n    'open',\n    CASE WHEN {{ $json.urgente }} THEN 'urgent' ELSE 'normal' END,\n    NOW()\n)\nRETURNING id, status, priority, created_at;",
-        "options": {}
+        "query": "INSERT INTO tickets (channel, user_id, subject, status, priority, created_at)\nVALUES (\n    $1,\n    $2,\n    $3,\n    'open',\n    CASE WHEN $4::boolean THEN 'urgent' ELSE 'normal' END,\n    NOW()\n)\nRETURNING id, status, priority, created_at;",
+        "options": {
+          "queryReplacement": "={{ [$json.canal, $json.user, $json.message, $json.urgente === true || $json.urgente === 'true'] }}"
+        }
       },
       "name": "Crear Ticket",
       "type": "n8n-nodes-base.postgres",
@@ -385,8 +389,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO interactions (\n    channel, user_id, message, intent, ai_response,\n    order_id, is_urgent, received_at, responded_at\n)\nVALUES (\n    '{{ $('Parse JSON').item.json.canal }}',\n    '{{ $('Parse JSON').item.json.user }}',\n    '{{ $('Parse JSON').item.json.message.replace(/'/g, \"''\") }}',\n    '{{ $('Parse JSON').item.json.intent }}',\n    '{{ $('Parse JSON').item.json.respuesta.replace(/'/g, \"''\") }}',\n    (SELECT id FROM orders WHERE order_number = '{{ $('Parse JSON').item.json.order_id }}'),\n    {{ $('Parse JSON').item.json.urgente === true || $('Parse JSON').item.json.urgente === 'true' ? 'true' : 'false' }},\n    '{{ $('Parse JSON').item.json.received_at }}'::TIMESTAMP,\n    NOW()\n);",
-        "options": {}
+        "query": "INSERT INTO interactions (\n    channel, user_id, message, intent, ai_response,\n    order_id, is_urgent, received_at, responded_at\n)\nVALUES (\n    $1,\n    $2,\n    $3,\n    $4,\n    $5,\n    (SELECT id FROM orders WHERE order_number = $6),\n    $7::boolean,\n    $8::timestamp,\n    NOW()\n);",
+        "options": {
+          "queryReplacement": "={{ [$('Parse JSON').item.json.canal, $('Parse JSON').item.json.user, $('Parse JSON').item.json.message, $('Parse JSON').item.json.intent, $('Parse JSON').item.json.respuesta, $('Parse JSON').item.json.order_id, $('Parse JSON').item.json.urgente === true || $('Parse JSON').item.json.urgente === 'true', $('Parse JSON').item.json.received_at] }}"
+        }
       },
       "name": "Registrar Interacción",
       "type": "n8n-nodes-base.postgres",

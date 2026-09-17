@@ -1,0 +1,42 @@
+Las dos corridas del corpus del 12/08 — defecto D-7
+======================================================================
+
+                                        corrida 1      corrida 2
+hora de inicio                              11:09          20:45
+mensajes enviados                             150            150
+respuestas HTTP 200                           150            150
+filas escritas en interactions                115            150
+mensajes sin respuesta al cliente              35              0
+aciertos sobre los 150 enviados      140 (93.3 %)   139 (92.7 %)
+IC 95 % (Wilson)                     [88.2; 96.3]   [87.3; 95.9]
+
+Misma etiqueta sobre el mismo mensaje: 145 de 150 (96.7 %)
+La exactitud de la corrida omitida es mayor que la de la definitiva: no hay
+selección favorable, sino un problema de transparencia y de alcance.
+
+Los 35 faltantes, por intención (la distribución es la prueba causal)
+  según la referencia humana           ESTADO_PEDIDO 32 · FAQ 1 · RECLAMO 2
+  según la clasificación del modelo    ESTADO_PEDIDO 35
+  Agrupados por la ruta que el mensaje tomó de verdad, el patrón es exacto:
+  se perdió todo lo que entró a la rama ESTADO_PEDIDO, y solo eso.
+
+Latencia de la solicitud HTTP, en segundos (medida por el cliente)
+  corrida 1  n = 150 · media 0.034 · mediana 0.031 · máximo 0.162
+  corrida 2  n = 150 · media 0.033 · mediana 0.031 · máximo 0.123
+  El webhook responde en decenas de milisegundos, antes de que el flujo termine:
+  por eso las dos corridas son indistinguibles para el emisor, y la conciliación
+  contra la base es el único control que detecta la pérdida.
+
+TMR registrado en interactions, en segundos (la métrica del Capítulo 5)
+  corrida 1  FAQ            n =  47 · media 2.509 · máximo 6.092
+  corrida 1  GENERAL        n =  28 · media 2.142 · máximo 4.308
+  corrida 1  RECLAMO        n =  40 · media 2.521 · máximo 8.054
+  corrida 1                 n = 115 · media 2.424 · máximo 8.054
+  corrida 2  ESTADO_PEDIDO  n =  36 · media 1.446 · máximo 1.906
+  corrida 2  FAQ            n =  45 · media 1.544 · máximo 2.915
+  corrida 2  GENERAL        n =  29 · media 1.281 · máximo 1.782
+  corrida 2  RECLAMO        n =  40 · media 1.543 · máximo 1.944
+  corrida 2                 n = 150 · media 1.469 · máximo 2.915
+  La corrida 1 no tiene ESTADO_PEDIDO: son las 35 interacciones que no se
+  escribieron. Su TMR global es 2,424 s frente a 1,469 s de la definitiva:
+  la segunda es un 39 % más baja, por la latencia del proveedor de inferencia.

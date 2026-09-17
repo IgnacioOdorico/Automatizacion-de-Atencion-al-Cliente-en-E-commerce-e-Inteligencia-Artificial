@@ -123,8 +123,8 @@ check('B5  la narración de la auditoría pasó al anexo de desvíos',
 b71 = bloque('7.1 ', '7.2 ')
 b72 = bloque('7.2 ', 'CAPÍTULO 8')
 check('B6  §7.1 contiene solo recomendaciones de producción',
-      not any(x in b71 for x in ('Capturar la marca de recepción', 'Homogeneizar el filtro', 'Aislar el componente de red'))
-      and all(x in b72 for x in ('Capturar la marca de recepción', 'Homogeneizar el filtro', 'Aislar el componente de red'))
+      not any(x in b71 for x in ('Capturar la marca de recepción', 'Extender el filtro de procedencia', 'Aislar el componente de red'))
+      and all(x in b72 for x in ('Capturar la marca de recepción', 'Extender el filtro de procedencia', 'Aislar el componente de red'))
       and '7.2 Recomendaciones para la investigación y líneas futuras' in HEAD)
 check('B7  §7.1 incorpora Tiendanube, protección de datos y alineación de reglas',
       all(x in b71 for x in ('Tiendanube', 'protección de datos personales', 'Alinear las reglas del prompt con el contenido de la base')))

@@ -196,3 +196,29 @@ python analizar_e2.py | Tee-Object resultados\e2_analisis.txt
 - [ ] **Ronda 1 — 150 etiquetas** ← el paso que falta
 - [ ] Ronda 2 — 50 de control
 - [ ] Ejecución y análisis
+
+---
+
+## Las dos corridas del corpus
+
+El corpus se ejecutó dos veces el 12/08. La primera (11:09) devolvió 150 HTTP 200 y escribió
+115 filas: se perdieron en silencio las 35 que el modelo mandó a la rama `ESTADO_PEDIDO`
+(defecto **D-7**, `docs/PLAN_REGENERACION_EVIDENCIA.md` §14.7). La corrida definitiva (20:45)
+se ejecutó sobre el sistema corregido, escribió las 150 y es la que reporta el Capítulo 5.
+
+La comparación entre ambas —exactitud, coincidencia de etiquetas, distribución de los
+faltantes y TMR— se reconstruye con:
+
+```
+python corrida1_vs_corrida2.py --base > resultados/corrida1_vs_corrida2.txt
+```
+
+| | corrida 1 (11:09) | corrida 2 (20:45) |
+|---|---|---|
+| filas escritas | 115 / 150 | 150 / 150 |
+| exactitud | 140/150 = 93,3 % | 139/150 = 92,7 % |
+| TMR global | 2,424 s | 1,469 s |
+
+Las dos coinciden en la etiqueta de 145 de los 150 mensajes. La corrida omitida tiene la
+exactitud algo **mayor**: no hay selección favorable. El documento la declara en las
+Secciones 5.2.3, 5.5 (f) y (h), 6.3 y 6.4 y en el Anexo L.

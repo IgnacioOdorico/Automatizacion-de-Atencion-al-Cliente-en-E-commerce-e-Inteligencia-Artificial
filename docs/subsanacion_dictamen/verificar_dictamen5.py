@@ -224,8 +224,11 @@ check('10d concurrencia efectiva y seis rondas en dos ejecuciones',
       'concurrencia efectiva' in b513 and 'dos ejecuciones del guion' in b513)
 
 seccion('11. INCONSISTENCIAS DEL CUADRO')
+# A-01 de la auditoría del 17/09 reescribió la §4.5: las vistas filtran por procedencia y el
+# control pasa a exigir que se diga qué paneles heredan el filtro de v_chatbot_corpus.
 check('11a §4.5 cinco paneles heredan de la vista',
-      'cinco lo heredan de la vista v_chatbot_corpus' in TODO and 'seis del tablero del Flujo 2 lo heredan' not in TODO)
+      'cinco del tablero del Flujo 2, que consumen v_chatbot_corpus' in TODO
+      and 'ninguna de las dos restringe por procedencia' not in TODO)
 check('11b §4.6.2 no dice que todas las vistas filtran',
       'Las vistas que alimentan los tableros de resultados filtran por ese valor' not in TODO)
 check('11c §5.1.4 CV frente a r',

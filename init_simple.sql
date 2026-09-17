@@ -161,6 +161,12 @@ CREATE INDEX IF NOT EXISTS idx_tickets_status             ON tickets (status);
 
 -- ############################################################
 --  VISTAS — MÉTRICAS PARA LA TESIS
+--  Las cinco restringen por data_source = 'measured': agregan sobre los
+--  registros que producen las corridas de medición y dejan fuera el seed
+--  ('synthetic') y el baseline manual ('e4_manual'), de modo que la separación
+--  entre lo medido y lo precargado es una propiedad del esquema y no una
+--  convención de cada panel. Es la definición con la que se capturaron las
+--  figuras de resultados (experiments/E5/vistas_measured.sql).
 -- ############################################################
 
 CREATE OR REPLACE VIEW v_order_processing_time AS
@@ -176,7 +182,8 @@ SELECT
     EXTRACT(EPOCH FROM (o.notified_at - o.processed_at))   AS mttr_seconds,
     EXTRACT(EPOCH FROM (o.notified_at - o.received_at))    AS total_seconds
 FROM orders o
-WHERE o.processed_at IS NOT NULL;
+WHERE o.processed_at IS NOT NULL
+  AND o.data_source = 'measured';
 
 CREATE OR REPLACE VIEW v_daily_order_summary AS
 SELECT
@@ -194,6 +201,7 @@ SELECT
     ROUND(AVG(EXTRACT(EPOCH FROM (notified_at - processed_at)))::NUMERIC, 2)
                                 AS avg_mttr_seg
 FROM orders
+WHERE data_source = 'measured'
 GROUP BY DATE(received_at)
 ORDER BY fecha DESC;
 
@@ -208,7 +216,8 @@ SELECT
     EXTRACT(EPOCH FROM (i.responded_at - i.received_at))   AS tmr_seconds,
     i.is_urgent
 FROM interactions i
-WHERE i.responded_at IS NOT NULL;
+WHERE i.responded_at IS NOT NULL
+  AND i.data_source = 'measured';
 
 CREATE OR REPLACE VIEW v_daily_chatbot_summary AS
 SELECT
@@ -225,23 +234,35 @@ SELECT
                                 AS avg_tmr_seg,
     COUNT(*) FILTER (WHERE is_urgent)                   AS urgentes
 FROM interactions
+WHERE data_source = 'measured'
 GROUP BY DATE(received_at)
 ORDER BY fecha DESC;
 
 CREATE OR REPLACE VIEW v_metrics_summary AS
 SELECT
-    (SELECT COUNT(*) FROM orders)                       AS total_orders,
-    (SELECT COUNT(*) FROM orders WHERE status = 'confirmed')
+    (SELECT COUNT(*) FROM orders
+      WHERE data_source = 'measured')                   AS total_orders,
+    (SELECT COUNT(*) FROM orders
+      WHERE data_source = 'measured' AND status = 'confirmed')
                                                         AS orders_confirmed,
     (SELECT ROUND(AVG(EXTRACT(EPOCH FROM (processed_at - received_at)))::NUMERIC, 2)
-     FROM orders WHERE processed_at IS NOT NULL)        AS avg_mttd_seg,
+     FROM orders
+      WHERE data_source = 'measured' AND processed_at IS NOT NULL)
+                                                        AS avg_mttd_seg,
     (SELECT ROUND(AVG(EXTRACT(EPOCH FROM (notified_at - processed_at)))::NUMERIC, 2)
-     FROM orders WHERE notified_at IS NOT NULL)         AS avg_mttr_seg,
-    (SELECT COUNT(*) FROM interactions)                 AS total_interactions,
+     FROM orders
+      WHERE data_source = 'measured' AND notified_at IS NOT NULL)
+                                                        AS avg_mttr_seg,
+    (SELECT COUNT(*) FROM interactions
+      WHERE data_source = 'measured')                   AS total_interactions,
     (SELECT ROUND(AVG(EXTRACT(EPOCH FROM (responded_at - received_at)))::NUMERIC, 2)
-     FROM interactions WHERE responded_at IS NOT NULL)  AS avg_tmr_seg,
-    (SELECT COUNT(*) FROM tickets)                      AS total_tickets,
-    (SELECT COUNT(*) FROM tickets WHERE status = 'resolved')
+     FROM interactions
+      WHERE data_source = 'measured' AND responded_at IS NOT NULL)
+                                                        AS avg_tmr_seg,
+    (SELECT COUNT(*) FROM tickets
+      WHERE data_source = 'measured')                   AS total_tickets,
+    (SELECT COUNT(*) FROM tickets
+      WHERE data_source = 'measured' AND status = 'resolved')
                                                         AS tickets_resolved;
 
 -- ############################################################

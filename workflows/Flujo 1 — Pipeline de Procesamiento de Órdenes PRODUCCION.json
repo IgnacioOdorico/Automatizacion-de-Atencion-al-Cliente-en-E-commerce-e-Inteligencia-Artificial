@@ -28,8 +28,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO orders (\n  order_number,\n  customer_name,\n  customer_email,\n  customer_phone,\n  product_id,\n  quantity,\n  total_amount,\n  status,\n  received_at,\n  raw_payload\n)\nSELECT\n  '{{ $json.body.order_number }}',\n  '{{ $json.body.customer_name }}',\n  '{{ $json.body.customer_email }}',\n  '{{ $json.body.customer_phone }}',\n  p.id,\n  {{ $json.body.quantity }},\n  p.price * {{ $json.body.quantity }},\n  'pending',\n  NOW(),\n  '{{ JSON.stringify($json.body) }}'::jsonb\nFROM products p\nWHERE p.sku = '{{ $json.body.product_sku }}'\nRETURNING id AS order_id, order_number, total_amount, product_id;",
-        "options": {}
+        "query": "INSERT INTO orders (\n  order_number,\n  customer_name,\n  customer_email,\n  customer_phone,\n  product_id,\n  quantity,\n  total_amount,\n  status,\n  received_at,\n  raw_payload\n)\nSELECT\n  $1,\n  $2,\n  $3,\n  $4,\n  p.id,\n  $5::int,\n  p.price * $5::int,\n  'pending',\n  NOW(),\n  $6::jsonb\nFROM products p\nWHERE p.sku = $7\nRETURNING id AS order_id, order_number, total_amount, product_id;",
+        "options": {
+          "queryReplacement": "={{ [$json.body.order_number, $json.body.customer_name, $json.body.customer_email, $json.body.customer_phone, $json.body.quantity, JSON.stringify($json.body), $json.body.product_sku] }}"
+        }
       },
       "id": "c9632b56-7ad7-4800-b900-4f23a3138a6d",
       "name": "Registrar Orden",
@@ -49,8 +51,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  p.id AS product_id,\n  p.sku,\n  p.name AS product_name,\n  p.price,\n  p.stock AS stock_actual,\n  p.stock_min,\n  {{ $('Webhook - Recibir Orden').item.json.body.quantity }} AS cantidad_solicitada,\n  CASE\n    WHEN p.stock >= {{ $('Webhook - Recibir Orden').item.json.body.quantity }} THEN true\n    ELSE false\n  END AS stock_disponible\nFROM products p\nWHERE p.sku = '{{ $('Webhook - Recibir Orden').item.json.body.product_sku }}';",
-        "options": {}
+        "query": "SELECT\n  p.id AS product_id,\n  p.sku,\n  p.name AS product_name,\n  p.price,\n  p.stock AS stock_actual,\n  p.stock_min,\n  $1::int AS cantidad_solicitada,\n  CASE\n    WHEN p.stock >= $1::int THEN true\n    ELSE false\n  END AS stock_disponible\nFROM products p\nWHERE p.sku = $2;",
+        "options": {
+          "queryReplacement": "={{ [$('Webhook - Recibir Orden').item.json.body.quantity, $('Webhook - Recibir Orden').item.json.body.product_sku] }}"
+        }
       },
       "id": "68705a80-480c-4c1a-b973-d28ab8047d7f",
       "name": "Verificar Stock",
@@ -102,8 +106,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE products\nSET stock = stock - {{ $json.cantidad_solicitada }}\nWHERE id = {{ $json.product_id }}\nRETURNING id AS product_id, sku, stock AS stock_nuevo, (SELECT stock_min FROM products WHERE id = {{ $json.product_id }}) AS stock_min;",
-        "options": {}
+        "query": "UPDATE products\nSET stock = stock - $1::int\nWHERE id = $2::int\nRETURNING id AS product_id, sku, stock AS stock_nuevo, (SELECT stock_min FROM products WHERE id = $2::int) AS stock_min;",
+        "options": {
+          "queryReplacement": "={{ [$json.cantidad_solicitada, $json.product_id] }}"
+        }
       },
       "id": "22ded743-84d2-4631-bdb6-cac417f8089d",
       "name": "Actualizar Stock",
@@ -123,8 +129,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders\nSET\n  status = 'confirmed',\n  processed_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, order_number, status, processed_at;",
-        "options": {}
+        "query": "UPDATE orders\nSET\n  status = 'confirmed',\n  processed_at = NOW()\nWHERE id = $1::int\nRETURNING id AS order_id, order_number, status, processed_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Registrar Orden').item.json.order_id] }}"
+        }
       },
       "id": "fc2848d9-4dcd-4710-ac67-bdd0a460ab56",
       "name": "Confirmar Orden",
@@ -168,11 +176,13 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, notified_at;",
-        "options": {}
+        "query": "UPDATE orders\nSET notified_at = NOW()\nWHERE id = $1::int\nRETURNING id AS order_id, notified_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Registrar Orden').item.json.order_id] }}"
+        }
       },
       "id": "4ecef653-b067-4d25-9347-d9e2bf84522d",
-      "name": "Registrar Notificaciâ”œâ”‚n",
+      "name": "Registrar Notificación",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
@@ -204,8 +214,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE orders\nSET\n  status = 'no_stock',\n  processed_at = NOW()\nWHERE id = {{ $('Registrar Orden').item.json.order_id }}\nRETURNING id AS order_id, order_number, status, processed_at;",
-        "options": {}
+        "query": "UPDATE orders\nSET\n  status = 'no_stock',\n  processed_at = NOW()\nWHERE id = $1::int\nRETURNING id AS order_id, order_number, status, processed_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Registrar Orden').item.json.order_id] }}"
+        }
       },
       "id": "4c184a01-8d2b-46ed-9542-72226776b8f9",
       "name": "Marcar Sin Stock",
@@ -385,18 +397,7 @@
       "main": [
         [
           {
-            "node": "Registrar Notificaciâ”œâ”‚n",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Registrar Notificaciâ”œâ”‚n": {
-      "main": [
-        [
-          {
-            "node": "Respuesta Confirmada",
+            "node": "Registrar Notificación",
             "type": "main",
             "index": 0
           }
@@ -419,6 +420,17 @@
         [
           {
             "node": "Respuesta Sin Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Notificación": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Confirmada",
             "type": "main",
             "index": 0
           }
