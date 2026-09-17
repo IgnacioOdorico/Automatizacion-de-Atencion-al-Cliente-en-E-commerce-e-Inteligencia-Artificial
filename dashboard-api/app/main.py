@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import auth, dashboard, orders, products, tickets
+from app.routers import auth, connections, dashboard, orders, products, tickets
 
 app = FastAPI(title=settings.app_name)
 
@@ -21,6 +21,7 @@ def health() -> dict:
 
 
 app.include_router(auth.router)
+app.include_router(connections.router)
 app.include_router(dashboard.router)
 app.include_router(orders.router)
 app.include_router(tickets.router)

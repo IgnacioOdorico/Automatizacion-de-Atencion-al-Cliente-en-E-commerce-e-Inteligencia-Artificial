@@ -22,6 +22,19 @@ os.environ["DATABASE_URL"] = os.environ.get(
 os.environ["CORS_ORIGINS"] = os.environ.get(
     "CORS_ORIGINS", "http://localhost:5173,http://localhost:8080"
 )
+os.environ["DASHBOARD_GOOGLE_CLIENT_ID"] = os.environ.get(
+    "DASHBOARD_GOOGLE_CLIENT_ID", "test-client-id.apps.googleusercontent.com"
+)
+os.environ["DASHBOARD_GOOGLE_CLIENT_SECRET"] = os.environ.get(
+    "DASHBOARD_GOOGLE_CLIENT_SECRET", "test-client-secret"
+)
+os.environ["DASHBOARD_GOOGLE_REDIRECT_URI"] = os.environ.get(
+    "DASHBOARD_GOOGLE_REDIRECT_URI",
+    "http://localhost:8000/connections/gmail/callback",
+)
+os.environ["DASHBOARD_FRONTEND_URL"] = os.environ.get(
+    "DASHBOARD_FRONTEND_URL", "http://localhost:5173"
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -111,7 +124,7 @@ def _skip_integration_without_db(request):
 
 @pytest.fixture
 def db_ready():
-    from app.core import rate_limit
+    from app.core import rate_limit, telegram_codes
     from app.db import execute
 
     execute(TRUNCATE_SQL)
@@ -119,6 +132,7 @@ def db_ready():
     for statement in FIXTURE_SQL[1:]:
         execute(statement)
     rate_limit.reset()
+    telegram_codes.reset()
     return True
 
 

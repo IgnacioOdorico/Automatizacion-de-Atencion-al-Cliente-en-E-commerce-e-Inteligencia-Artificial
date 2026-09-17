@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     dashboard_jwt_secret: str = "demo-dashboard-jwt-secret"
     dashboard_enc_key: str = ""
     dashboard_n8n_secret: str = "demo-n8n-secret"
+    dashboard_google_client_id: str = ""
+    dashboard_google_client_secret: str = ""
+    dashboard_google_redirect_uri: str = ""
+    dashboard_frontend_url: str = "http://localhost:5173"
+    telegram_code_ttl_minutes: int = 15
     cors_origins: str = "http://localhost:5173,http://localhost:8080"
 
     access_token_expire_minutes: int = 120
