@@ -246,8 +246,8 @@ check('11h §5.1.1 sin «eventos»', '(emails, eventos)' not in TODO)
 t49 = filas(tabla_con_epigrafe('Tabla 3.4:'))    # 15/09: las Tablas 4.9 y 4.10 pasaron a §3.5.8
 t410 = filas(tabla_con_epigrafe('Tabla 3.5:'))
 check('11i identificadores de pruebas unificados',
-      [f[0] for f in t49[1:]] == ['PF-01', 'PF-02', 'PF-03', 'PF-04', 'PF-05']
-      and [f[0] for f in t410[1:]] == ['PC-01', 'PC-02', 'PC-03', 'PC-04', 'PC-05'])
+      [f[0] for f in t49[1:]] == ['PF-01', 'PF-02', 'PF-03', 'PF-04', 'PF-05', 'PF-06']   # 18/09: PF-06 y PC-06
+      and [f[0] for f in t410[1:]] == ['PC-01', 'PC-02', 'PC-03', 'PC-04', 'PC-05', 'PC-06'])
 check('11j sin «e ejemplos»', not re.search(r'\be ejemplos', TODO))   # «siete ejemplos» no cuenta
 check('11k §2.3.2 sin «varios órdenes de magnitud respecto al estándar manual»',
       'varios órdenes de magnitud respecto al estándar manual' not in TODO)

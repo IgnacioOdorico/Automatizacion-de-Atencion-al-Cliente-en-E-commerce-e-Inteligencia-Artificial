@@ -25,3 +25,10 @@ PC-06 · Flujo 2 — reclamo en inglés con dos contracciones y dos comas
   asunto registrado: I haven't received my order yet, and it's been two weeks. I'd like a refund, please.
   texto íntegro: sí
   correo de respuesta en Mailpit: «Respuesta TechStore para Prueba PF-06»
+
+---
+Nota agregada el 18/09/2026 (auditoría de 4.ª instancia, B-02). La cabecera cita el commit
+b64099b porque la prueba corrió antes de versionar los workflows parametrizados (commit 4e748a6).
+La versión publicada del workflow sobre la que corrió cada ejecución, según el historial del motor:
+  PF-06 · Flujo 1 · ejecución 4085 · workflow xICbeLNSWYt89Zxg · versionId 3ed427a2-a0d6-4331-a399-4286574b0a1d (publicada 2026-09-17 18:19:40.781+00) · consultas parametrizadas: sí
+  PC-06 · Flujo 2 · ejecución 4086 · workflow GyT06kIZgB5Kmw4P · versionId 378d2e7b-1438-4383-910b-1ce56a35ccd2 (publicada 2026-09-17 18:19:47.931+00) · consultas parametrizadas: sí

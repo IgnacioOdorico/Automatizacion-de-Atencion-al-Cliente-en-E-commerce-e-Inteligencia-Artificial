@@ -147,8 +147,8 @@ check('B7e §5.2.1 declara los tickets sin vínculo con la interacción', 'clave
 
 # ============================================================================
 seccion('B8. VERSIÓN')
-check('B8a el documento cita la etiqueta entrega-2026-09-r5', TODO.count('entrega-2026-09-r5') == 2
-      and not re.search(r'entrega-2026-09(?!-r5)', TODO))
+check('B8a el documento cita la etiqueta entrega-2026-09-r6', TODO.count('entrega-2026-09-r6') == 2
+      and not re.search(r'entrega-2026-09(?!-r6)', TODO))
 
 print()
 print('=' * 78)

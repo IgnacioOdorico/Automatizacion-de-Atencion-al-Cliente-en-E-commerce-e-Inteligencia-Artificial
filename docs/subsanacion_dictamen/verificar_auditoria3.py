@@ -138,7 +138,8 @@ check('A-03g la prueba con apóstrofo deja evidencia versionada',
 
 print()
 print('== M-01 a M-08 · hallazgos de severidad media')
-s521 = par('Se ejecutaron cinco pruebas funcionales sobre el Flujo 2')
+# 18/09: con PC-06 la §5.2.1 informa seis pruebas
+s521 = par('Se ejecutaron seis pruebas funcionales sobre el Flujo 2')
 check('M-01a §5.2.1 declara que el resultado esperado de PC-05 contradice el etiquetado',
       'mensaje 44' in s521 and 'no aprobada' in s521.lower())
 oe5 = [f for f in celdas(tabla('Obj.', 'Enunciado', 'Resultado', 'Estado')) if f and f[0].startswith('OE5')]
@@ -213,7 +214,8 @@ check('B-06a §7.1 describe los triggers que el archivo tiene',
       'WooCommerce' in prod1 and 'Shopify' in prod1 and 'MercadoLibre' not in prod1)
 check('B-06b la recomendación de integrar plataformas nombra las dos que faltan',
       any(p.startswith('Integrar Tiendanube y MercadoShops') for p in P))
-s433 = par('Ambas métricas se calculan en la vista v_order_processing_time')
+# 18/09 (B-05 de la 4.ª instancia): la §4.3.3 dice que la vista define la métrica
+s433 = par('Ambas métricas se definen en la vista v_order_processing_time')
 check('B-07 §4.3.3 indica el nodo de la rama sin stock y el MTTD por rama',
       'Marcar Sin Stock' in s433 and '0,010' in s433 and '0,006' in s433)
 pf = leer('experiments/PF/README.md')
