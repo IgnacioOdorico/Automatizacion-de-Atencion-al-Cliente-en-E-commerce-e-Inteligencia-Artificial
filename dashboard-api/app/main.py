@@ -2,7 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import auth, connections, dashboard, orders, products, tickets
+from app.routers import (
+    auth,
+    connections,
+    dashboard,
+    monitoring_feed,
+    orders,
+    products,
+    tickets,
+)
 
 def create_app() -> FastAPI:
     docs = settings.dashboard_enable_docs
@@ -32,6 +40,7 @@ def create_app() -> FastAPI:
     application.include_router(orders.router)
     application.include_router(tickets.router)
     application.include_router(products.router)
+    application.include_router(monitoring_feed.router)
     return application
 
 

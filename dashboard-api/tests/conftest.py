@@ -162,3 +162,32 @@ def auth_headers(client, db_ready):
     )
     assert resp.status_code == 200, resp.text
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}
+
+@pytest.fixture(scope="session")
+def _n8n_tables_cleanup():
+    """Deja la BD de test como la encontró: sin tablas de n8n al terminar la sesión."""
+    yield
+    from app.db import ping
+
+    if ping():
+        import helpers_n8n
+
+        helpers_n8n.drop_n8n_tables()
+
+
+@pytest.fixture
+def n8n_tables(db_ready, _n8n_tables_cleanup):
+    """Tablas internas de n8n (DDL mínimo espejo de 2.12.2) vacías, solo en la BD de test."""
+    import helpers_n8n
+
+    helpers_n8n.create_n8n_tables()
+    return True
+
+
+@pytest.fixture
+def no_n8n_tables(db_ready, _n8n_tables_cleanup):
+    """Simula una instalación sin las tablas de n8n legibles."""
+    import helpers_n8n
+
+    helpers_n8n.drop_n8n_tables()
+    return True
