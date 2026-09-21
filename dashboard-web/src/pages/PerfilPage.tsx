@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { authApi } from '@/api/endpoints';
+import { CHANNEL_ICONS } from '@/components/channelIcons';
 import { QueryView } from '@/components/QueryView';
 import { MessengerIcon } from '@/components/icons';
 import { Badge } from '@/components/ui/Badge';
@@ -98,10 +99,11 @@ export function PerfilPage() {
                         label: connection.status,
                         tone: 'neutral' as const,
                       };
+                      const Icon = CHANNEL_ICONS[connection.channel] ?? MessengerIcon;
                       return (
                         <div key={connection.channel} className="channel-row">
                           <div className="channel-row__icon">
-                            <MessengerIcon width={17} height={17} />
+                            <Icon width={17} height={17} />
                           </div>
                           <div>
                             <div className="channel-row__name">

@@ -15,9 +15,20 @@ import { TableSkeleton } from '@/components/ui/Skeleton';
 import { useFreshRows } from '@/hooks/useFreshRows';
 import { ORDER_STATUSES, orderStatusMeta } from '@/lib/domain';
 import { formatCurrency, formatDateTime } from '@/lib/format';
+import type { Order } from '@/types/api';
 
 /** Polling en vivo: spec client-dashboard/metrics (3-5s). */
 const POLL_INTERVAL = 4000;
+
+/** Solo los hitos que ya ocurrieron: un pedido sin procesar no muestra guiones de relleno. */
+function orderTimeline(order: Order): Array<{ label: string; at: string }> {
+  const steps: Array<[string, string | null]> = [
+    ['Recibido', order.received_at],
+    ['Procesado', order.processed_at],
+    ['Notificado', order.notified_at],
+  ];
+  return steps.flatMap(([label, at]) => (at ? [{ label, at }] : []));
+}
 
 const STATUS_OPTIONS: SelectOption[] = [
   { value: '', label: 'Todos los estados' },
@@ -97,7 +108,7 @@ export function PedidosPage() {
         {(data) => (
           <>
             <div className={`table-wrap${query.isPlaceholderData ? ' is-refreshing' : ''}`}>
-              <table className="table table--stack">
+              <table className="table table--stack table--compact">
                 <thead>
                   <tr>
                     <th>Pedido</th>
@@ -148,18 +159,12 @@ export function PedidosPage() {
                           {formatCurrency(order.total_amount)}
                         </td>
                         <td className="table__dates" data-label="Fechas">
-                          <div>
-                            <span className="table__dates-label">Recibido</span>
-                            {formatDateTime(order.received_at)}
-                          </div>
-                          <div>
-                            <span className="table__dates-label">Procesado</span>
-                            {formatDateTime(order.processed_at)}
-                          </div>
-                          <div>
-                            <span className="table__dates-label">Notificado</span>
-                            {formatDateTime(order.notified_at)}
-                          </div>
+                          {orderTimeline(order).map((step) => (
+                            <div key={step.label}>
+                              <span className="table__dates-label">{step.label}</span>
+                              {formatDateTime(step.at)}
+                            </div>
+                          ))}
                         </td>
                       </tr>
                     );

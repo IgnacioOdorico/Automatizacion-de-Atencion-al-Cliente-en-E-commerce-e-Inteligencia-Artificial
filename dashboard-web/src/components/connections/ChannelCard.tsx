@@ -1,17 +1,11 @@
-import type { FC, ReactNode, SVGProps } from 'react';
+import type { ReactNode } from 'react';
 
-import { MailIcon, MessengerIcon, SendIcon } from '@/components/icons';
+import { CHANNEL_ICONS } from '@/components/channelIcons';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { channelActions, disconnectCopy, type ChannelCardModel } from '@/lib/connections';
 import { formatDateTime } from '@/lib/format';
 import type { Channel } from '@/types/api';
-
-const CHANNEL_ICONS: Record<Channel, FC<SVGProps<SVGSVGElement>>> = {
-  whatsapp: MessengerIcon,
-  telegram: SendIcon,
-  email: MailIcon,
-};
 
 /** Qué representa `external_reference` en cada canal (spec connections). */
 const REFERENCE_LABELS: Record<Channel, string> = {

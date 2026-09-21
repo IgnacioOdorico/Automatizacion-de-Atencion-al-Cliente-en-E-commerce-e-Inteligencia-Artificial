@@ -92,6 +92,18 @@ export function formatDuration(seconds: string | number | null | undefined): str
 }
 
 /**
+ * Promedio de una métrica de tiempo (MTTD/MTTR/TMR). La vista de métricas
+ * devuelve 0 cuando todavía no hay muestras: eso no es "0s", es "sin dato".
+ */
+export function formatMetricDuration(
+  seconds: string | number | null | undefined,
+  samples: number,
+): string {
+  if (samples <= 0) return '—';
+  return formatDuration(seconds);
+}
+
+/**
  * Monedas en "$ X,XX" con separador de miles es-AR. La API serializa DECIMAL
  * como string ("349.99"), así que acepta ambas formas. El signo va antes del $.
  */

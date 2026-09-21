@@ -52,7 +52,7 @@ export function Shell() {
         <div className="sidebar__foot">
           <div className="user-card">
             <div className="user-card__avatar">
-              {me?.business_name ? initials(me.business_name) : '?'}
+              {me?.business_name ? initials(me.business_name) : 'TC'}
             </div>
             <div className="user-card__meta">
               {isPending ? (
@@ -62,8 +62,8 @@ export function Shell() {
                 </>
               ) : (
                 <>
-                  <span className="user-card__name">{me?.business_name}</span>
-                  <span className="user-card__email">{me?.email}</span>
+                  <span className="user-card__name">{me?.business_name ?? 'Tu cuenta'}</span>
+                  {me?.email && <span className="user-card__email">{me.email}</span>}
                 </>
               )}
             </div>

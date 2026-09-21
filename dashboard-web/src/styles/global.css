@@ -823,7 +823,7 @@ button {
   font-size: 13.5px;
 }
 .table thead th {
-  padding: 12px 14px;
+  padding: 12px 12px;
   text-align: left;
   font-size: 11px;
   font-weight: 650;
@@ -835,7 +835,7 @@ button {
   background: rgba(255, 255, 255, 0.015);
 }
 .table tbody td {
-  padding: 12px 14px;
+  padding: 12px 12px;
   vertical-align: top;
   border-bottom: 1px solid var(--border);
 }
@@ -1275,7 +1275,7 @@ button {
   min-height: 124px;
 }
 .dash-section__title-skeleton {
-  margin: 3px 0 15px;
+  margin: 3px 0 16px;
 }
 .conn-card--skeleton {
   min-height: 210px;
@@ -1295,10 +1295,15 @@ button {
 /* Textos largos: una línea con "…" y el valor completo en el tooltip (title) */
 .table__cell-main,
 .table__cell-sub {
-  max-width: 260px;
+  max-width: 320px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* Pedidos: 6 columnas en ~935 px, así que nombres y correos se recortan antes */
+.table--compact .table__cell-main,
+.table--compact .table__cell-sub {
+  max-width: 170px;
 }
 .table__cell-clamp {
   display: -webkit-box;
@@ -1544,7 +1549,10 @@ button {
   background: var(--bg-hover);
 }
 .table__link {
+  /* Un número largo (ORD-DEMO-aaaammddhhmmss) parte en el guion en vez de ensanchar la tabla */
+  max-width: 150px;
   padding: 0;
+  overflow-wrap: anywhere;
   border: none;
   background: none;
   color: var(--text-1);

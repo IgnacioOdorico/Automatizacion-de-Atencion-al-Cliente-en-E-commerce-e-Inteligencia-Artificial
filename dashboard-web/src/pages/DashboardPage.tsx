@@ -7,7 +7,7 @@ import { QueryView } from '@/components/QueryView';
 import { PackageIcon } from '@/components/icons';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { formatDuration } from '@/lib/format';
+import { formatMetricDuration } from '@/lib/format';
 import type { Summary } from '@/types/api';
 
 /** Polling en vivo: spec client-dashboard/metrics (3-5s). */
@@ -46,18 +46,26 @@ function StatCards({ cards }: { cards: StatCard[] }) {
   );
 }
 
-/** Cantidad de tarjetas por sección: el esqueleto de carga replica esta misma grilla. */
-const SECTION_SIZES = [4, 3, 3];
+/**
+ * El esqueleto de carga replica la grilla: cantidad de tarjetas y alto aproximado
+ * de cada sección (las que llevan texto de ayuda son más altas), para que al
+ * llegar los datos no se corra el contenido de abajo.
+ */
+const SKELETON_SECTIONS = [
+  { size: 4, height: 148 },
+  { size: 3, height: 167 },
+  { size: 3, height: 124 },
+];
 
 function DashboardSkeleton() {
   return (
     <div aria-hidden="true">
-      {SECTION_SIZES.map((size, s) => (
+      {SKELETON_SECTIONS.map(({ size, height }, s) => (
         <section key={s} className="dash-section">
           <Skeleton height={12} width={120} className="dash-section__title-skeleton" />
           <div className="stat-grid">
             {Array.from({ length: size }, (_, i) => (
-              <div key={i} className="card stat-card stat-card--skeleton">
+              <div key={i} className="card stat-card stat-card--skeleton" style={{ minHeight: height }}>
                 <Skeleton height={11} width="46%" />
                 <Skeleton height={30} width="38%" style={{ marginTop: 10 }} />
               </div>
@@ -105,19 +113,19 @@ function buildSections(data: Summary): StatSection[] {
         {
           id: 'mttd',
           label: 'MTTD',
-          value: formatDuration(data.avg_mttd_seg),
+          value: formatMetricDuration(data.avg_mttd_seg, data.total_orders),
           hint: 'Tiempo medio entre el pedido y su procesamiento.',
         },
         {
           id: 'mttr',
           label: 'MTTR',
-          value: formatDuration(data.avg_mttr_seg),
+          value: formatMetricDuration(data.avg_mttr_seg, data.total_orders),
           hint: 'Tiempo medio entre el procesamiento y el aviso al cliente.',
         },
         {
           id: 'tmr',
           label: 'TMR',
-          value: formatDuration(data.avg_tmr_seg),
+          value: formatMetricDuration(data.avg_tmr_seg, data.total_interactions),
           hint: 'Tiempo medio del bot entre la consulta y su respuesta.',
         },
       ],

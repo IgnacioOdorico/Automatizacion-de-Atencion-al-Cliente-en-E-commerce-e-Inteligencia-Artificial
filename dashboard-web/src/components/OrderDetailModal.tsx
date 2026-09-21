@@ -7,7 +7,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { orderStatusMeta } from '@/lib/domain';
-import { dataSourceLabel, formatCurrency, formatDateTime } from '@/lib/format';
+import { dataSourceLabel, formatContact, formatCurrency, formatDateTime } from '@/lib/format';
 import { describePayload, orderItemProduct } from '@/lib/orderDetail';
 
 interface OrderDetailModalProps {
@@ -91,7 +91,7 @@ function OrderDetailDialog({ orderId, onClose }: { orderId: number; onClose: () 
             <dl className="dl">
               <DlItem label="Cliente" value={data.customer_name} />
               <DlItem label="Email" value={data.customer_email} />
-              <DlItem label="Teléfono" value={data.customer_phone} />
+              <DlItem label="Teléfono" value={formatContact('whatsapp', data.customer_phone)} />
               <DlItem label="Producto" value={data.product_name} />
               <DlItem label="SKU" value={data.product_sku} />
               <DlItem label="Cantidad" value={data.quantity} />

@@ -7,6 +7,7 @@ import {
   formatDate,
   formatDateTime,
   formatDuration,
+  formatMetricDuration,
 } from '@/lib/format';
 
 describe('formatDuration', () => {
@@ -43,6 +44,22 @@ describe('formatDuration', () => {
     expect(formatDuration('90')).toBe('1m 30s');
     expect(formatDuration('3660.9')).toBe('1h 1m');
     expect(formatDuration('no-num')).toBe('—');
+  });
+});
+
+describe('formatMetricDuration', () => {
+  it('sin muestras no hay promedio: un guion en vez de un "0s" engañoso', () => {
+    expect(formatMetricDuration(0, 0)).toBe('—');
+    expect(formatMetricDuration('0.00', 0)).toBe('—');
+  });
+
+  it('con muestras formatea la duración', () => {
+    expect(formatMetricDuration('76.38', 22)).toBe('1m 16s');
+    expect(formatMetricDuration(0, 3)).toBe('0s');
+  });
+
+  it('un valor ausente sigue siendo guion', () => {
+    expect(formatMetricDuration(null, 5)).toBe('—');
   });
 });
 
