@@ -103,6 +103,7 @@ cd dashboard-web; npm run dev                           # Vite en :5173 (proxy /
 - Variables nuevas por nombre: ver `.env.example` y la sección "Dashboard del cliente" del `README.md`.
 - Los tests `pytest` truncan tablas: solo corren contra `ecommerce_tesis_test`, **nunca** contra `ecommerce_tesis` (ahí `orders`/`tickets` son evidencia medida de la tesis).
 - `nginx.conf` + `security-headers.conf` mandan la CSP y demás headers: si el front pasa a cargar algo externo, ampliar la CSP a propósito (`nginxConf.test.ts` la guarda).
+- **Monitoreo** (`/monitoreo`, API `/monitoring/*`, contratos en `docs/API_MONITOREO.md`): todo es de solo lectura. Lee `orders`/`interactions`/`tickets`/`stock_alerts` y, para la pestaña Workflow, las tablas **internas de n8n** (`workflow_entity`, `execution_entity`, `execution_data`, esquema de n8n 2.12.2; degrada con `available:false` si faltan). El grafo nunca devuelve `parameters`/`credentials` y la vista previa de salida se redacta. Los tests crean esas tablas de n8n solo en `ecommerce_tesis_test`; jamás escribas en la BD viva.
 
 ## Testing del pipeline — es manual, disparando webhooks
 

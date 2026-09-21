@@ -494,7 +494,7 @@ Esta opción es ideal para **debugging** y ver qué hace cada nodo en detalle:
 
 ## 🖥️ Dashboard del cliente
 
-Portal web para el dueño del e-commerce: métricas en vivo (pedidos de hoy, tickets abiertos, MTTD/MTTR/TMR), pedidos, tickets, catálogo, conexión de canales (WhatsApp, Telegram, Gmail) y perfil. **Lee la misma BD que los Flujos 1 y 2 sin modificarlos**; solo agrega las tablas `client_accounts` y `channel_connections`.
+Portal web para el dueño del e-commerce: métricas en vivo (pedidos de hoy, tickets abiertos, MTTD/MTTR/TMR), pedidos, tickets, catálogo, **monitoreo del bot en vivo**, conexión de canales (WhatsApp, Telegram, Gmail) y perfil. **Lee la misma BD que los Flujos 1 y 2 sin modificarlos**; solo agrega las tablas `client_accounts` y `channel_connections`.
 
 | Servicio | URL |
 |---|---|
@@ -513,6 +513,21 @@ Get-Content seed_dashboard.sql | docker exec -i tesis_postgres psql -U n8n_user 
 ```
 
 Cuenta demo del seed: `ventas@tecnoshopmza.com.ar` / `Demo2026!` (solo para la demo: no cargues `seed_dashboard.sql` en una instalación real).
+
+### Monitoreo del bot (`/monitoreo`)
+
+Pensado para explicar el workflow en cámara: muestra lo que hace el bot **al pie de la letra**, en solo lectura. Tiene tres pestañas:
+
+| Pestaña | Qué muestra | De dónde sale |
+|---|---|---|
+| **En vivo** | Línea de tiempo con cada pedido recibido, procesado y notificado, cada mensaje del cliente con la respuesta exacta del bot (intent, urgencia, TMR), tickets y alertas de stock. Se actualiza cada 3 s y se puede pausar. | `orders`, `interactions`, `tickets`, `stock_alerts` |
+| **Conversaciones** | Hilos por canal y usuario, en formato chat. | `interactions` |
+| **Workflow** | El propio workflow de n8n dibujado, con el camino de cada ejecución iluminado nodo por nodo (ramas "con stock" y "sin stock", errores), reproducción animada, modo "Seguir en vivo" y las métricas de la tesis. | Tablas internas de n8n en la misma Postgres: `workflow_entity`, `execution_entity`, `execution_data` |
+
+- Los contratos de la API están en [docs/API_MONITOREO.md](docs/API_MONITOREO.md).
+- **Seguridad:** el grafo nunca incluye `parameters` ni credenciales de los nodos, y la vista previa de salida de cada nodo sale recortada y con claves/tokens redactados.
+- **Datos:** sin el Flujo 2 importado y con sus credenciales cargadas en n8n (OpenAI, Telegram/SMTP), `interactions` queda vacía y la pestaña Conversaciones muestra su estado vacío. Los pedidos, tickets y ejecuciones (incluidos los errores) se ven igual.
+- **Acoplamiento:** la pestaña Workflow depende del esquema interno de n8n 2.12.2; si esas tablas no existen o cambian, degrada a un estado vacío y no rompe el resto del portal.
 
 ### Variables de `.env`
 

@@ -31,7 +31,7 @@ Fuera de alcance: modificar workflows, exponer credenciales o `parameters` de no
   - [x] M4b-4 lista de ejecuciones, seguir en vivo y detalle de nodo (`565a07b`)
   - [x] M4b-5 tarjeta de métricas de la tesis, leyenda, ruta y pestaña (`f160c7e`)
   - [x] M4b-6 revisión visual (1280 y 375 px contra una API de mentira) y cierre (`85cb4b1`)
-- [ ] M5 Reconstruir stack, smoke autenticado, docs (SPEC §1/§5/§10, README, CLAUDE.md), pausa de polling y a11y
+- [x] M5 Reconstruir stack, smoke autenticado, docs (SPEC §1/§5/§10, README, CLAUDE.md), pausa de polling y a11y (**parcial en lo que depende de datos reales: ver "Evidencia de M5"**)
 
 ## Ruta por tarea
 M1–M3: delegated direct (un writer backend). M4a y M4b: delegated direct (un writer front, después del contrato de la API; M4b en 6 unidades de trabajo con commit cada una). M5: delegated direct.
@@ -80,5 +80,19 @@ M1–M3: delegated direct (un writer backend). M4a y M4b: delegated direct (un w
 - Parser `flatted` propio, iterativo, con tope (2 MB de texto / 200k posiciones); redacción por clave y por valor ANTES de truncar (para no filtrar prefijos de tokens).
 - El grafo es una lista blanca (nunca `parameters`/`credentials`); notas adhesivas excluidas; aristas `ai_*` con `kind`.
 
+## Evidencia de M5 (verificada por el orquestador)
+- `docker compose up -d --build dashboard-api dashboard-web`: ambos `Up`, API `healthy`. La CSP de nginx sigue presente (`default-src 'self'; …`) y `/monitoreo`, `/monitoreo/en-vivo`, `/monitoreo/conversaciones` y `/monitoreo/workflow` responden 200 (fallback SPA).
+- Smoke de solo lectura por `http://localhost:8080/api` con una cuenta e2e descartable (borrada al terminar; conteos de `client_accounts`/`orders`/`interactions`/`tickets`/`execution_entity` idénticos antes y después):
+  - `/monitoring/summary`: 22 órdenes por estado, 2 tickets abiertos, ejecuciones `available:true`; `bot.interactions = 0` (el chatbot no tiene datos).
+  - `/monitoring/events?limit=100`: 49 eventos reales (22 `order_received`, 11 `order_processed`, 11 `order_notified`, 5 `ticket_created`), `has_more:false`; `since` con el cursor más nuevo devuelve 0 (polling incremental correcto).
+  - `/monitoring/workflows`: Flujo 1 activo (1 ejecución, 1 error); grafo real de 15 nodos y 15 aristas, sin `parameters` ni `credentials`.
+  - `/monitoring/executions` y traza de la ejecución 1: `path = [Webhook - Recibir Orden, Registrar Orden]`, Webhook `success`, Registrar Orden `error`.
+  - Sin JWT: `401`. (Un `422` inicial fue error del script de humo: pidió `limit=200` y el tope es 100.)
+- Suites completas: `pytest` 502 passed; `npm test` 818 passed en 45 archivos; `npm run build` OK.
+- Docs: README (sección "Monitoreo del bot"), CLAUDE.md (bullet de Monitoreo), SPEC §1/§5/§10 (ya hecho en el backend), `docs/API_MONITOREO.md`.
+
+### No verificado (depende del usuario)
+Ejecuciones EXITOSAS reales del Flujo 1 (rama con stock/sin stock) y cualquier ejecución del Flujo 2 (no está importado; sin credenciales de OpenAI/Telegram/SMTP/Postgres en n8n), y cómo se ve todo con sesión real en el navegador.
+
 ## Próximo paso
-M5: reconstruir el stack, smoke autenticado con datos reales (sobre todo una ejecución exitosa real del Flujo 1 y otra del Flujo 2, que todavía no existen), docs (SPEC §1/§5/§10, README, CLAUDE.md), pausa de polling y a11y. Ojo con la CSP de nginx al reconstruir (el front no carga nada externo nuevo).
+Que el usuario cargue en n8n las credenciales del Flujo 1 (Postgres `postgres:5432` BD `ecommerce_tesis`, SMTP `mailpit:1025`) e importe el Flujo 2 con sus credenciales; después correr `.\demo_en_vivo.ps1` mirando `/monitoreo/workflow` con "Seguir en vivo" y revisar a ojo el diagrama. Push de la rama según decisión del usuario (21 commits locales sin subir).
