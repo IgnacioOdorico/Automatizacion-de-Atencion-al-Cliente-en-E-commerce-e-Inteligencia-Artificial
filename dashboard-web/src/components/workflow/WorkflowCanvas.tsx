@@ -6,7 +6,7 @@ import { useElementSize } from '@/hooks/useElementSize';
 import { usePanZoom } from '@/hooks/usePanZoom';
 import { nodeAriaLabel, nodeMetaLines } from '@/lib/nodeCard';
 import { nodeKind } from '@/lib/nodeKinds';
-import { preferredHeight, viewCss } from '@/lib/viewport';
+import { COMPACT_WIDTH, preferredHeight, viewCss } from '@/lib/viewport';
 import { CARD_H, CARD_W, wrapLabel, type EdgeShape, type GraphLayout, type NodeBox } from '@/lib/workflowGraph';
 import type { EdgeOverlay, NodeOverlay, Overlay } from '@/lib/workflowTrace';
 
@@ -194,11 +194,14 @@ export function WorkflowCanvas({ title, layout, overlay, selected, onSelect, res
       fit();
     }
     // Solo reacciona a que cambie el nodo de la cámara.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camera]);
 
   // Alto del lienzo según lo que mide el dibujo, para no dejar aire de sobra en diagramas chatos.
-  const height = useMemo(() => preferredHeight(layout.bounds, size.width), [layout.bounds, size.width]);
+  // Con un piso: el panel de detalle y la cámara de la reproducción (que acerca) necesitan lugar en vertical.
+  const height = useMemo(
+    () => preferredHeight(layout.bounds, size.width, { min: size.width < COMPACT_WIDTH ? 340 : 400 }),
+    [layout.bounds, size.width],
+  );
 
   const uid = useId().replace(/[^A-Za-z0-9_-]/g, '');
   const titleId = `wf-title-${uid}`;

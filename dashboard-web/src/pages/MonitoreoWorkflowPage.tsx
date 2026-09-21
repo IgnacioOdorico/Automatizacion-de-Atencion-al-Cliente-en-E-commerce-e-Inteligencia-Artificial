@@ -219,7 +219,6 @@ export function MonitoreoWorkflowPage() {
       setAutoplay({ scope: scopeKey, id: null });
     }
     // `playback.restart` cambia solo con el movimiento reducido: no hace falta re-disparar por eso.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoplay, detailData, path.length, scopeKey]);
 
   // El panel de un nodo muestra su resultado final aunque la reproducción todavía no haya llegado.
@@ -359,7 +358,7 @@ export function MonitoreoWorkflowPage() {
                           shortType={graphNode.short_type}
                           disabled={graphNode.disabled}
                           overlay={finalOverlay?.nodes.get(graphNode.name) ?? { visual: 'plain', trace: null }}
-                          hasExecution={detailData !== null && (finalOverlay?.hasTrace ?? false)}
+                          execution={detailData === null ? 'none' : finalOverlay?.hasTrace ? 'trace' : 'no-trace'}
                           onClose={closeDetail}
                         />
                       )}

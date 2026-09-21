@@ -99,7 +99,7 @@ export function PlaybackBar({
 export function PlaybackCaptionPill({ caption }: { caption: PlaybackCaption }) {
   return (
     <p className="wf-caption" aria-live="polite">
-      <span className="wf-caption__step">{caption.step}</span>
+      <span className="wf-caption__step">{caption.step}</span>{' '}
       {caption.node && <strong className="wf-caption__node">{caption.node}</strong>}
     </p>
   );

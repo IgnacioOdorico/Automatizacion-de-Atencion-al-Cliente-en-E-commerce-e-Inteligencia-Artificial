@@ -114,7 +114,7 @@ interface HeightOptions extends FitOptions {
  */
 export function preferredHeight(bounds: Rect, width: number, options: HeightOptions = {}): number | null {
   if (width <= 0) return null;
-  const { padding = 32, maxScale = 1.25, reserve = 88, min = 300, max = 580 } = options;
+  const { padding = 32, maxScale = 1.25, reserve = 88, min = 400, max = 620 } = options;
   const w = Math.max(bounds.maxX - bounds.minX, 1);
   const h = Math.max(bounds.maxY - bounds.minY, 1);
   const k = clampScale(Math.min(Math.max(width - padding * 2, 1) / w, maxScale));

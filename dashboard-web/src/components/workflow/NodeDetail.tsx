@@ -13,8 +13,11 @@ interface NodeDetailProps {
   shortType: string | null;
   disabled: boolean;
   overlay: NodeOverlay;
-  /** Hay una ejecución elegida (si no, solo se muestra lo estructural del nodo). */
-  hasExecution: boolean;
+  /**
+   * Qué se sabe de la ejecución elegida: `none` (no hay ninguna), `no-trace` (hay, pero sin
+   * detalle por nodo: purgada, demasiado grande) o `trace`.
+   */
+  execution: 'none' | 'no-trace' | 'trace';
   onClose: () => void;
 }
 
@@ -25,7 +28,7 @@ interface NodeDetailProps {
  * al abrirla desde el teclado el foco pasa acá, y Escape la cierra.
  */
 export const NodeDetail = forwardRef<HTMLElement, NodeDetailProps>(function NodeDetail(
-  { name, shortType, disabled, overlay, hasExecution, onClose },
+  { name, shortType, disabled, overlay, execution, onClose },
   ref,
 ) {
   const kind = nodeKind(shortType);
@@ -69,10 +72,14 @@ export const NodeDetail = forwardRef<HTMLElement, NodeDetailProps>(function Node
       <div className="wf-detail__body">
         {disabled && <p className="wf-detail__note">Este nodo está deshabilitado en n8n: el workflow lo saltea.</p>}
 
-        {!hasExecution ? (
+        {execution === 'none' ? (
           <p className="wf-detail__note">
             Cuando haya una ejecución de este workflow, acá vas a ver qué hizo este nodo: cuánto tardó, cuántos items
             produjo y su salida.
+          </p>
+        ) : execution === 'no-trace' ? (
+          <p className="wf-detail__note">
+            La ejecución elegida no tiene detalle por nodo, así que no hay datos de este nodo. Probá con otra ejecución.
           </p>
         ) : visual === 'missing' ? (
           <p className="wf-detail__note">

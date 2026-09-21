@@ -491,6 +491,14 @@ describe('Detalle de un nodo', () => {
     expect(panel()?.textContent).toContain('Cuando haya una ejecución');
   });
 
+  it('si la ejecución elegida no tiene detalle por nodo (purgada), lo dice sin prometer datos que no van a llegar', async () => {
+    all = [at(15, { ...traceConStock(15), nodes: [], path: [], error: 'La ejecución no tiene datos de traza (¿fueron purgados?)' })];
+    await mount();
+    await openNode('Verificar Stock');
+    expect(panel()?.textContent).toContain('no tiene detalle por nodo');
+    expect(panel()?.textContent).not.toContain('Cuando haya una ejecución');
+  });
+
   it('el nodo elegido se conserva al cambiar de ejecución', async () => {
     await mount();
     await openNode('IF Stock Disponible');
