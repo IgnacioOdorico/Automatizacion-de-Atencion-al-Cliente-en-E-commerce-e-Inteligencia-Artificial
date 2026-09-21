@@ -2823,6 +2823,305 @@ button {
   font-weight: 650;
 }
 
+/* Seguir en vivo */
+.wf-follow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  margin: 0 0 4px auto;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.wf-follow:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+.wf-follow__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+.wf-follow[aria-checked='true'] {
+  border-color: rgba(74, 222, 128, 0.45);
+  background: var(--success-soft);
+  color: var(--text-1);
+}
+.wf-follow[aria-checked='true'] .wf-follow__dot {
+  background: var(--success);
+  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5);
+  animation: live-pulse 1.8s infinite;
+}
+
+/* Lienzo + panel de detalle del nodo */
+.wf-stage {
+  position: relative;
+}
+.wf-detail {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 64px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  width: min(370px, calc(100% - 24px));
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-pop);
+  cursor: default;
+}
+.wf-detail__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 12px 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.wf-detail__icon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--brand-soft-strong);
+  color: #c7d2fe;
+}
+.wf-detail__title {
+  flex: 1;
+  min-width: 0;
+}
+.wf-detail__title h3 {
+  color: var(--text-1);
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.wf-detail__title p {
+  margin: 2px 0 0;
+  color: var(--text-2);
+  font-size: 12.5px;
+}
+.wf-detail__close {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.wf-detail__close:hover {
+  background: var(--bg-active);
+  color: var(--text-1);
+}
+.wf-detail__body {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 14px;
+  overflow: auto;
+}
+.wf-detail__body > .badge {
+  justify-self: start;
+}
+.wf-detail__note {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.wf-detail__facts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.wf-detail__facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 13px;
+}
+.wf-detail__facts dt {
+  color: var(--text-2);
+}
+.wf-detail__facts dd {
+  margin: 0;
+  color: var(--text-1);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.wf-detail__error {
+  padding: 10px 12px;
+  border: 1px solid rgba(240, 135, 139, 0.4);
+  border-radius: 10px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.wf-detail__error p {
+  margin: 0;
+}
+.wf-detail__error-title {
+  font-weight: 650;
+}
+.wf-detail__out h4 {
+  margin: 0 0 6px;
+  color: var(--text-1);
+  font-size: 13px;
+}
+.wf-preview {
+  max-height: 240px;
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-canvas);
+  color: var(--text-1);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Ejecuciones y métricas debajo del diagrama */
+.wf-below {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+.wf-runs {
+  padding: 16px;
+}
+.wf-runs__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.wf-section-title {
+  margin: 0;
+  color: var(--text-1);
+  font-size: 15.5px;
+}
+.wf-runs-filter .field {
+  min-width: 170px;
+}
+.wf-runs__empty {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  color: var(--text-2);
+}
+.wf-runs__empty p {
+  margin: 0;
+}
+.wf-runs__list {
+  display: grid;
+  gap: 4px;
+  max-height: 440px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+.wf-run {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.wf-run:hover {
+  background: var(--bg-hover);
+}
+.wf-run[aria-current='true'] {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: var(--brand-soft);
+}
+.wf-run__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.wf-run__id {
+  color: var(--text-1);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.wf-run__dur {
+  margin-left: auto;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.wf-run__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  color: var(--text-2);
+  font-size: 12.5px;
+}
+.wf-run__error {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--danger);
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.wf-run--fresh {
+  animation: wf-run-fresh 3s ease-out;
+}
+@keyframes wf-run-fresh {
+  0% {
+    background: var(--brand-soft-strong);
+  }
+  70% {
+    background: var(--brand-soft);
+  }
+  100% {
+    background: transparent;
+  }
+}
+.wf-runs-more {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wf-edge--flowing {
     animation: none;
@@ -2833,6 +3132,15 @@ button {
     stroke: #c7d2fe;
     stroke-width: 3;
   }
+  .wf-follow[aria-checked='true'] .wf-follow__dot {
+    animation: none;
+    box-shadow: none;
+  }
+  /* Sin animación, la ejecución nueva queda marcada de forma estática mientras dura el aviso */
+  .wf-run--fresh {
+    animation: none;
+    background: var(--brand-soft);
+  }
 }
 
 @media (max-width: 860px) {
@@ -2841,5 +3149,15 @@ button {
   }
   .wf-dock {
     bottom: 60px;
+  }
+  /* En pantallas chicas el detalle del nodo pasa debajo del diagrama */
+  .wf-detail {
+    position: static;
+    width: 100%;
+    max-height: 70vh;
+    margin-top: 12px;
+  }
+  .wf-follow {
+    margin-left: 0;
   }
 }

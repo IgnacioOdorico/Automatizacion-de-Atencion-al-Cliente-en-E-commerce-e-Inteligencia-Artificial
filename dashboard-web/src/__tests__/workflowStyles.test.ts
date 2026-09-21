@@ -98,6 +98,91 @@ describe('Controles del lienzo (contraste AA)', () => {
   });
 });
 
+describe('Lista de ejecuciones (contraste AA)', () => {
+  const card = surface('bg-surface');
+  const selected = over(color(".wf-run[aria-current='true']", 'background'), card);
+
+  it('número, estado, hora, duración y error de cada fila, normal y elegida', () => {
+    for (const selector of ['.wf-run', '.wf-run__id', '.wf-run__dur', '.wf-run__meta', '.wf-run__error']) {
+      const text = color(selector, 'color');
+      expect(contrastRatio(text, card), selector).toBeGreaterThanOrEqual(AA);
+      expect(contrastRatio(text, selected), `${selector} elegida`).toBeGreaterThanOrEqual(AA);
+    }
+  });
+
+  it('el aviso de ejecución nueva pasa por colores legibles durante toda la animación', () => {
+    const block = /@keyframes wf-run-fresh\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+    expect(block).not.toBe('');
+    for (const bg of block.match(/background:\s*[^;]+;/g) ?? []) {
+      const value = resolveVars(bg.replace(/^background:\s*/, '').replace(/;$/, ''), tokens);
+      if (value === 'transparent') continue;
+      expect(contrastRatio(color('.wf-run__id', 'color'), over(parseColor(value), card)), value).toBeGreaterThanOrEqual(AA);
+    }
+  });
+});
+
+describe('Seguir en vivo y leyenda de la reproducción (contraste AA)', () => {
+  it('el interruptor, apagado y encendido, sobre el fondo de la página', () => {
+    expect(contrastRatio(color('.wf-follow', 'color'), canvas)).toBeGreaterThanOrEqual(AA);
+    const on = over(color(".wf-follow[aria-checked='true']", 'background'), canvas);
+    expect(contrastRatio(color(".wf-follow[aria-checked='true']", 'color'), on)).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('el estado del interruptor no depende solo del color: el punto encendido y apagado se distinguen del fondo', () => {
+    expect(contrastRatio(color('.wf-follow__dot', 'background'), canvas)).toBeGreaterThanOrEqual(GRAPHIC);
+    expect(contrastRatio(color(".wf-follow[aria-checked='true'] .wf-follow__dot", 'background'), canvas)).toBeGreaterThanOrEqual(GRAPHIC);
+  });
+
+  it('paso y nodo actual de la reproducción sobre su leyenda', () => {
+    const bg = over(color('.wf-caption', 'background'), canvas);
+    expect(contrastRatio(color('.wf-caption', 'color'), bg)).toBeGreaterThanOrEqual(AA);
+    expect(contrastRatio(color('.wf-caption__node', 'color'), bg)).toBeGreaterThanOrEqual(AA);
+  });
+});
+
+describe('Panel de detalle del nodo (contraste AA)', () => {
+  const panel = surface('bg-surface');
+
+  it('título, tipo, notas y datos sobre el panel', () => {
+    for (const selector of [
+      '.wf-detail__title h3',
+      '.wf-detail__title p',
+      '.wf-detail__note',
+      '.wf-detail__facts dt',
+      '.wf-detail__facts dd',
+      '.wf-detail__out h4',
+    ]) {
+      expect(contrastRatio(color(selector, 'color'), panel), selector).toBeGreaterThanOrEqual(AA);
+    }
+  });
+
+  it('el error del nodo sobre su recuadro', () => {
+    const bg = over(color('.wf-detail__error', 'background'), panel);
+    expect(contrastRatio(color('.wf-detail__error', 'color'), bg)).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('la vista previa de la salida sobre su bloque', () => {
+    const bg = color('.wf-preview', 'background');
+    expect(contrastRatio(color('.wf-preview', 'color'), over(bg, panel))).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('la vista previa es monoespaciada, scrolleable y parte las líneas largas', () => {
+    expect(declaration(css, '.wf-preview', 'font-family')).toContain('monospace');
+    expect(declaration(css, '.wf-preview', 'overflow')).toBe('auto');
+    expect(declaration(css, '.wf-preview', 'white-space')).toBe('pre-wrap');
+  });
+});
+
+describe('Ejecución encabezado y avisos (contraste AA)', () => {
+  const card = surface('bg-surface');
+
+  it('encabezado de la ejecución y avisos sobre su tarjeta', () => {
+    for (const selector of ['.wf-exec__row', '.wf-exec__title', '.wf-exec__error', '.wf-notice', '.wf-notices']) {
+      expect(contrastRatio(color(selector, 'color'), card), selector).toBeGreaterThanOrEqual(AA);
+    }
+  });
+});
+
 /** Cuerpo de TODOS los bloques `@media (prefers-reduced-motion: reduce) { ... }` (llaves anidadas). */
 function reducedMotionBlocks(source: string): string {
   const marker = '@media (prefers-reduced-motion: reduce)';
@@ -126,6 +211,12 @@ describe('Movimiento reducido en el diagrama', () => {
 
   it('la conexión que "fluye" queda quieta y continua', () => {
     expect(block).toMatch(/\.wf-edge--flowing[^{]*\{[^}]*animation:\s*none/);
+  });
+
+  it('el indicador de "Seguir en vivo" y la ejecución nueva de la lista quedan quietos', () => {
+    expect(block).toMatch(/\.wf-follow\[aria-checked='true'\] \.wf-follow__dot[^{]*\{[^}]*animation:\s*none/);
+    expect(block).toMatch(/\.wf-run--fresh[^{]*\{[^}]*animation:\s*none/);
+    expect(block).toMatch(/\.wf-run--fresh[^{]*\{[^}]*background/);
   });
 
   it('el nodo actual de la reproducción no pulsa: queda marcado con un trazo fijo', () => {
