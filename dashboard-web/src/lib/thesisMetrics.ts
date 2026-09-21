@@ -1,4 +1,4 @@
-import { formatMetricDuration } from '@/lib/format';
+import { formatTmr } from '@/lib/format';
 import type { Summary } from '@/types/api';
 
 /**
@@ -56,6 +56,12 @@ const DEFINITIONS: readonly Definition[] = [
   },
 ];
 
+/** Promedio con precisión de milisegundos: los tiempos de la tesis son cortos y "0s" no dice nada. */
+function averageText(average: string | number | undefined, samples: number): string {
+  if (samples <= 0 || average === undefined || average === '') return '—';
+  return formatTmr(Number(average));
+}
+
 function sampleText(count: number | undefined, one: string, many: string, empty: string): string {
   if (count === undefined) return 'Sin datos';
   if (count <= 0) return empty;
@@ -69,7 +75,7 @@ export function thesisMetrics(summary: Summary | undefined): ThesisMetric[] {
     const average = isChat ? summary?.avg_tmr_seg : def.id === 'mttd' ? summary?.avg_mttd_seg : summary?.avg_mttr_seg;
     return {
       ...def,
-      value: samples === undefined ? '—' : formatMetricDuration(average, samples),
+      value: samples === undefined ? '—' : averageText(average, samples),
       sample: isChat
         ? sampleText(samples, 'mensaje', 'mensajes', 'Todavía sin mensajes')
         : sampleText(samples, 'pedido', 'pedidos', 'Todavía sin pedidos'),

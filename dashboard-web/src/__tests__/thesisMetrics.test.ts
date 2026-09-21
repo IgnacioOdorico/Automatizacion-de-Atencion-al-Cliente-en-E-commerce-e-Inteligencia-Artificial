@@ -43,11 +43,20 @@ describe('thesisMetrics', () => {
     expect(m.tmr.measures).toMatch(/respond/i);
   });
 
-  it('los valores salen del resumen con el formato del portal', () => {
+  it('los valores salen del resumen con precisión de milisegundos (los promedios de la tesis son cortos)', () => {
     const m = byId(SUMMARY);
-    expect(m.mttd.value).toBe('0s');
-    expect(m.mttr.value).toBe('3s');
-    expect(m.tmr.value).toBe('3s');
+    expect(m.mttd.value).toBe('460 ms');
+    expect(m.mttr.value).toBe('2,5 s');
+    expect(m.tmr.value).toBe('3,4 s');
+  });
+
+  it('acepta el promedio como número o como texto (la API serializa NUMERIC como string)', () => {
+    expect(byId({ ...SUMMARY, avg_mttd_seg: 0.5 }).mttd.value).toBe('500 ms');
+    expect(byId({ ...SUMMARY, avg_mttd_seg: '90.00' }).mttd.value).toBe('1m 30s');
+  });
+
+  it('un promedio ilegible es un guion, no un NaN', () => {
+    expect(byId({ ...SUMMARY, avg_mttd_seg: 'abc' }).mttd.value).toBe('—');
   });
 
   it('cuenta sobre cuántas muestras se calculó', () => {

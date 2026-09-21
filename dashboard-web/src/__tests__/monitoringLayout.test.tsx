@@ -22,6 +22,7 @@ function mount(path: string) {
           <Route path="/monitoreo" element={<MonitoreoPage />}>
             <Route path="en-vivo" element={<p>Contenido en vivo</p>} />
             <Route path="conversaciones" element={<p>Contenido de conversaciones</p>} />
+            <Route path="workflow" element={<p>Contenido del workflow</p>} />
           </Route>
         </Routes>
         <Where />
@@ -56,7 +57,7 @@ describe('MonitoreoPage (título, pestañas y panel)', () => {
     expect(container.querySelector('h1')?.textContent).toBe('Monitoreo');
     const list = container.querySelector('[role="tablist"]');
     expect(list?.getAttribute('aria-label')).toBeTruthy();
-    expect(tabs().map((t) => t.textContent)).toEqual(['En vivo', 'Conversaciones']);
+    expect(tabs().map((t) => t.textContent)).toEqual(['En vivo', 'Conversaciones', 'Workflow']);
   });
 
   it('marca la pestaña de la URL como seleccionada (y solo esa entra en el orden de tabulación)', () => {
@@ -74,6 +75,14 @@ describe('MonitoreoPage (título, pestañas y panel)', () => {
     expect(panel.textContent).toContain('Contenido de conversaciones');
     expect(panel.getAttribute('aria-labelledby')).toBe(tabs()[1].id);
     expect(tabs()[1].getAttribute('aria-controls')).toBe(panel.id);
+  });
+
+  it('la pestaña Workflow se abre desde el riel y muestra su contenido', () => {
+    mount('/monitoreo/en-vivo');
+    act(() => tabs()[2].click());
+    expect(where()).toBe('/monitoreo/workflow');
+    expect(container.querySelector('[role="tabpanel"]')?.textContent).toContain('Contenido del workflow');
+    expect(tabs()[2].getAttribute('aria-selected')).toBe('true');
   });
 
   it('hacer clic en una pestaña cambia la URL', () => {
@@ -94,11 +103,11 @@ describe('MonitoreoPage (título, pestañas y panel)', () => {
   it('flecha izquierda desde la primera da la vuelta a la última; Home y End saltan a los extremos', () => {
     mount('/monitoreo/en-vivo');
     press(tabs()[0], 'ArrowLeft');
-    expect(where()).toBe('/monitoreo/conversaciones');
-    press(tabs()[1], 'Home');
+    expect(where()).toBe('/monitoreo/workflow');
+    press(tabs()[2], 'Home');
     expect(where()).toBe('/monitoreo/en-vivo');
     press(tabs()[0], 'End');
-    expect(where()).toBe('/monitoreo/conversaciones');
+    expect(where()).toBe('/monitoreo/workflow');
   });
 
   it('una tecla cualquiera no navega', () => {

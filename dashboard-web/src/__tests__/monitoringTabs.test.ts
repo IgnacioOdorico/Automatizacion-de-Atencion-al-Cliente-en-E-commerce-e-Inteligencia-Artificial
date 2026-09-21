@@ -9,10 +9,11 @@ import {
 } from '@/lib/monitoringTabs';
 
 describe('MONITORING_TABS', () => {
-  it('En vivo primero (es la pestaña por defecto) y Conversaciones después', () => {
+  it('En vivo primero (es la pestaña por defecto), Conversaciones y Workflow después', () => {
     expect(MONITORING_TABS.map((t) => [t.path, t.label])).toEqual([
       ['en-vivo', 'En vivo'],
       ['conversaciones', 'Conversaciones'],
+      ['workflow', 'Workflow'],
     ]);
     expect(DEFAULT_TAB_PATH).toBe('en-vivo');
   });
@@ -22,6 +23,7 @@ describe('tabForPathname (la pestaña vive en la URL)', () => {
   it('reconoce cada sub-ruta', () => {
     expect(tabForPathname('/monitoreo/en-vivo').path).toBe('en-vivo');
     expect(tabForPathname('/monitoreo/conversaciones').path).toBe('conversaciones');
+    expect(tabForPathname('/monitoreo/workflow').path).toBe('workflow');
   });
 
   it('tolera la barra final', () => {
@@ -72,6 +74,7 @@ describe('navegación lateral: ítem "Monitoreo"', () => {
     expect(navItemForPath('/monitoreo')?.label).toBe('Monitoreo');
     expect(navItemForPath('/monitoreo/en-vivo')?.label).toBe('Monitoreo');
     expect(navItemForPath('/monitoreo/conversaciones')?.label).toBe('Monitoreo');
+    expect(navItemForPath('/monitoreo/workflow')?.label).toBe('Monitoreo');
   });
 
   it('no confunde rutas que solo empiezan parecido', () => {

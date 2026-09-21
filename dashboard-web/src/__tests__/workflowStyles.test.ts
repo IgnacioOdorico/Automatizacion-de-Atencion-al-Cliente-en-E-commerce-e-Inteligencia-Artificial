@@ -183,6 +183,39 @@ describe('Ejecución encabezado y avisos (contraste AA)', () => {
   });
 });
 
+describe('Métricas de la tesis y leyenda (contraste AA)', () => {
+  const card = surface('bg-surface');
+  const inner = surface('bg-surface-2');
+
+  it('título e introducción sobre la tarjeta', () => {
+    expect(contrastRatio(color('.wf-metrics__intro', 'color'), card)).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('cada métrica: sigla, flujo, valor, nombre, definición, fórmula y muestras sobre su bloque', () => {
+    for (const selector of [
+      '.wf-metric__short',
+      '.wf-metric__flow',
+      '.wf-metric__value',
+      '.wf-metric__name',
+      '.wf-metric__measures',
+      '.wf-metric__sample',
+    ]) {
+      expect(contrastRatio(color(selector, 'color'), inner), selector).toBeGreaterThanOrEqual(AA);
+    }
+    const formulaBg = color('.wf-metric__formula code', 'background');
+    expect(contrastRatio(color('.wf-metric__formula code', 'color'), over(formulaBg, inner))).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('la leyenda: textos sobre el fondo de la página y muestras que se distinguen', () => {
+    expect(contrastRatio(color('.wf-legend__list', 'color'), canvas)).toBeGreaterThanOrEqual(AA);
+    expect(contrastRatio(color('.wf-legend__hint', 'color'), canvas)).toBeGreaterThanOrEqual(AA);
+    const tagBg = over(color('.wf-legend__tag', 'background'), canvas);
+    expect(contrastRatio(color('.wf-legend__tag', 'color'), tagBg)).toBeGreaterThanOrEqual(AA);
+    expect(contrastRatio(color('.wf-legend__swatch--success', 'color'), over(color('.wf-legend__swatch--success', 'background'), canvas))).toBeGreaterThanOrEqual(GRAPHIC);
+    expect(contrastRatio(color('.wf-legend__swatch--error', 'color'), over(color('.wf-legend__swatch--error', 'background'), canvas))).toBeGreaterThanOrEqual(GRAPHIC);
+  });
+});
+
 /** Cuerpo de TODOS los bloques `@media (prefers-reduced-motion: reduce) { ... }` (llaves anidadas). */
 function reducedMotionBlocks(source: string): string {
   const marker = '@media (prefers-reduced-motion: reduce)';

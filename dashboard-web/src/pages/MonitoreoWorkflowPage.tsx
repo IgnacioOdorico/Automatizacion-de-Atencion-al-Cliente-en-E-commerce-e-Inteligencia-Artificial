@@ -13,6 +13,8 @@ import { ExecutionHeader } from '@/components/workflow/ExecutionHeader';
 import { ExecutionList } from '@/components/workflow/ExecutionList';
 import { NodeDetail } from '@/components/workflow/NodeDetail';
 import { PlaybackBar, PlaybackCaptionPill } from '@/components/workflow/PlaybackBar';
+import { ThesisMetricsCard } from '@/components/workflow/ThesisMetricsCard';
+import { WorkflowLegend } from '@/components/workflow/WorkflowLegend';
 import { WorkflowCanvas, WorkflowCanvasSkeleton } from '@/components/workflow/WorkflowCanvas';
 import { useFreshRows } from '@/hooks/useFreshRows';
 import { useNow } from '@/hooks/useNow';
@@ -257,7 +259,14 @@ export function MonitoreoWorkflowPage() {
         query={workflows}
         loading={<PageSkeleton />}
         isEmpty={(data) => !data.available || data.items.length === 0}
-        empty={<NoWorkflows available={workflows.data?.available ?? false} />}
+        empty={
+          <>
+            <NoWorkflows available={workflows.data?.available ?? false} />
+            <div className="wf-below">
+              <ThesisMetricsCard />
+            </div>
+          </>
+        }
       >
         {() => (
           <>
@@ -368,6 +377,7 @@ export function MonitoreoWorkflowPage() {
                       onRestart={playback.restart}
                       onShowAll={playback.showAll}
                     />
+                    <WorkflowLegend />
                   </>
                 ) : null
               }
@@ -387,6 +397,7 @@ export function MonitoreoWorkflowPage() {
                 loadingMore={loadingMore}
                 moreError={moreError}
               />
+              <ThesisMetricsCard />
             </div>
 
             {notices.length > 0 && (

@@ -29,7 +29,7 @@ Fuera de alcance: modificar workflows, exponer credenciales o `parameters` de no
   - [x] M4b-2 lienzo SVG con pan/zoom (mouse, rueda con Ctrl, pinch, teclado), selector de workflow y estados
   - [x] M4b-3 overlay de la ejecución + reproducir camino
   - [x] M4b-4 lista de ejecuciones, seguir en vivo y detalle de nodo
-  - [ ] M4b-5 tarjeta de métricas de la tesis, leyenda, ruta y pestaña
+  - [x] M4b-5 tarjeta de métricas de la tesis, leyenda, ruta y pestaña
   - [ ] M4b-6 revisión visual (1280 y 375 px contra una API de mentira) y cierre
 - [ ] M5 Reconstruir stack, smoke autenticado, docs (SPEC §1/§5/§10, README, CLAUDE.md), pausa de polling y a11y
 
@@ -51,6 +51,7 @@ M1–M3: delegated direct (un writer backend). M4: delegated direct (un writer f
 - **M4b-2**: RED `workflowCanvas.test.tsx` (módulo inexistente) y 14 tests nuevos de `viewport` (`initialView`, `preferredHeight`, `centerOn`, `isInView`). GREEN: canvas 28, page 12, styles 14, nodeCard 13, viewport 39. jsdom no trae PointerEvent ni ResizeObserver: los tests usan un `MouseEvent` con `pointerId` y un `ResizeObserver` de mentira (`helpers/fakeResizeObserver.ts`). Los tests de página (`workflowPage`) se escribieron DESPUÉS del componente (solo la lib fue RED-first).
 - **M4b-3**: RED 12 tests (`playbackCaption`, `traceNoticeMessages`) y 27 de `workflowOverlay.test.tsx` (overlay por estado y rama del IF, error, purgada/truncada, nodos que faltan o sobran, reproducción con velocidad/pausa/reinicio/resultado final, movimiento reducido, cámara, ejecución en curso). GREEN: overlay 27, playback 18+, workflowTrace 41+. Mutaciones: `reducedMotion` ignorado rompe el test de movimiento reducido; sacar el corte final de `tick` rompe 2 tests. Nota de jsdom: dentro de un mismo `act` React no re-arma el temporizador entre pasos, por eso los tests avanzan el reloj un paso por vez (en el navegador no pasa).
 - **M4b-4**: tests escritos antes de la implementación (`nodeDetail.test.ts` 16 y `workflowExecutions.test.tsx` 35; no se corrió un RED explícito por archivo: los módulos/componentes no existían al escribirlos). GREEN: 35 + 16; estilos 25. Mutaciones: no apagar "Seguir en vivo" al elegir a mano rompe 1 test; seguir siempre (ignorar `follow`) rompe 2 (apagado no cambia lo que se ve; reactivar no salta al backlog). Cubre lista, filtro por estado, cargar más con `next_before`, polling 4 s / 10 s, pestaña oculta, autoplay de la ejecución nueva, movimiento reducido, panel de detalle (texto plano, recortado, error, foco y Escape).
+- **M4b-5**: RED 2 tests de `thesisMetrics` (precisión de ms: `0.46` = 460 ms, no "0s") y 9 de `workflowMetrics.test.tsx` (tarjeta, definiciones reales por columna, valores, guiones sin datos, esqueleto, error con Reintentar, independencia del diagrama, leyenda). GREEN: 10 + 9. Los tests de pestañas y del layout se actualizaron (tercera pestaña Workflow). Suite completa: 817 passed (45 archivos, base 451/29). `tsc --noEmit` limpio; `npm run build` OK.
 - Pendiente de verificar: formato de ejecuciones EXITOSAS reales (solo existe la ejecución 1, con error; el resto de los fixtures exitosos se armaron con el formato observado) y del Flujo 2 (no está importado en n8n). Front (M4) y reconstrucción del stack (M5) sin hacer.
 
 ## Decisiones de M4a (front)

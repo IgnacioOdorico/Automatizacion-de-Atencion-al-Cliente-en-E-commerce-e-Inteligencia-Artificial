@@ -13,6 +13,7 @@ export interface MonitoringTab {
 export const MONITORING_TABS: readonly MonitoringTab[] = [
   { path: 'en-vivo', label: 'En vivo' },
   { path: 'conversaciones', label: 'Conversaciones' },
+  { path: 'workflow', label: 'Workflow' },
 ];
 
 export const DEFAULT_TAB_PATH = MONITORING_TABS[0].path;

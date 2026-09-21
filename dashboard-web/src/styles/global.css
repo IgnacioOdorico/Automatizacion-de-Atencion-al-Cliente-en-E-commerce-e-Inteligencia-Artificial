@@ -3122,6 +3122,151 @@ button {
   margin-top: 12px;
 }
 
+/* Métricas de la tesis */
+.wf-metrics {
+  padding: 16px;
+}
+.wf-metrics__intro {
+  margin: 4px 0 14px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.wf-metrics__list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wf-metric {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-2);
+}
+.wf-metric__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wf-metric__short {
+  color: #c7d2fe;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.wf-metric__flow {
+  padding: 1px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.wf-metric__value {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-1);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.wf-metric__name {
+  margin: 2px 0 0;
+  color: var(--text-1);
+  font-size: 13.5px;
+  font-weight: 650;
+}
+.wf-metric__measures {
+  margin: 4px 0 0;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.wf-metric__formula {
+  margin: 8px 0 0;
+}
+.wf-metric__formula code {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--bg-canvas);
+  color: #c7d2fe;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+.wf-metric__sample {
+  margin: 8px 0 0;
+  color: var(--text-2);
+  font-size: 12.5px;
+}
+
+/* Leyenda del diagrama */
+.wf-legend {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.wf-legend__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 0;
+  padding: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  list-style: none;
+}
+.wf-legend__list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.wf-legend__swatch {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border-strong);
+  border-radius: 7px;
+}
+.wf-legend__swatch--success {
+  border-color: var(--success);
+  background: #172b2f;
+  color: var(--success);
+}
+.wf-legend__swatch--error {
+  border-color: var(--danger-strong);
+  background: #31212e;
+  color: var(--danger);
+}
+.wf-legend__swatch--skipped {
+  border: 2px dashed var(--border-strong);
+  background: var(--bg-surface);
+}
+.wf-legend__line {
+  width: 30px;
+  height: 0;
+  border-top: 3px solid #a5b4fc;
+  border-radius: 2px;
+}
+.wf-legend__line--inactive {
+  border-top: 2px dashed rgba(153, 168, 190, 0.5);
+}
+.wf-legend__tag {
+  padding: 1px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--bg-surface-2);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 650;
+}
+.wf-legend__hint {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wf-edge--flowing {
     animation: none;

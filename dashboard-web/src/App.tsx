@@ -9,6 +9,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { MonitoreoConversacionesPage } from '@/pages/MonitoreoConversacionesPage';
 import { MonitoreoEnVivoPage } from '@/pages/MonitoreoEnVivoPage';
 import { MonitoreoPage } from '@/pages/MonitoreoPage';
+import { MonitoreoWorkflowPage } from '@/pages/MonitoreoWorkflowPage';
 import { PedidosPage } from '@/pages/PedidosPage';
 import { PerfilPage } from '@/pages/PerfilPage';
 import { RegistroPage } from '@/pages/RegistroPage';
@@ -45,6 +46,7 @@ export function App() {
             <Route index element={<Navigate to={DEFAULT_TAB_PATH} replace />} />
             <Route path="en-vivo" element={<MonitoreoEnVivoPage />} />
             <Route path="conversaciones" element={<MonitoreoConversacionesPage />} />
+            <Route path="workflow" element={<MonitoreoWorkflowPage />} />
           </Route>
           <Route path="/conexiones" element={<ConexionesPage />} />
           <Route path="/perfil" element={<PerfilPage />} />
