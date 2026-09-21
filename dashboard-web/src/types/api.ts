@@ -39,6 +39,11 @@ export interface TelegramStartResponse {
   expires_in: number;
 }
 
+/** DELETE /connections/telegram/code: `cancelled` es false si no había código pendiente. */
+export interface TelegramCancelResponse {
+  cancelled: boolean;
+}
+
 /** GET /connections/gmail/oauth-url: URL de consentimiento de Google con `state` firmado. */
 export interface GmailOAuthUrlResponse {
   url: string;

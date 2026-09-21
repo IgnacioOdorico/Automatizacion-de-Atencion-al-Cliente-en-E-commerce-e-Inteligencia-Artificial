@@ -79,7 +79,7 @@ export function TelegramCard({ model, link, onDisconnect }: TelegramCardProps) {
                 Generar código nuevo
               </Button>
             )}
-            <Button variant="ghost" onClick={link.dismiss}>
+            <Button variant="ghost" onClick={link.cancel} loading={link.cancelling}>
               {link.expired ? 'Cerrar' : 'Cancelar'}
             </Button>
           </>

@@ -73,12 +73,15 @@ export function channelActions(channel: Channel, status: ConnectionStatus): Chan
 
 export type ConnectionAction =
   | 'telegram-start'
+  | 'telegram-cancel'
   | 'gmail-connect'
   | 'whatsapp-request'
   | 'disconnect';
 
 const ACTION_FALLBACKS: Record<ConnectionAction, string> = {
   'telegram-start': 'No pudimos generar el código de vinculación. Reintentá en unos segundos.',
+  'telegram-cancel':
+    'No pudimos cancelar el código de vinculación: sigue vigente hasta que venza. Reintentá en unos segundos.',
   'gmail-connect': 'No pudimos iniciar la conexión con Gmail. Reintentá en unos segundos.',
   'whatsapp-request':
     'No pudimos enviar la solicitud de aprobación. Reintentá en unos segundos.',

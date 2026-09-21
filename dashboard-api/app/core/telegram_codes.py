@@ -37,6 +37,24 @@ def start_code(account_id: int) -> dict:
         }
 
 
+def cancel(account_id: int) -> bool:
+    """Invalida el código pendiente de esa cuenta (y solo el de esa cuenta).
+
+    Idempotente: sin código pendiente (o ya consumido/vencido) no falla y
+    devuelve False. True solo si había un código vigente que se descartó.
+    """
+    with _lock:
+        code = _current_by_account.pop(account_id, None)
+        if code is None:
+            return False
+        record = _records.get(code)
+        # Defensa: el índice por cuenta nunca debe apuntar a un código ajeno.
+        if record is None or record["account_id"] != account_id:
+            return False
+        _records.pop(code, None)
+        return datetime.now(timezone.utc) < record["expires_at"]
+
+
 def validate_code(code: str) -> dict | None:
     record = _records.get(code)
     if record is None:

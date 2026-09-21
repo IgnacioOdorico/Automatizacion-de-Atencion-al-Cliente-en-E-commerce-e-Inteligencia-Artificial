@@ -46,3 +46,12 @@ export function formatCountdown(seconds: number): string {
 export function shouldPollTelegram(state: { hasCode: boolean; expired: boolean }): boolean {
   return state.hasCode && !state.expired;
 }
+
+/**
+ * Al cancelar, un código vigente se invalida también en el server
+ * (DELETE /connections/telegram/code). Uno vencido ya no sirve allá: alcanza
+ * con descartarlo de la pantalla, sin request.
+ */
+export function shouldCancelTelegramCode(state: { hasCode: boolean; expired: boolean }): boolean {
+  return state.hasCode && !state.expired;
+}

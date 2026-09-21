@@ -413,3 +413,23 @@ describe('disconnectCopy', () => {
     expect(copy.message).not.toContain('()');
   });
 });
+
+describe('connectionActionError — cancelar código de Telegram', () => {
+  it('sin detalle usa un mensaje propio que aclara que el código sigue vigente', () => {
+    const msg = connectionActionError(new ApiError(500, '500 Internal Server Error'), 'telegram-cancel');
+    expect(msg).toBe(
+      'No pudimos cancelar el código de vinculación: sigue vigente hasta que venza. Reintentá en unos segundos.',
+    );
+  });
+
+  it('respeta el detalle que manda el server', () => {
+    const msg = connectionActionError(new ApiError(400, 'x', 'Algo pasó'), 'telegram-cancel');
+    expect(msg).toBe('Algo pasó');
+  });
+
+  it('un error de red (no ApiError) también termina en un texto claro', () => {
+    const msg = connectionActionError(new TypeError('Failed to fetch'), 'telegram-cancel');
+    expect(msg.length).toBeGreaterThan(10);
+    expect(msg).not.toContain('Failed to fetch');
+  });
+});

@@ -6,6 +6,7 @@ import {
   codeDeadline,
   formatCountdown,
   secondsRemaining,
+  shouldCancelTelegramCode,
   shouldPollTelegram,
 } from '@/lib/telegramLink';
 
@@ -76,5 +77,19 @@ describe('shouldPollTelegram', () => {
   it('el intervalo queda dentro de la ventana de polling de la spec (3-5s)', () => {
     expect(TELEGRAM_POLL_MS).toBeGreaterThanOrEqual(3000);
     expect(TELEGRAM_POLL_MS).toBeLessThanOrEqual(5000);
+  });
+});
+
+describe('shouldCancelTelegramCode', () => {
+  it('con un código vigente hay que invalidarlo en el server', () => {
+    expect(shouldCancelTelegramCode({ hasCode: true, expired: false })).toBe(true);
+  });
+
+  it('un código vencido ya no sirve en el server: alcanza con descartarlo en pantalla', () => {
+    expect(shouldCancelTelegramCode({ hasCode: true, expired: true })).toBe(false);
+  });
+
+  it('sin código no hay nada que cancelar', () => {
+    expect(shouldCancelTelegramCode({ hasCode: false, expired: false })).toBe(false);
   });
 });

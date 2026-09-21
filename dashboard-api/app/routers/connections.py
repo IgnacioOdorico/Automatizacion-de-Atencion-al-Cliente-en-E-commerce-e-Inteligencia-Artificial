@@ -120,6 +120,16 @@ def telegram_start(account_id: int = Depends(get_current_account_id)) -> dict:
     return telegram_codes.start_code(account_id)
 
 
+@router.delete("/telegram/code")
+def telegram_cancel_code(account_id: int = Depends(get_current_account_id)) -> dict:
+    """Cancela el código de vinculación pendiente de la cuenta autenticada.
+
+    No toca el estado del canal (eso es DELETE /connections/telegram) y es
+    idempotente: sin código pendiente responde 200 con `cancelled: false`.
+    """
+    return {"cancelled": telegram_codes.cancel(account_id)}
+
+
 @router.post("/telegram/confirm")
 def telegram_confirm(
     payload: TelegramConfirmRequest,

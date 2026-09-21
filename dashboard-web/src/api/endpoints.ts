@@ -12,6 +12,7 @@ import {
   Product,
   RegisterResponse,
   Summary,
+  TelegramCancelResponse,
   TelegramStartResponse,
   Ticket,
   WhatsAppApprovalResponse,
@@ -75,6 +76,12 @@ export const dashboardApi = {
 export const connectionsApi = {
   telegramStart(): Promise<TelegramStartResponse> {
     return apiRequest<TelegramStartResponse>('/connections/telegram/start', { method: 'POST' });
+  },
+  /** Invalida el código pendiente en el server (no toca el estado del canal). */
+  telegramCancelCode(): Promise<TelegramCancelResponse> {
+    return apiRequest<TelegramCancelResponse>('/connections/telegram/code', {
+      method: 'DELETE',
+    });
   },
   gmailOAuthUrl(): Promise<GmailOAuthUrlResponse> {
     return apiRequest<GmailOAuthUrlResponse>('/connections/gmail/oauth-url');

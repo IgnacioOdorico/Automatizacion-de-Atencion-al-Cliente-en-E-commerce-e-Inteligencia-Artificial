@@ -3,7 +3,12 @@ import { useMutation } from '@tanstack/react-query';
 
 import { connectionsApi } from '@/api/endpoints';
 import { connectionActionError } from '@/lib/connections';
-import { codeDeadline, secondsRemaining, shouldPollTelegram } from '@/lib/telegramLink';
+import {
+  codeDeadline,
+  secondsRemaining,
+  shouldCancelTelegramCode,
+  shouldPollTelegram,
+} from '@/lib/telegramLink';
 
 interface LinkSession {
   code: string;
@@ -11,14 +16,23 @@ interface LinkSession {
 }
 
 /**
- * Sesión de vínculo de Telegram: pide el código, lleva la cuenta regresiva y
- * dice cuándo hay que consultar el estado. El código vive solo en memoria del
- * componente (nunca en localStorage): recargar la página lo descarta.
+ * Sesión de vínculo de Telegram: pide el código, lo cancela en el server cuando
+ * el usuario lo descarta, lleva la cuenta regresiva y dice cuándo hay que
+ * consultar el estado. El código vive solo en memoria del componente (nunca en
+ * localStorage): recargar la página lo descarta.
  */
 export function useTelegramLink() {
   const [session, setSession] = useState<LinkSession | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [linked, setLinked] = useState(false);
+
+  // Cancelar invalida el código en el server. Solo si el DELETE sale bien se
+  // descarta el código local; si falla, la pantalla sigue mostrando el código
+  // (que en el server sigue vigente) junto con el error, para reintentar.
+  const cancelCode = useMutation({
+    mutationFn: connectionsApi.telegramCancelCode,
+    onSuccess: () => setSession(null),
+  });
 
   const start = useMutation({
     mutationFn: connectionsApi.telegramStart,
@@ -27,6 +41,7 @@ export function useTelegramLink() {
       setNow(receivedAt);
       setSession({ code: res.code, deadline: codeDeadline(res, receivedAt) });
       setLinked(false);
+      cancelCode.reset();
     },
   });
 
@@ -45,11 +60,24 @@ export function useTelegramLink() {
     setLinked(true);
   }, []);
 
-  /** Descarta el código de la pantalla (el del server vence solo a los 15 min). */
+  /**
+   * Descarta el código de la pantalla sin tocar el server (la desconexión del
+   * canal ya lo dejó sin efecto; uno vencido tampoco sirve allá).
+   */
   const dismiss = useCallback(() => {
     setSession(null);
     start.reset();
-  }, [start]);
+    cancelCode.reset();
+  }, [start, cancelCode]);
+
+  /** Botón "Cancelar": invalida el código pendiente en el server y lo descarta. */
+  const cancel = useCallback(() => {
+    if (shouldCancelTelegramCode({ hasCode: session !== null, expired })) {
+      cancelCode.mutate();
+    } else {
+      dismiss();
+    }
+  }, [session, expired, cancelCode, dismiss]);
 
   return {
     code: session?.code ?? null,
@@ -60,10 +88,16 @@ export function useTelegramLink() {
     /** Consultar GET /connections mientras se espera la confirmación. */
     polling: shouldPollTelegram({ hasCode: session !== null, expired }),
     starting: start.isPending,
-    error: start.isError ? connectionActionError(start.error, 'telegram-start') : null,
+    cancelling: cancelCode.isPending,
+    error: start.isError
+      ? connectionActionError(start.error, 'telegram-start')
+      : cancelCode.isError
+        ? connectionActionError(cancelCode.error, 'telegram-cancel')
+        : null,
     start: () => start.mutate(),
     complete,
     dismiss,
+    cancel,
   };
 }
 

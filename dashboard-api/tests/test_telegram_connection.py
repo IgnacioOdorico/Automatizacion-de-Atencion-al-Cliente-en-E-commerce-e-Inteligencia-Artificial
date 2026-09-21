@@ -105,3 +105,113 @@ def test_confirm_is_single_use(client, auth_headers):
         headers={"X-N8N-SECRET": N8N_SECRET},
     )
     assert again.status_code == 400
+
+# ---------- Cancelar el código pendiente (DELETE /connections/telegram/code) ----------
+
+
+def _second_account_headers(client):
+    client.post(
+        "/auth/register",
+        json={
+            "business_name": "Panadería Sol",
+            "email": "panaderia@sol.com",
+            "password": "Fuerte2026!",
+        },
+    )
+    login = client.post(
+        "/auth/login", json={"email": "panaderia@sol.com", "password": "Fuerte2026!"}
+    )
+    return {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+
+def _confirm(client, code, chat_id="458721336"):
+    return client.post(
+        "/connections/telegram/confirm",
+        json={"code": code, "chat_id": chat_id},
+        headers={"X-N8N-SECRET": N8N_SECRET},
+    )
+
+
+def test_cancel_code_requires_jwt(client):
+    assert client.delete("/connections/telegram/code").status_code == 401
+
+
+def test_cancel_code_invalidates_the_pending_code(client, auth_headers):
+    code = client.post("/connections/telegram/start", headers=auth_headers).json()["code"]
+
+    resp = client.delete("/connections/telegram/code", headers=auth_headers)
+    assert resp.status_code == 200
+    assert resp.json() == {"cancelled": True}
+
+    assert _confirm(client, code).status_code == 400
+
+
+def test_cancel_code_is_idempotent_without_pending_code(client, auth_headers):
+    first = client.delete("/connections/telegram/code", headers=auth_headers)
+    again = client.delete("/connections/telegram/code", headers=auth_headers)
+    assert first.status_code == 200 and first.json() == {"cancelled": False}
+    assert again.status_code == 200 and again.json() == {"cancelled": False}
+
+
+def test_cancel_code_twice_after_start_is_idempotent(client, auth_headers):
+    client.post("/connections/telegram/start", headers=auth_headers)
+    assert client.delete("/connections/telegram/code", headers=auth_headers).json() == {
+        "cancelled": True
+    }
+    assert client.delete("/connections/telegram/code", headers=auth_headers).json() == {
+        "cancelled": False
+    }
+
+
+def test_can_start_a_new_code_after_cancelling(client, auth_headers):
+    client.post("/connections/telegram/start", headers=auth_headers)
+    client.delete("/connections/telegram/code", headers=auth_headers)
+
+    code = client.post("/connections/telegram/start", headers=auth_headers).json()["code"]
+    assert _confirm(client, code).status_code == 200
+
+
+def test_cancel_code_never_touches_another_accounts_code(client, auth_headers):
+    other_headers = _second_account_headers(client)
+    other_code = client.post("/connections/telegram/start", headers=other_headers).json()[
+        "code"
+    ]
+    my_code = client.post("/connections/telegram/start", headers=auth_headers).json()["code"]
+
+    resp = client.delete("/connections/telegram/code", headers=auth_headers)
+    assert resp.json() == {"cancelled": True}
+
+    assert _confirm(client, my_code).status_code == 400
+    # El código de la otra cuenta sigue vivo y vincula a SU cuenta.
+    assert _confirm(client, other_code, chat_id="999000111").status_code == 200
+
+    from app.db import fetch_one
+
+    row = fetch_one(
+        "SELECT client_account_id, status, external_reference FROM channel_connections "
+        "WHERE channel = 'telegram' AND client_account_id <> 1"
+    )
+    assert row["status"] == "connected"
+    assert row["external_reference"] == "999000111"
+
+
+def test_cancel_code_does_not_disconnect_the_channel(client, auth_headers):
+    # /telegram/code no debe colisionar con DELETE /connections/{channel}:
+    # cancelar el código no toca el canal (la fixture lo deja conectado).
+    client.post("/connections/telegram/start", headers=auth_headers)
+    assert client.delete("/connections/telegram/code", headers=auth_headers).status_code == 200
+
+    from app.db import fetch_one
+
+    row = fetch_one(
+        "SELECT status, external_reference FROM channel_connections "
+        "WHERE client_account_id = 1 AND channel = 'telegram'"
+    )
+    assert row["status"] == "connected"
+    assert row["external_reference"] == "458721336"
+
+
+def test_disconnect_channel_route_still_works_next_to_cancel_code(client, auth_headers):
+    resp = client.delete("/connections/telegram", headers=auth_headers)
+    assert resp.status_code == 200
+    assert resp.json() == {"channel": "telegram", "status": "disconnected"}
