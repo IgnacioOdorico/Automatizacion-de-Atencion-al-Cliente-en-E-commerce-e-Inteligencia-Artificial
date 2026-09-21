@@ -1,5 +1,9 @@
+import functools
+import threading
+import time
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.exc import IntegrityError
 
 from app.core import rate_limit
@@ -20,7 +24,30 @@ from app.db import execute_returning_one, fetch_all, fetch_one
 router = APIRouter(tags=["auth"])
 
 REFRESH_COOKIE = "refresh_token"
-_used_refresh_jtis: set[str] = set()
+BCRYPT_MAX_BYTES = 72
+
+# Refresh tokens ya rotados: jti -> vencimiento (epoch). Se olvidan al vencer (un token
+# vencido ya no pasa la validación de firma/exp), así el set no crece para siempre.
+_used_refresh_jtis: dict[str, float] = {}
+_used_refresh_lock = threading.Lock()
+
+
+def _consume_refresh_jti(jti: str, expires_at: float) -> bool:
+    """Marca el jti como usado. False si ya lo estaba (reutilización). Atómico."""
+    now = time.time()
+    with _used_refresh_lock:
+        for old_jti in [j for j, exp in _used_refresh_jtis.items() if exp <= now]:
+            del _used_refresh_jtis[old_jti]
+        if jti in _used_refresh_jtis:
+            return False
+        _used_refresh_jtis[jti] = expires_at
+        return True
+
+
+@functools.lru_cache(maxsize=1)
+def _dummy_hash() -> str:
+    """Hash bcrypt descartable para igualar el costo del login de un email inexistente."""
+    return hash_password("dummy-password-for-timing-only")
 
 
 class RegisterRequest(BaseModel):
@@ -28,10 +55,18 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
 
+    @field_validator("password")
+    @classmethod
+    def _fits_bcrypt(cls, value: str) -> str:
+        # bcrypt solo mira los primeros 72 bytes: en vez de truncar en silencio, se rechaza.
+        if len(value.encode("utf-8")) > BCRYPT_MAX_BYTES:
+            raise ValueError("La contraseña no puede superar los 72 bytes")
+        return value
+
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(max_length=128)
 
 
 class RefreshRequest(BaseModel):
@@ -114,7 +149,12 @@ def login(payload: LoginRequest, request: Request, response: Response) -> dict:
         "SELECT id, password_hash FROM client_accounts WHERE email = :email",
         {"email": email},
     )
-    if account is None or not verify_password(payload.password, account["password_hash"]):
+    # Siempre se hace UN bcrypt, exista o no la cuenta: si no, el tiempo de respuesta
+    # delataría qué emails están registrados.
+    password_ok = verify_password(
+        payload.password, account["password_hash"] if account else _dummy_hash()
+    )
+    if account is None or not password_ok:
         rate_limit.record_failure(ip_key, email_key)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -142,12 +182,11 @@ def refresh(payload: RefreshRequest, request: Request, response: Response) -> di
         ) from exc
 
     jti = data.get("jti")
-    if not jti or jti in _used_refresh_jtis:
+    if not jti or not _consume_refresh_jti(jti, float(data["exp"])):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token ya utilizado",
         )
-    _used_refresh_jtis.add(jti)
     return _issue_tokens(response, int(data["sub"]))
 
 

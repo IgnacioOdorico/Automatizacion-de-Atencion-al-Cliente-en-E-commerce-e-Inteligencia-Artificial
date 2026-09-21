@@ -54,9 +54,19 @@ def create_refresh_token(account_id: int) -> str:
 
 def decode_token(token: str) -> dict:
     try:
-        return jwt.decode(token, settings.dashboard_jwt_secret, algorithms=[ALGORITHM])
+        # Solo HS256 (rechaza alg=none y otros) y con los claims obligatorios: un token
+        # sin `exp` no vence nunca, así que se rechaza aunque la firma sea válida.
+        payload = jwt.decode(
+            token,
+            settings.dashboard_jwt_secret,
+            algorithms=[ALGORITHM],
+            options={"require": ["exp", "sub", "type"]},
+        )
     except jwt.PyJWTError as exc:
         raise InvalidTokenError("Token inválido o vencido") from exc
+    if not str(payload.get("sub", "")).isdigit():
+        raise InvalidTokenError("Token inválido")
+    return payload
 
 
 def decode_access_token(token: str) -> dict:

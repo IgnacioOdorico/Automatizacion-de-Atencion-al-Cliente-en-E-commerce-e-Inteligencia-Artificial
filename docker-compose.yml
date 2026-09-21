@@ -157,7 +157,7 @@ services:
   # ----------------------------------------------------------
   # Dashboard API — Backend FastAPI del portal del cliente
   # Lee las tablas y vistas de la BD (no las modifica).
-  # Acceso: http://localhost:8000 (docs en /docs)
+  # Acceso: http://localhost:8000 (/docs y /openapi.json apagados; DASHBOARD_ENABLE_DOCS=true los prende)
   # Variables: ver .env.example (DASHBOARD_*).
   # FAIL-CLOSED: DASHBOARD_JWT_SECRET, DASHBOARD_ENC_KEY y DASHBOARD_N8N_SECRET no
   # tienen default. Si faltan en .env (o son débiles/de ejemplo) la API se niega a
@@ -187,6 +187,8 @@ services:
       # Único proxy en el que la API confía para leer X-Real-IP (IP real del cliente
       # en el rate limit de /auth/login). Un acceso directo a :8000 NO puede spoofearla.
       - DASHBOARD_TRUSTED_PROXIES=${DASHBOARD_TRUSTED_PROXIES:-dashboard-web}
+      # /docs, /redoc y /openapi.json exponen el mapa de la API: apagados por defecto.
+      - DASHBOARD_ENABLE_DOCS=${DASHBOARD_ENABLE_DOCS:-false}
     depends_on:
       postgres:
         condition: service_healthy

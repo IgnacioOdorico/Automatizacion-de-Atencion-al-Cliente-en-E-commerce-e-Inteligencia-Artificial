@@ -25,8 +25,8 @@ ChannelName = Literal["whatsapp", "telegram", "email"]
 
 
 class TelegramConfirmRequest(BaseModel):
-    code: str
-    chat_id: str
+    code: str = Field(min_length=1, max_length=16)
+    chat_id: str = Field(min_length=1, max_length=64)
 
 
 class WhatsAppApprovalRequest(BaseModel):
@@ -139,8 +139,9 @@ def telegram_confirm(
     payload: TelegramConfirmRequest,
     x_n8n_secret: str | None = Header(default=None, alias="X-N8N-SECRET"),
 ) -> dict:
+    # En bytes: compare_digest sobre str lanza TypeError con caracteres no ASCII.
     if not x_n8n_secret or not secrets.compare_digest(
-        x_n8n_secret, settings.dashboard_n8n_secret
+        x_n8n_secret.encode("utf-8"), settings.dashboard_n8n_secret.encode("utf-8")
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Secreto compartido inválido"

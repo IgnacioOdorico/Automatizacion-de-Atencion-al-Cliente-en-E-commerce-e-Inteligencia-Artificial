@@ -9,14 +9,18 @@ _failures: dict[str, list[float]] = defaultdict(list)
 
 def _prune(key: str, now: float) -> None:
     threshold = now - WINDOW_SECONDS
-    _failures[key] = [stamp for stamp in _failures[key] if stamp > threshold]
+    recent = [stamp for stamp in _failures.get(key, []) if stamp > threshold]
+    if recent:
+        _failures[key] = recent
+    else:
+        _failures.pop(key, None)  # sin buckets vacíos: la memoria no crece con claves viejas
 
 
 def is_blocked(*keys: str) -> bool:
     now = time.monotonic()
     for key in keys:
         _prune(key, now)
-        if len(_failures[key]) >= MAX_FAILURES:
+        if len(_failures.get(key, [])) >= MAX_FAILURES:
             return True
     return False
 

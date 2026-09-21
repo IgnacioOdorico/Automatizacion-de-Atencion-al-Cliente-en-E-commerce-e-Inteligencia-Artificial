@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     # Proxies (IP, CIDR o nombre de host) en los que se confía para leer X-Real-IP.
     # Vacío = no se confía en ningún header (se usa la IP del peer directo).
     dashboard_trusted_proxies: str = ""
+    # /docs, /redoc y /openapi.json exponen el mapa completo de la API: apagados por
+    # defecto; se prenden solo para desarrollo (DASHBOARD_ENABLE_DOCS=true).
+    dashboard_enable_docs: bool = False
 
     access_token_expire_minutes: int = 120
     refresh_token_expire_days: int = 7

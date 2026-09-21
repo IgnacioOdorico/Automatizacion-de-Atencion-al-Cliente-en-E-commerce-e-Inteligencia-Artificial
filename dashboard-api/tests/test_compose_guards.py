@@ -54,3 +54,7 @@ def test_compose_has_no_known_weak_secret_strings():
 def test_only_the_web_proxy_is_trusted_for_the_client_ip():
     # Nunca un rango amplio: un acceso directo a :8000 podría spoofear X-Real-IP.
     assert _default("DASHBOARD_TRUSTED_PROXIES") == "dashboard-web"
+
+
+def test_api_docs_are_off_by_default_in_compose():
+    assert _default("DASHBOARD_ENABLE_DOCS") == "false"
