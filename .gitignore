@@ -41,6 +41,10 @@ dist/
 # Worktrees, settings locales y todo lo de .claude: nunca se versiona.
 .claude/
 
+# --- Tooling de agentes (OpenCode / skill registry) ---------
+.opencode/
+.atl/
+
 # --- OS ------------------------------------------------------
 .DS_Store
 Thumbs.db
