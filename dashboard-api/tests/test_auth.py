@@ -32,6 +32,47 @@ def test_register_creates_bcrypt_account(client):
     assert row["password_hash"] != "Fuerte2026!"
 
 
+def test_register_creates_three_disconnected_channel_rows(client):
+    """Spec connections: al registrar, una fila `disconnected` por cada canal.
+
+    Sin esto, /me de una cuenta recién creada devolvía `connections: []` hasta que
+    alguien pedía /connections (que las creaba de forma perezosa).
+    """
+    email = "nueva@panaderialuna.com.ar"
+    reg = client.post(
+        "/auth/register",
+        json={"business_name": "Panadería Luna", "email": email, "password": "Fuerte2026!"},
+    )
+    assert reg.status_code == 201
+
+    from app.db import fetch_all
+
+    rows = fetch_all(
+        """
+        SELECT cc.channel, cc.status, cc.external_reference, cc.encrypted_credentials
+        FROM channel_connections cc
+        JOIN client_accounts a ON a.id = cc.client_account_id
+        WHERE a.email = :email
+        ORDER BY cc.channel
+        """,
+        {"email": email},
+    )
+    assert [r["channel"] for r in rows] == ["email", "telegram", "whatsapp"]
+    assert all(r["status"] == "disconnected" for r in rows)
+    assert all(r["external_reference"] is None and r["encrypted_credentials"] is None for r in rows)
+
+    login = client.post("/auth/login", json={"email": email, "password": "Fuerte2026!"})
+    assert login.status_code == 200
+    me = client.get(
+        "/me", headers={"Authorization": f"Bearer {login.json()['access_token']}"}
+    )
+    assert {c["channel"]: c["status"] for c in me.json()["connections"]} == {
+        "email": "disconnected",
+        "telegram": "disconnected",
+        "whatsapp": "disconnected",
+    }
+
+
 def test_register_duplicate_email_conflict(client):
     resp = client.post(
         "/auth/register",

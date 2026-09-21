@@ -65,11 +65,23 @@ def register(payload: RegisterRequest) -> dict:
             detail="El email ya está registrado",
         )
     try:
+        # Una sola sentencia (atómica): la cuenta y sus 3 conexiones `disconnected`
+        # (spec connections), así /me no devuelve `connections: []` tras el alta.
         account = execute_returning_one(
             f"""
-            INSERT INTO client_accounts (business_name, email, password_hash)
-            VALUES (:business_name, :email, :password_hash)
-            RETURNING id, business_name, email, {iso('created_at')} AS created_at
+            WITH new_account AS (
+                INSERT INTO client_accounts (business_name, email, password_hash)
+                VALUES (:business_name, :email, :password_hash)
+                RETURNING id, business_name, email, created_at
+            ),
+            initial_connections AS (
+                INSERT INTO channel_connections (client_account_id, channel)
+                SELECT new_account.id, channel.name
+                FROM new_account,
+                     unnest(ARRAY['whatsapp', 'telegram', 'email']) AS channel(name)
+            )
+            SELECT id, business_name, email, {iso('created_at')} AS created_at
+            FROM new_account
             """,
             {
                 "business_name": payload.business_name,
