@@ -176,8 +176,9 @@ services:
       - DASHBOARD_GOOGLE_CLIENT_ID=${DASHBOARD_GOOGLE_CLIENT_ID:-}
       - DASHBOARD_GOOGLE_CLIENT_SECRET=${DASHBOARD_GOOGLE_CLIENT_SECRET:-}
       - DASHBOARD_GOOGLE_REDIRECT_URI=${DASHBOARD_GOOGLE_REDIRECT_URI:-}
-      # URL del frontend para la redirección post-callback de Gmail.
-      - DASHBOARD_FRONTEND_URL=${DASHBOARD_FRONTEND_URL:-http://localhost:5173}
+      # URL del frontend para la redirección post-callback de Gmail. En Docker el
+      # front sale por :8080; si desarrollás con Vite (:5173), pisala en .env.
+      - DASHBOARD_FRONTEND_URL=${DASHBOARD_FRONTEND_URL:-http://localhost:8080}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
     depends_on:
       postgres:
