@@ -21,7 +21,7 @@ Credenciales de Google (`DASHBOARD_GOOGLE_CLIENT_ID/SECRET`) y bot de Telegram (
 - [x] C4 Docker: levantar stack completo, aplicar migración/seed, smoke de API, aislamiento entre cuentas, Telegram confirm por curl, WhatsApp pending, `orden-nueva` → dashboard en vivo; corregir lo que rompa (**parcial: el punto 9 — Flujo 1 real de n8n → email en Mailpit — queda `blocked` por credenciales de n8n, ver evidencia**)
 - [x] C5 Fase 7 (pulido para cámara): estados carga/vacío/error, datos en pantalla, transiciones, demo en vivo (**parcial: el disparo real de `demo_en_vivo.ps1` queda `blocked` por credenciales de n8n y la revisión visual con la sesión real del usuario queda pendiente; ver evidencia**)
 - [x] C6 Fase 8 (QA seguridad §6): checklist 9.1–9.8 con evidencia, corregir huecos (**parcial: 9.1 y 9.8 quedan sin tildar por salvedades; el circuito real de Gmail/Telegram y el Flujo 1 real quedan sin verificar por credenciales; ver evidencia y "Pendientes del usuario"**)
-- [ ] C7 Push de la rama a GitHub (no `main`) y reporte
+- [x] C7 Push de la rama a GitHub (no `main`) y reporte (`origin/feature/dashboard-cliente` en `c477dd9`; `main` intacta en `04bd8e4`; antes del push: `pytest` 216 y `npm test` 238 en verde, `npm run build` OK, escaneo de secretos del diff `main..HEAD` sin hallazgos reales)
 
 ## Ruta por tarea
 C1, C2, C5, C6: delegated direct (un writer por vez). C3, C7: inline (mecánico). C4: delegated direct.
