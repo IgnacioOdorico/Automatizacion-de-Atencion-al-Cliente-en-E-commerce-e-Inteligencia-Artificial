@@ -8,6 +8,7 @@ from app.routers import (
     dashboard,
     monitoring_conversations,
     monitoring_feed,
+    monitoring_workflows,
     orders,
     products,
     tickets,
@@ -43,6 +44,7 @@ def create_app() -> FastAPI:
     application.include_router(products.router)
     application.include_router(monitoring_feed.router)
     application.include_router(monitoring_conversations.router)
+    application.include_router(monitoring_workflows.router)
     return application
 
 

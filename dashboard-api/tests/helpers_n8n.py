@@ -7,7 +7,7 @@ el formato `flatted` de `execution_data.data`.
 """
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from app.db import execute, execute_returning_one, fetch_one
@@ -204,9 +204,9 @@ def node_run(
         else [],
         "hints": [],
         "executionTime": duration_ms,
-        "executionStatus": "error" if error else "success",
+        "executionStatus": "error" if error is not None else "success",
     }
-    if error:
+    if error is not None:
         run["error"] = error
     else:
         run["data"] = {
@@ -283,4 +283,63 @@ def insert_execution(
             },
         )
     return execution_id
+
+# ---------------------------------------------------------------------------
+# Ejecuciones tipo del Flujo 1 (ramas "con stock" y "sin stock")
+# ---------------------------------------------------------------------------
+
+T0 = datetime(2026, 9, 21, 12, 0, 0, tzinfo=timezone.utc)
+ORDER = {"order_number": "ORD-T-001", "customer_name": "Ana", "quantity": 2}
+
+
+def at(ms: int) -> datetime:
+    return T0 + timedelta(milliseconds=ms)
+
+
+WEBHOOK = "Webhook - Recibir Orden"
+REGISTRAR = "Registrar Orden"
+VERIFICAR = "Verificar Stock"
+IF_STOCK = "IF Stock Disponible"
+
+
+def with_stock_run_data() -> dict:
+    """Rama 'con stock': IF Stock Disponible sale por 0, IF Stock Bajo por 1 (falso)."""
+    return {
+        WEBHOOK: [node_run(at(0), 0, 2, [[{"body": ORDER, "headers": {"host": "localhost"}}]])],
+        REGISTRAR: [node_run(at(5), 1, 31, [[{"order_id": 7, **ORDER}]], previous=WEBHOOK)],
+        VERIFICAR: [node_run(at(40), 2, 12, [[{"stock": 10}]], previous=REGISTRAR)],
+        IF_STOCK: [node_run(at(55), 3, 1, [[{"stock": 10}], []], previous=VERIFICAR)],
+        "Actualizar Stock": [node_run(at(60), 4, 20, [[{"stock": 8}]], previous=IF_STOCK)],
+        "IF Stock Bajo": [node_run(at(85), 5, 1, [[], [{"stock": 8}]], previous="Actualizar Stock")],
+        "Confirmar Orden": [node_run(at(90), 6, 15, [[{"status": "confirmed"}]], previous="IF Stock Bajo")],
+        "Enviar Email Confirmación": [
+            node_run(at(110), 7, 300, [[{"accepted": ["ana@example.com"]}]], previous="Confirmar Orden")
+        ],
+        "Registrar Notificación": [
+            node_run(at(415), 8, 14, [[{"notified": True}]], previous="Enviar Email Confirmación")
+        ],
+        "Respuesta Confirmada": [
+            node_run(at(435), 9, 3, [[{"success": True}]], previous="Registrar Notificación")
+        ],
+    }
+
+
+def no_stock_run_data() -> dict:
+    run_data = with_stock_run_data()
+    for name in ("Actualizar Stock", "IF Stock Bajo", "Confirmar Orden",
+                 "Enviar Email Confirmación", "Registrar Notificación", "Respuesta Confirmada"):
+        del run_data[name]
+    run_data[IF_STOCK] = [node_run(at(55), 3, 1, [[], [{"stock": 0}]], previous=VERIFICAR)]
+    run_data["Marcar Sin Stock"] = [node_run(at(60), 4, 18, [[{"status": "no_stock"}]], previous=IF_STOCK)]
+    run_data["Enviar Email Sin Stock"] = [
+        node_run(at(80), 5, 250, [[{"accepted": ["ana@example.com"]}]], previous="Marcar Sin Stock")
+    ]
+    run_data["Registrar Notificación Sin Stock"] = [
+        node_run(at(335), 6, 9, [[{"notified": True}]], previous="Enviar Email Sin Stock")
+    ]
+    run_data["Respuesta Sin Stock"] = [
+        node_run(at(350), 7, 2, [[{"success": False}]], previous="Registrar Notificación Sin Stock")
+    ]
+    return run_data
+
 
