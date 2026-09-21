@@ -8,6 +8,7 @@ import {
   formatDateTime,
   formatDateTimeSeconds,
   formatDuration,
+  formatEventClock,
   formatMetricDuration,
   formatRelative,
   formatTime,
@@ -233,3 +234,25 @@ describe('formatTmr (tiempos cortos del bot y del pipeline)', () => {
     expect(formatTmr(Number.NaN)).toBe('—');
   });
 });
+
+describe('formatEventClock (hora absoluta en la tarjeta del feed)', () => {
+  const now = Date.parse('2026-09-21T14:10:00.000Z'); // 21/09 11:10 en Mendoza
+
+  it('el mismo día: solo hh:mm:ss', () => {
+    expect(formatEventClock('2026-09-21T14:03:22.418Z', now)).toBe('11:03:22');
+  });
+
+  it('otro día: con día y mes, para no confundir "ayer a las 11" con "hoy a las 11"', () => {
+    expect(formatEventClock('2026-09-20T14:03:22.418Z', now)).toBe('20/09 11:03:22');
+  });
+
+  it('el día se corta en la medianoche de Mendoza, no en la de UTC', () => {
+    // 22/09 01:30Z = 21/09 22:30 en Mendoza: sigue siendo hoy.
+    expect(formatEventClock('2026-09-22T01:30:00.000Z', now)).toBe('22:30:00');
+  });
+
+  it('sin dato', () => {
+    expect(formatEventClock(null, now)).toBe('—');
+  });
+});
+

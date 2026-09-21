@@ -19,6 +19,8 @@ interface QueryViewProps<T> {
   /** Estado vacío diseñado (con datos pero sin ítems). Sin esto nunca hay estado vacío. */
   empty?: ReactNode;
   isEmpty?: (data: T) => boolean;
+  /** El error inicial (sin datos previos) usa la versión con menos aire, para franjas y tarjetas chicas. */
+  smallError?: boolean;
   children: (data: T) => ReactNode;
 }
 
@@ -27,7 +29,14 @@ interface QueryViewProps<T> {
  * (mensaje + Reintentar), vacío (EmptyState) o listo. Si un refetch falla con
  * datos ya cargados se siguen mostrando y aparece una franja de aviso.
  */
-export function QueryView<T>({ query, loading, empty, isEmpty, children }: QueryViewProps<T>) {
+export function QueryView<T>({
+  query,
+  loading,
+  empty,
+  isEmpty,
+  smallError,
+  children,
+}: QueryViewProps<T>) {
   const { data } = query;
   const hasData = data !== undefined;
   const { view, refreshFailed } = resolveViewState({
@@ -48,7 +57,9 @@ export function QueryView<T>({ query, loading, empty, isEmpty, children }: Query
   }
 
   if (view === 'error') {
-    return <ErrorState error={query.error} onRetry={retry} retrying={query.isFetching} />;
+    return (
+      <ErrorState small={smallError} error={query.error} onRetry={retry} retrying={query.isFetching} />
+    );
   }
 
   return (

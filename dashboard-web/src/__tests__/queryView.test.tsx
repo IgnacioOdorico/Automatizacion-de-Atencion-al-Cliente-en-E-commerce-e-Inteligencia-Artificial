@@ -122,4 +122,18 @@ describe('QueryView', () => {
     act(() => retryButton()?.click());
     expect(refetch).toHaveBeenCalledTimes(1);
   });
+
+  it('smallError: el error inicial usa la versión compacta (para franjas y tarjetas chicas)', () => {
+    render(
+      <QueryView
+        query={query({ isError: true, error: new TypeError('Failed to fetch') })}
+        loading={<div />}
+        smallError
+      >
+        {() => <div />}
+      </QueryView>,
+    );
+    expect(container.querySelector('.error-state--sm')).not.toBeNull();
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain('Sin conexión');
+  });
 });

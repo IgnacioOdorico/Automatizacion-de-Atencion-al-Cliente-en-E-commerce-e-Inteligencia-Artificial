@@ -7,6 +7,7 @@ import {
   applyOlder,
   feedItems,
   initialFeed,
+  isScrolledAway,
   newestFeedTs,
   olderCursor,
   pendingCount,
@@ -253,3 +254,21 @@ describe('newestFeedTs (para el indicador "Bot activo")', () => {
     expect(newestFeedTs(initialFeed())).toBeNull();
   });
 });
+
+describe('isScrolledAway (con la lista lejos del borde superior, lo nuevo espera para no mover lo que estás leyendo)', () => {
+  it('con la lista a la vista, no está lejos', () => {
+    expect(isScrolledAway(120)).toBe(false);
+    expect(isScrolledAway(0)).toBe(false);
+    expect(isScrolledAway(-100)).toBe(false);
+  });
+
+  it('con el inicio de la lista más de 200 px arriba de la pantalla, sí', () => {
+    expect(isScrolledAway(-201)).toBe(true);
+    expect(isScrolledAway(-1200)).toBe(true);
+  });
+
+  it('el umbral es configurable', () => {
+    expect(isScrolledAway(-50, 40)).toBe(true);
+  });
+});
+

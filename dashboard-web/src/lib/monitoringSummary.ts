@@ -68,10 +68,18 @@ export function cardTick(iso: string, nowMs: number): number {
   return nowMs - ts < 60_000 ? nowMs : minute;
 }
 
+export interface KpiPart {
+  text: string;
+  /** Solo el fragmento con este tono se pinta (por ejemplo, los "con error" y no los "ok"). */
+  tone?: 'warning' | 'danger';
+}
+
 export interface Kpi {
   id: string;
   label: string;
   value: string;
+  /** El mismo `value` en fragmentos, cuando solo una parte lleva tono. */
+  parts?: KpiPart[];
   hint?: string;
   /** Marca visual adicional al número (el número y el texto ya lo dicen todo). */
   tone?: 'warning' | 'danger';
@@ -92,8 +100,12 @@ export function summaryKpis(summary: MonitoringSummary): Kpi[] {
           id: 'executions',
           label: 'Ejecuciones',
           value: `${executions.success} ok · ${executions.error} con error`,
+          parts: [
+            { text: `${executions.success} ok` },
+            { text: ' · ' },
+            { text: `${executions.error} con error`, tone: executions.error > 0 ? 'danger' : undefined },
+          ],
           hint: window,
-          tone: executions.error > 0 ? 'danger' : undefined,
         }
       : {
           id: 'executions',

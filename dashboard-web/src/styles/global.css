@@ -1671,3 +1671,415 @@ button {
 .mon-panel {
   min-width: 0;
 }
+
+/* ============================================================
+   Monitoreo — En vivo (estado del bot, KPIs y feed de eventos)
+   ============================================================ */
+
+.mon-top {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* Estado del bot: solo afirma "activo" si hubo un evento real hace poco */
+.mon-bot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
+.mon-bot__dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+.mon-bot--active .mon-bot__dot {
+  background: var(--success);
+  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5);
+  animation: live-pulse 1.8s infinite;
+}
+.mon-bot--idle .mon-bot__dot {
+  background: var(--warning);
+}
+.mon-bot__text {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  min-width: 0;
+}
+.mon-bot__title {
+  color: var(--text-1);
+  font-size: 14.5px;
+  font-weight: 650;
+}
+.mon-bot__detail {
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+/* KPIs de las últimas horas */
+.mon-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 12px;
+}
+.mon-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 92px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+.mon-kpi__label {
+  color: var(--text-3);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.mon-kpi__value {
+  color: var(--text-1);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.mon-kpi--text .mon-kpi__value {
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 1.35;
+  padding: 3px 0;
+}
+.mon-kpi--warning .mon-kpi__value {
+  color: var(--warning);
+}
+.mon-kpi__part--danger {
+  color: var(--danger);
+}
+.mon-kpi__hint {
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+/* Barra de acciones y filtros */
+.mon-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.mon-toolbar .btn {
+  height: 36px;
+  padding: 0 14px;
+}
+.mon-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 6px 4px 14px;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 999px;
+  background: var(--brand-soft-strong);
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+.mon-pending .btn {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+.mon-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.mon-filters .field {
+  min-width: 190px;
+}
+.mon-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+  min-width: 260px;
+}
+.mon-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.mon-chip:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+.mon-chip[aria-pressed='true'] {
+  background: var(--brand-soft-strong);
+  color: var(--text-1);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+.mon-hint {
+  margin: -6px 0 14px;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+
+/* Feed: una tarjeta por evento, la más nueva arriba */
+.mon-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mon-event {
+  --sev: var(--border-strong);
+  --sev-soft: var(--bg-surface-2);
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 0 14px;
+  padding: 14px 16px 14px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--sev);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.mon-event:hover {
+  border-color: var(--border-strong);
+  border-left-color: var(--sev);
+  background: var(--bg-surface-2);
+}
+.mon-event--info {
+  --sev: #818cf8;
+  --sev-soft: rgba(129, 140, 248, 0.14);
+}
+.mon-event--success {
+  --sev: var(--success);
+  --sev-soft: var(--success-soft);
+}
+.mon-event--warning {
+  --sev: var(--warning);
+  --sev-soft: rgba(251, 191, 36, 0.13);
+}
+.mon-event--error {
+  --sev: var(--danger-strong);
+  --sev-soft: var(--danger-soft);
+}
+.mon-event__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--sev-soft);
+  color: var(--sev);
+}
+.mon-event__body {
+  min-width: 0;
+}
+.mon-event__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+.mon-event__type {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.mon-event__time {
+  margin-left: auto;
+  color: var(--text-3);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mon-event__headline {
+  display: block;
+  margin: 4px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-1);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+/* El botón se estira sobre toda la tarjeta: un clic en cualquier parte abre el detalle */
+.mon-event__headline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+}
+.mon-event__headline:focus-visible {
+  outline: none;
+}
+.mon-event__headline:focus-visible::after {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.mon-event__detail {
+  margin: 2px 0 0;
+  color: var(--text-2);
+  font-size: 13.5px;
+  overflow-wrap: anywhere;
+}
+.mon-event__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Texto exacto del cliente o del bot: siempre como texto, sin recortar en el detalle */
+.mon-quote {
+  margin: 8px 0 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  unicode-bidi: isolate;
+}
+.mon-quote--bot {
+  border-left: 3px solid var(--brand);
+  background: var(--brand-soft);
+}
+.mon-quote--clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+/* Evento que acaba de entrar: se ilumina y se apaga solo */
+.mon-event--fresh {
+  animation: mon-fresh 3s ease-out;
+}
+@keyframes mon-fresh {
+  0% {
+    background: var(--brand-soft-strong);
+  }
+  65% {
+    background: var(--brand-soft);
+  }
+  100% {
+    background: var(--bg-surface);
+  }
+}
+
+.mon-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.mon-end {
+  margin: 16px 0 0;
+  color: var(--text-3);
+  font-size: 12.5px;
+  text-align: center;
+}
+.mon-event--skeleton {
+  min-height: 108px;
+}
+
+/* Detalle de un evento */
+.mon-detail-quote {
+  max-height: 42vh;
+  margin: 0;
+  overflow: auto;
+}
+.mon-detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.mon-detail-links .btn {
+  height: 36px;
+}
+
+@media (max-width: 560px) {
+  .mon-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .mon-kpi {
+    min-height: 84px;
+    padding: 12px 14px;
+  }
+  .mon-kpi--text {
+    grid-column: 1 / -1;
+  }
+  .mon-event {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 0 10px;
+    padding: 12px 12px 12px 10px;
+  }
+  .mon-event__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+  .mon-event__time {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+  .mon-filters .field {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mon-bot__dot {
+    animation: none;
+    box-shadow: none;
+  }
+  /* Sin animación, el evento nuevo queda marcado de forma estática mientras dura el aviso */
+  .mon-event--fresh {
+    animation: none;
+    background: var(--brand-soft);
+  }
+}

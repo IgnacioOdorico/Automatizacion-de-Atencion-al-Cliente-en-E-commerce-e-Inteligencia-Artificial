@@ -83,6 +83,20 @@ export function formatDateTimeSeconds(iso: string | null | undefined): string {
   return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}:${seconds}`;
 }
 
+/**
+ * Hora absoluta de un evento del feed: "hh:mm:ss" si es de hoy (hora de
+ * Mendoza) y "dd/mm hh:mm:ss" si es de otro día.
+ */
+export function formatEventClock(iso: string | null | undefined, nowMs: number): string {
+  const d = toDate(iso);
+  if (!d) return '—';
+  const p = dateParts(d);
+  const clock = `${p.hour}:${p.minute}:${timeParts(d).second}`;
+  const today = dateParts(new Date(nowMs));
+  const sameDay = p.day === today.day && p.month === today.month && p.year === today.year;
+  return sameDay ? clock : `${p.day}/${p.month} ${clock}`;
+}
+
 /** "hh:mm" en la hora del negocio (burbujas de los hilos de conversación). */
 export function formatTime(iso: string | null | undefined): string {
   const d = toDate(iso);

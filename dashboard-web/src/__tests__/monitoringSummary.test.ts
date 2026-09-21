@@ -156,21 +156,27 @@ describe('summaryKpis (franja de las últimas 24 h)', () => {
     expect(kpis.find((k) => k.id === 'tmr')?.value).toBe('—');
   });
 
-  it('los urgentes y los errores se marcan con tono, además del número', () => {
+  it('los urgentes se marcan con tono, además del número', () => {
     const byId = Object.fromEntries(summaryKpis(summary()).map((k) => [k.id, k]));
     expect(byId.urgent.tone).toBe('warning');
-    expect(byId.executions.tone).toBe('danger');
+    const calm = summaryKpis(summary({ bot: { ...summary().bot, urgent: 0 } }));
+    expect(calm.find((k) => k.id === 'urgent')?.tone).toBeUndefined();
+  });
 
-    const calm = Object.fromEntries(
-      summaryKpis(
-        summary({
-          bot: { ...summary().bot, urgent: 0 },
-          executions: { available: true, total: 5, success: 5, error: 0, last_error_at: null },
-        }),
-      ).map((k) => [k.id, k]),
-    );
-    expect(calm.urgent.tone).toBeUndefined();
-    expect(calm.executions.tone).toBeUndefined();
+  it('en ejecuciones solo lo que falló se marca (los "ok" no se pintan de error)', () => {
+    const exec = summaryKpis(summary()).find((k) => k.id === 'executions');
+    expect(exec?.parts).toEqual([
+      { text: '19 ok' },
+      { text: ' · ' },
+      { text: '2 con error', tone: 'danger' },
+    ]);
+    expect(exec?.parts?.map((p) => p.text).join('')).toBe(exec?.value);
+    expect(exec?.tone).toBeUndefined();
+
+    const clean = summaryKpis(
+      summary({ executions: { available: true, total: 5, success: 5, error: 0, last_error_at: null } }),
+    ).find((k) => k.id === 'executions');
+    expect(clean?.parts?.some((p) => p.tone)).toBe(false);
   });
 
   it('sin datos de ejecuciones (n8n no disponible) se degrada sin romper', () => {

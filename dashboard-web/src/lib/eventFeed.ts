@@ -142,3 +142,17 @@ export function applyOlder(state: FeedState, page: EventsPage): FeedState {
       : state.chunks;
   return { ...state, chunks, hasMore: page.has_more };
 }
+
+/** Distancia (px) a la que el inicio de la lista se considera fuera de la vista. */
+export const SCROLL_HOLD_PX = 200;
+
+/**
+ * `listTop` es la posición del inicio de la lista respecto de la pantalla
+ * (getBoundingClientRect().top). Si ya se desplazó bien arriba de la vista, el
+ * usuario está leyendo más abajo: lo nuevo espera en el contador en vez de
+ * empujar el contenido y hacer saltar el scroll.
+ */
+export function isScrolledAway(listTop: number, threshold = SCROLL_HOLD_PX): boolean {
+  return listTop < -threshold;
+}
+
