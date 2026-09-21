@@ -63,7 +63,7 @@
 - [x] 8.1 Estados de carga, vacío y error consistentes en todas las páginas (AC: sin datos, se ve un estado vacío diseñado, no una tabla cruda; error de red → mensaje + reintento)
 - [x] 8.2 Datos seed realistas en pantalla: cuentas, empresas y órdenes con nombres reales, formato local de fechas y montos con 2 decimales (AC: revisión visual sin "Test123", "Usuario 1" ni "Lorem ipsum" en pantalla)
 - [x] 8.3 Transiciones y micro-interacciones suaves (hover en cards, transición de estados de conexión, skeletons de carga) (AC: la demo se ve consistente, sin parpadeos ni saltos)
-- [x] 8.4 Respuesta de la demo en vivo: probar disparar los webhooks (`orden-nueva` y `whatsapp-business` con payload plano según DESVIOS §2.4) desde la UI o curl mientras se filma el dashboard (AC: el efecto "en vivo" se ve en cámara con polling 4s)
+- [x] 8.4 Respuesta de la demo en vivo: probar disparar los webhooks (`orden-nueva` y `whatsapp-business` con payload plano según DESVIOS §2.4) desde la UI o curl mientras se filma el dashboard (AC: el efecto "en vivo" se ve en cámara con polling 4s) — script `demo_en_vivo.ps1` listo y documentado; el disparo real queda pendiente: n8n sin credenciales cargadas (ver `odd/tasks/dashboard-cliente-cierre.md`)
 
 ## 9. Fase 8 — QA de seguridad (checklist §6, una por una)
 
