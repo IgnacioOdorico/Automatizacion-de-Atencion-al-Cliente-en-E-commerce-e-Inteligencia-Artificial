@@ -189,6 +189,9 @@ services:
       - DASHBOARD_TRUSTED_PROXIES=${DASHBOARD_TRUSTED_PROXIES:-dashboard-web}
       # /docs, /redoc y /openapi.json exponen el mapa de la API: apagados por defecto.
       - DASHBOARD_ENABLE_DOCS=${DASHBOARD_ENABLE_DOCS:-false}
+      # Alta de cuentas abierta para la demo. Como orders/tickets/products son globales
+      # (un comercio por instalación), en una instalación pública se pone en false.
+      - DASHBOARD_ALLOW_REGISTRATION=${DASHBOARD_ALLOW_REGISTRATION:-true}
     depends_on:
       postgres:
         condition: service_healthy

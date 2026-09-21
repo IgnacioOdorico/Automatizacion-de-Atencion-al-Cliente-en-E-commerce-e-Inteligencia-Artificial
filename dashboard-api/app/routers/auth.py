@@ -94,6 +94,11 @@ def _issue_tokens(response: Response, account_id: int) -> dict:
 
 @router.post("/auth/register", status_code=status.HTTP_201_CREATED)
 def register(payload: RegisterRequest) -> dict:
+    if not settings.dashboard_allow_registration:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El registro de cuentas nuevas está deshabilitado",
+        )
     email = payload.email.lower()
     if fetch_one("SELECT id FROM client_accounts WHERE email = :email", {"email": email}):
         raise HTTPException(

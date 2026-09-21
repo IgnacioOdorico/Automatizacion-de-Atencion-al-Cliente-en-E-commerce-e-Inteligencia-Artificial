@@ -58,3 +58,7 @@ def test_only_the_web_proxy_is_trusted_for_the_client_ip():
 
 def test_api_docs_are_off_by_default_in_compose():
     assert _default("DASHBOARD_ENABLE_DOCS") == "false"
+
+
+def test_registration_flag_is_passed_and_open_by_default_for_the_demo():
+    assert _default("DASHBOARD_ALLOW_REGISTRATION") == "true"

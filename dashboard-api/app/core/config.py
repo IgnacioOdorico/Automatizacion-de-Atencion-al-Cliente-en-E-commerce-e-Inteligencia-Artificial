@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     # /docs, /redoc y /openapi.json exponen el mapa completo de la API: apagados por
     # defecto; se prenden solo para desarrollo (DASHBOARD_ENABLE_DOCS=true).
     dashboard_enable_docs: bool = False
+    # Alta de cuentas abierta (demo). orders/tickets/products son globales (un comercio por
+    # instalación): en una instalación pública, cerrarla con DASHBOARD_ALLOW_REGISTRATION=false.
+    dashboard_allow_registration: bool = True
 
     access_token_expire_minutes: int = 120
     refresh_token_expire_days: int = 7

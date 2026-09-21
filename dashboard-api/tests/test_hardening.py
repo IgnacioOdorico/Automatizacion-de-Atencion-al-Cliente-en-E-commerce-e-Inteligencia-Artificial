@@ -238,3 +238,31 @@ def test_dockerfile_runs_the_api_as_a_non_root_user():
     assert lines[user_at[-1]].split()[1].lower() not in {"root", "0"}
     # USER va antes del CMD para que el proceso lo herede
     assert user_at[-1] < max(i for i, line in enumerate(lines) if line.upper().startswith("CMD "))
+
+
+# --- registro abierto: se puede cerrar por configuración --------------------------------
+def test_registration_can_be_closed_by_configuration(client, monkeypatch):
+    """orders/tickets/products son globales (SPEC §10): si la instalación es pública, el
+    operador tiene que poder cerrar el alta de cuentas nuevas."""
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "dashboard_allow_registration", False)
+    resp = client.post(
+        "/auth/register",
+        json={"business_name": "Tienda", "email": "cerrado@example.com", "password": "Fuerte2026!"},
+    )
+    assert resp.status_code == 403
+    assert "deshabilitado" in resp.json()["detail"]
+
+
+@pytest.mark.integration
+def test_registration_stays_open_by_default(client):
+    resp = client.post(
+        "/auth/register",
+        json={"business_name": "Tienda", "email": "abierto@example.com", "password": "Fuerte2026!"},
+    )
+    assert resp.status_code == 201
+    # el login de cuentas existentes no depende del flag
+    from app.core.config import settings
+
+    assert settings.dashboard_allow_registration is True
