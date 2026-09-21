@@ -1,16 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  FOLLOW_SCALE,
   MAX_SCALE,
   MIN_SCALE,
+  COMPACT_SCALE,
+  COMPACT_WIDTH,
+  centerOn,
   clampScale,
   fitView,
+  initialView,
+  isInView,
   keyboardAction,
   panBy,
   pinchView,
+  preferredHeight,
   toScreen,
   toWorld,
-  viewTransform,
+  viewCss,
   wheelZoomFactor,
   zoomAt,
 } from '@/lib/viewport';
@@ -112,8 +119,8 @@ describe('clampScale y conversiones', () => {
     expect(back.y).toBeCloseTo(p.y);
   });
 
-  it('viewTransform arma el atributo transform del <g>', () => {
-    expect(viewTransform({ x: 10, y: -5, k: 0.5 })).toBe('translate(10 -5) scale(0.5)');
+  it('viewCss arma el transform CSS del grupo que se mueve', () => {
+    expect(viewCss({ x: 10, y: -5, k: 0.5 })).toBe('translate(10px, -5px) scale(0.5)');
   });
 });
 
@@ -199,5 +206,105 @@ describe('keyboardAction (flechas, +, -, 0)', () => {
     expect(keyboardAction('Enter')).toBeNull();
     expect(keyboardAction('a')).toBeNull();
     expect(keyboardAction('Tab')).toBeNull();
+  });
+});
+
+describe('initialView (con qué vista se abre el diagrama)', () => {
+  const wide = { minX: 0, minY: 0, maxX: 2200, maxY: 400 };
+
+  it('en un lienzo ancho es el ajuste a pantalla de siempre', () => {
+    const size = { width: 1000, height: 400 };
+    expect(initialView(wide, size)).toEqual(fitView(wide, size));
+    const edge = { width: COMPACT_WIDTH, height: 400 };
+    expect(initialView(wide, edge)).toEqual(fitView(wide, edge));
+  });
+
+  it('un diagrama que entero ya se lee en un lienzo angosto tampoco se toca', () => {
+    const small = { minX: 0, minY: 0, maxX: 300, maxY: 200 };
+    const size = { width: 340, height: 300 };
+    expect(initialView(small, size)).toEqual(fitView(small, size));
+  });
+
+  it('en un lienzo angosto, donde entero quedaría ilegible, se abre acercado desde el principio del flujo', () => {
+    const size = { width: 340, height: 300 };
+    const view = initialView(wide, size, { padding: 20 });
+    expect(view.k).toBe(COMPACT_SCALE);
+    // el borde izquierdo del diagrama queda a un margen del borde izquierdo del lienzo
+    expect(toScreen(view, { x: wide.minX, y: 0 }).x).toBeCloseTo(20);
+    // y en vertical queda centrado
+    expect(toScreen(view, { x: 0, y: (wide.minY + wide.maxY) / 2 }).y).toBeCloseTo(150);
+  });
+
+  it('sin tamaño de lienzo, la vista neutra', () => {
+    expect(initialView(wide, { width: 0, height: 0 })).toEqual({ x: 0, y: 0, k: 1 });
+  });
+});
+
+describe('preferredHeight (el lienzo no deja aire de sobra alrededor de un diagrama chato)', () => {
+  const wide = { minX: 0, minY: 0, maxX: 2000, maxY: 400 };
+
+  it('alto del dibujo ya escalado, más los márgenes y el lugar de los controles', () => {
+    const height = preferredHeight(wide, 1000, { padding: 32, reserve: 88, min: 100, max: 900 });
+    const k = (1000 - 64) / 2000;
+    expect(height).toBe(Math.round(400 * k + 64 + 88));
+  });
+
+  it('nunca baja del mínimo ni pasa del máximo', () => {
+    expect(preferredHeight(wide, 1000, { min: 500, max: 900 })).toBe(500);
+    expect(preferredHeight({ minX: 0, minY: 0, maxX: 100, maxY: 5000 }, 1000, { min: 300, max: 580 })).toBe(580);
+  });
+
+  it('un diagrama chico no se agranda de más para calcular el alto', () => {
+    const tiny = { minX: 0, minY: 0, maxX: 100, maxY: 50 };
+    const height = preferredHeight(tiny, 1000, { padding: 0, reserve: 0, min: 0, max: 900, maxScale: 1.25 });
+    expect(height).toBe(Math.round(50 * 1.25));
+  });
+
+  it('sin ancho medido no opina', () => {
+    expect(preferredHeight(wide, 0)).toBeNull();
+  });
+});
+
+describe('centerOn (llevar la cámara a un nodo)', () => {
+  const size = { width: 800, height: 400 };
+  const box = { x: 1000, y: 200, w: 150, h: 100 };
+
+  it('el centro del nodo queda en el centro del lienzo', () => {
+    const view = centerOn({ x: 0, y: 0, k: 1 }, size, box);
+    const c = toScreen(view, { x: box.x + box.w / 2, y: box.y + box.h / 2 });
+    expect(c.x).toBeCloseTo(400);
+    expect(c.y).toBeCloseTo(200);
+  });
+
+  it('si el zoom actual es menor al legible, sube hasta el legible', () => {
+    expect(centerOn({ x: 0, y: 0, k: 0.3 }, size, box).k).toBe(FOLLOW_SCALE);
+  });
+
+  it('si ya se lee, conserva el zoom (aunque sea mayor)', () => {
+    expect(centerOn({ x: 0, y: 0, k: 1.4 }, size, box).k).toBe(1.4);
+  });
+
+  it('un mínimo propio pisa al legible', () => {
+    expect(centerOn({ x: 0, y: 0, k: 0.2 }, size, box, { minScale: 0.5 }).k).toBe(0.5);
+  });
+});
+
+describe('isInView (¿el nodo se ve entero?)', () => {
+  const size = { width: 800, height: 400 };
+  const box = { x: 100, y: 100, w: 150, h: 100 };
+
+  it('dentro del lienzo, con margen', () => {
+    expect(isInView({ x: 0, y: 0, k: 1 }, size, box)).toBe(true);
+  });
+
+  it('cortado por un borde o afuera, no', () => {
+    expect(isInView({ x: -200, y: 0, k: 1 }, size, box)).toBe(false);
+    expect(isInView({ x: 0, y: 350, k: 1 }, size, box)).toBe(false);
+    expect(isInView({ x: 5000, y: 0, k: 1 }, size, box)).toBe(false);
+  });
+
+  it('pegado al borde (dentro del margen) tampoco cuenta como visible', () => {
+    expect(isInView({ x: -90, y: 0, k: 1 }, size, box, 24)).toBe(false);
+    expect(isInView({ x: -90, y: 0, k: 1 }, size, box, 0)).toBe(true);
   });
 });

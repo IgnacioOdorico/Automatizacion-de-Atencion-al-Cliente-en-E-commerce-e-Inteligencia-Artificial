@@ -2411,3 +2411,332 @@ button {
     max-width: 90%;
   }
 }
+
+/* ============================================================
+   Monitoreo — Workflow (el workflow de n8n dibujado en SVG)
+   ============================================================ */
+
+.wf-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 20px;
+  margin-bottom: 14px;
+}
+.wf-top .field {
+  min-width: min(100%, 320px);
+}
+.wf-top__stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 0 0 8px;
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+/* Lienzo: marco con grilla de puntos; el dibujo se mueve adentro */
+.wf-canvas {
+  position: relative;
+  height: clamp(340px, 54vh, 580px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-canvas);
+  background-image: radial-gradient(rgba(153, 168, 190, 0.14) 1px, transparent 1px);
+  background-size: 22px 22px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.wf-canvas--dragging {
+  cursor: grabbing;
+}
+.wf-canvas:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.wf-canvas--skeleton {
+  display: grid;
+  place-items: center;
+  cursor: default;
+  touch-action: auto;
+}
+.wf-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.wf-skeleton__row {
+  display: flex;
+  gap: 26px;
+}
+.wf-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* La cámara (ajustar, seguir un nodo) se mueve con suavidad; arrastrar a mano no tiene transición */
+.wf-viewport--animated {
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Conexiones: apagadas por defecto; el camino recorrido se ilumina */
+.wf-edge {
+  fill: none;
+  stroke: rgba(153, 168, 190, 0.6);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke 0.25s ease, stroke-width 0.25s ease;
+}
+.wf-edge--ai {
+  stroke-dasharray: 6 5;
+}
+.wf-edge--inactive {
+  stroke: rgba(153, 168, 190, 0.24);
+  stroke-width: 1.8;
+  stroke-dasharray: 3 6;
+}
+.wf-edge--active {
+  stroke: #a5b4fc;
+  stroke-width: 3.5;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 3px rgba(129, 140, 248, 0.7));
+}
+.wf-edge--active.wf-edge--ai {
+  stroke-dasharray: 6 5;
+}
+.wf-edge--flowing {
+  stroke-dasharray: 10 7;
+  animation: wf-flow 0.7s linear infinite;
+}
+@keyframes wf-flow {
+  to {
+    stroke-dashoffset: -17;
+  }
+}
+.wf-arrow--idle {
+  fill: rgba(153, 168, 190, 0.75);
+}
+.wf-arrow--inactive {
+  fill: rgba(153, 168, 190, 0.32);
+}
+.wf-arrow--active {
+  fill: #a5b4fc;
+}
+
+/* Rótulos de rama ("Sí", "No", "Salida 2") */
+.wf-elabel rect {
+  fill: var(--bg-surface-2);
+  stroke: var(--border-strong);
+}
+.wf-elabel text {
+  fill: var(--text-2);
+  font-size: 11px;
+  font-weight: 650;
+}
+.wf-elabel--active rect {
+  fill: #2c3163;
+  stroke: #a5b4fc;
+}
+.wf-elabel--active text {
+  fill: #e0e7ff;
+}
+.wf-elabel--inactive text {
+  fill: var(--text-3);
+}
+
+/* Nodos: tarjetas con ícono, nombre y, si hay ejecución, estado */
+.wf-node {
+  cursor: pointer;
+  outline: none;
+}
+.wf-node__card {
+  fill: var(--bg-surface-2);
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  transition: fill 0.25s ease, stroke 0.25s ease;
+}
+.wf-node:hover .wf-node__card {
+  stroke: rgba(165, 180, 252, 0.7);
+}
+.wf-node__iconbg {
+  fill: var(--brand-soft-strong);
+}
+.wf-node__glyph {
+  stroke: #c7d2fe;
+}
+.wf-node__name {
+  fill: var(--text-1);
+  font-size: 12px;
+  font-weight: 650;
+}
+.wf-node__meta {
+  fill: var(--text-2);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.wf-node__tag {
+  fill: var(--text-2);
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+/* Estados de la ejecución elegida */
+.wf-node--success .wf-node__card {
+  fill: #172b2f;
+  stroke: var(--success);
+  stroke-width: 2;
+}
+.wf-node--error .wf-node__card {
+  fill: #31212e;
+  stroke: var(--danger-strong);
+  stroke-width: 2.4;
+}
+.wf-node--running .wf-node__card {
+  stroke: var(--focus-ring);
+  stroke-width: 2;
+}
+.wf-node--waiting .wf-node__card {
+  stroke: var(--warning);
+  stroke-width: 2;
+}
+/* Lo que no corrió (o todavía no llegó la reproducción) se apaga, sin perder legibilidad */
+.wf-node--dim .wf-node__card {
+  fill: var(--bg-surface);
+  stroke: var(--border);
+  stroke-dasharray: 5 5;
+}
+.wf-node--dim .wf-node__name {
+  fill: var(--text-3);
+}
+.wf-node--dim .wf-node__meta {
+  fill: var(--text-3);
+}
+.wf-node--dim .wf-node__tag {
+  fill: var(--text-3);
+}
+.wf-node--dim .wf-node__iconbg {
+  fill: var(--bg-hover);
+}
+.wf-node--dim .wf-node__glyph {
+  stroke: var(--text-3);
+}
+
+/* Insignia de estado en la esquina: ícono, no solo color */
+.wf-node__badge circle {
+  fill: var(--bg-canvas);
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.wf-node__badge path {
+  stroke: currentColor;
+}
+.wf-node--success .wf-node__badge {
+  color: var(--success);
+}
+.wf-node--error .wf-node__badge {
+  color: var(--danger);
+}
+.wf-node--running .wf-node__badge {
+  color: #a5b4fc;
+}
+.wf-node--waiting .wf-node__badge {
+  color: var(--warning);
+}
+.wf-node--canceled .wf-node__badge {
+  color: var(--text-3);
+}
+
+/* Elegido, con foco y nodo actual de la reproducción */
+.wf-node--selected .wf-node__card {
+  stroke: #c7d2fe;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px rgba(165, 180, 252, 0.55));
+}
+.wf-node:focus-visible .wf-node__card {
+  stroke: var(--focus-ring);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 5px rgba(129, 140, 248, 0.8));
+}
+.wf-node--current .wf-node__card {
+  animation: wf-pulse 1.1s ease-in-out infinite;
+}
+@keyframes wf-pulse {
+  50% {
+    filter: drop-shadow(0 0 10px rgba(165, 180, 252, 0.9));
+  }
+}
+
+/* Controles de zoom y barra de reproducción */
+.wf-controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: rgba(13, 16, 24, 0.88);
+  backdrop-filter: blur(6px);
+  cursor: default;
+}
+.wf-controls__btn {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.wf-controls__btn:hover {
+  background: var(--bg-active);
+  color: var(--text-1);
+}
+.wf-zoom__level {
+  min-width: 46px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.wf-dock {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  max-width: calc(100% - 24px);
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wf-edge--flowing {
+    animation: none;
+    stroke-dasharray: none;
+  }
+  .wf-node--current .wf-node__card {
+    animation: none;
+    stroke: #c7d2fe;
+    stroke-width: 3;
+  }
+}
+
+@media (max-width: 860px) {
+  .wf-canvas {
+    height: clamp(300px, 58vh, 480px);
+  }
+  .wf-dock {
+    bottom: 60px;
+  }
+}
