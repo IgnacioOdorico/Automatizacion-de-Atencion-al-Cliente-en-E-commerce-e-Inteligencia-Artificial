@@ -6,6 +6,8 @@ interface BotStatusProps {
   nowMs: number;
   /** Ya llegó algún dato del servidor. Antes de eso no se afirma nada ("sin actividad" sería inventar). */
   known: boolean;
+  /** Ni el resumen ni el feed respondieron: se avisa en vez de quedarse "consultando" para siempre. */
+  failed?: boolean;
 }
 
 /**
@@ -13,13 +15,15 @@ interface BotStatusProps {
  * hace poco; después pasa a ámbar y a gris. No es una región en vivo: el
  * tiempo cambia cada segundo y no debe leerse en voz alta.
  */
-export function BotStatus({ lastActivityAt, nowMs, known }: BotStatusProps) {
+export function BotStatus({ lastActivityAt, nowMs, known, failed = false }: BotStatusProps) {
   if (!known) {
     return (
       <div className="mon-bot mon-bot--none">
         <span className="mon-bot__dot" aria-hidden="true" />
         <p className="mon-bot__text">
-          <span className="mon-bot__title">Consultando la actividad del bot…</span>
+          <span className="mon-bot__title">
+            {failed ? 'No pudimos consultar la actividad del bot' : 'Consultando la actividad del bot…'}
+          </span>
         </p>
       </div>
     );

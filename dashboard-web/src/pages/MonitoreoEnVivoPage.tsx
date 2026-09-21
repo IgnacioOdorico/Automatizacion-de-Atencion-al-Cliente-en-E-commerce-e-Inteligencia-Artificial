@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { monitoringApi } from '@/api/endpoints';
@@ -77,9 +77,16 @@ export function MonitoreoEnVivoPage() {
     setOrderId(id);
   };
 
+  // "Ver ahora" desde más abajo: primero se vuelca lo pendiente y, ya dibujado, se vuelve al
+  // principio de la lista. Sin animación: con "smooth" el navegador pelea con el reajuste del scroll.
+  const [jumpToTop, setJumpToTop] = useState(0);
+  useEffect(() => {
+    if (jumpToTop > 0) listRef.current?.scrollIntoView?.({ block: 'start' });
+  }, [jumpToTop]);
+
   const showNow = () => {
     feed.flush();
-    if (scrolledAway) listRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+    if (scrolledAway) setJumpToTop((n) => n + 1);
   };
 
   const badgeLabel = feed.failing ? 'Sin actualizar' : held ? 'En pausa' : 'En vivo';
@@ -91,6 +98,7 @@ export function MonitoreoEnVivoPage() {
           lastActivityAt={latestIso(summary.data?.last_activity_at, feed.newestTs)}
           nowMs={now}
           known={summary.data !== undefined || feed.query.data !== undefined}
+          failed={summary.isError && feed.failing}
         />
         <KpiStrip query={summary} />
       </div>
@@ -125,7 +133,7 @@ export function MonitoreoEnVivoPage() {
         onChannelChange={setChannel}
       />
 
-      <div ref={listRef}>
+      <div ref={listRef} className="mon-list">
         <QueryView
           query={feed.query}
           loading={<FeedSkeleton />}

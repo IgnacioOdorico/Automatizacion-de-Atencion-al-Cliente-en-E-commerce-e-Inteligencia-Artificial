@@ -142,6 +142,16 @@ function reducedMotionBlocks(source: string): string {
   }
 }
 
+describe('Aviso de eventos nuevos mientras leés más abajo', () => {
+  it('flota fijo sobre la pantalla (si no, quedaría fuera de la vista junto con la barra de acciones)', () => {
+    expect(declaration(css, '.mon-pending--float', 'position')).toBe('fixed');
+  });
+
+  it('queda por encima del contenido y de la barra superior', () => {
+    expect(Number(declaration(css, '.mon-pending--float', 'z-index'))).toBeGreaterThanOrEqual(20);
+  });
+});
+
 describe('Movimiento reducido en el feed', () => {
   const block = reducedMotionBlocks(css);
 

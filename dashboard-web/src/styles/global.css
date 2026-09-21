@@ -1798,6 +1798,16 @@ button {
   font-size: 13px;
   font-weight: 600;
 }
+/* Mientras leés más abajo, el aviso flota sobre la pantalla (centrado en el contenido) */
+.mon-pending--float {
+  position: fixed;
+  top: 76px;
+  left: calc(var(--sidebar-w) + (100vw - var(--sidebar-w)) / 2);
+  z-index: 20;
+  transform: translateX(-50%);
+  background: #1f2350;
+  box-shadow: var(--shadow-pop);
+}
 .mon-pending .btn {
   height: 28px;
   padding: 0 12px;
@@ -2008,6 +2018,10 @@ button {
   }
 }
 
+/* Al volver al principio de la lista, que no la tape la barra superior fija */
+.mon-list {
+  scroll-margin-top: 84px;
+}
 .mon-more {
   display: flex;
   flex-direction: column;
@@ -2039,6 +2053,13 @@ button {
 }
 .mon-detail-links .btn {
   height: 36px;
+}
+
+@media (max-width: 860px) {
+  .mon-pending--float {
+    top: 70px;
+    left: 50%;
+  }
 }
 
 @media (max-width: 560px) {

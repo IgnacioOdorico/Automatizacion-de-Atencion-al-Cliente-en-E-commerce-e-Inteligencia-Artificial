@@ -342,6 +342,33 @@ describe('En vivo: pausa', () => {
   });
 });
 
+describe('En vivo: "Ver ahora" desde más abajo', () => {
+  it('vuelca lo pendiente y lleva al principio de la lista una vez dibujado (no antes, para que no pelee con el scroll)', async () => {
+    const scrollIntoView = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect');
+    rect.mockReturnValue({ top: 0 } as DOMRect);
+    await mount();
+
+    rect.mockReturnValue({ top: -900 } as DOMRect);
+    act(() => {
+      window.dispatchEvent(new Event('scroll'));
+    });
+    nextPage = makePage([fresh], { newest_cursor: 'cur-2' });
+    await advance(3000);
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    click(buttonByText('Ver ahora'));
+    await advance(0);
+    expect(cards()).toHaveLength(4);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    // Se pidió sin animación: con "smooth" el navegador pelea con el reajuste del scroll.
+    expect(scrollIntoView.mock.calls[0][0]).toMatchObject({ block: 'start' });
+    expect((scrollIntoView.mock.calls[0][0] as ScrollIntoViewOptions).behavior).not.toBe('smooth');
+    delete (HTMLElement.prototype as { scrollIntoView?: unknown }).scrollIntoView;
+  });
+});
+
 describe('En vivo: filtros y más historia', () => {
   it('un chip de tipo vuelve a pedir el feed filtrado desde cero', async () => {
     await mount();
@@ -477,6 +504,16 @@ describe('En vivo: franja superior', () => {
     const bot = container.querySelector('.mon-bot');
     expect(bot?.textContent).toContain('Consultando');
     expect(bot?.textContent).not.toContain('Todavía sin actividad');
+    expect(bot?.textContent).not.toContain('Bot activo');
+  });
+
+  it('si no se puede consultar nada, lo dice en vez de quedarse en "Consultando"', async () => {
+    events.mockRejectedValue(new TypeError('Failed to fetch'));
+    summary.mockRejectedValue(new TypeError('Failed to fetch'));
+    await mount();
+    const bot = container.querySelector('.mon-bot');
+    expect(bot?.textContent).toContain('No pudimos consultar la actividad del bot');
+    expect(bot?.textContent).not.toContain('Consultando');
     expect(bot?.textContent).not.toContain('Bot activo');
   });
 
