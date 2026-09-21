@@ -1,6 +1,6 @@
 # SPEC — Dashboard Cliente + Conexiones (Frontend/Backend para demo de tesis)
 
-**Estado:** propuesto
+**Estado:** implementado en `feature/dashboard-cliente` (ver §10 para los desvíos)
 **Rama:** `feature/dashboard-cliente` (crear desde `main`/`master`, confirmar cuál es la rama base antes de empezar)
 **Depende de:** Flujo 1 (pipeline de órdenes) y Flujo 2 (chatbot omnicanal) — **ya implementados y NO se modifican**
 **Deadline:** ajustado — priorizar lo que se ve en cámara sobre lo que no
@@ -195,4 +195,49 @@ Repasar la checklist de la sección 6 una por una antes de dar por cerrada la ta
 
 ## 10. Desvíos del spec
 
-*(el agente completa esta sección a medida que encuentra diferencias entre este documento y el repo real)*
+> Completada al cerrar la Fase 8 y verificada contra el código de `feature/dashboard-cliente`. Los desvíos detectados antes de escribir código (relevamiento del repo) están en `docs/DESVIOS_SPEC.md`; acá van los que aparecieron al implementar.
+
+### 10.1 Modelo de datos
+
+| El spec dice | Lo que hay | Por qué |
+|---|---|---|
+| IDs `UUID` con `gen_random_uuid()` (§3) | `SERIAL` (entero) en `client_accounts` y `channel_connections`; el `sub` del JWT es numérico | El propio spec pide seguir la convención del repo: todas las tablas de `init_simple.sql` usan `SERIAL`. |
+| `channel IN ('whatsapp','telegram','gmail')` (§3) | En la BD el canal se llama `email` (`CHECK (channel IN ('whatsapp','telegram','email'))`); la UI lo muestra como "Gmail" | Es el mismo dominio que ya usan `interactions.channel` y `tickets.channel`. Un solo valor por canal en toda la BD, sin mapeos en las queries. |
+| Marcas de tiempo `TIMESTAMPTZ` | Se mantiene, pero la API serializa siempre ISO 8601 en UTC (`...Z`, con `AT TIME ZONE 'UTC'`) y el front formatea a hora de Mendoza | Una instancia anterior a la auditoría A-12 podía tener `TIMESTAMP` sin zona; así el resultado no depende de eso ni de la máquina que mira. |
+| Las 3 filas de `channel_connections` se crean "al pedirlas" | Se crean al registrarse (una sola sentencia con la cuenta) | Que `/me` de una cuenta nueva no devuelva `connections: []`. |
+
+### 10.2 Aislamiento entre cuentas: un solo comercio por instalación (limitación conocida)
+
+El §5 dice que todos los endpoints "devuelven solo datos de la `client_account_id` del token". Eso se cumple **solo para lo que pertenece a la cuenta**: perfil (`/me`), conexiones de canal, códigos de vinculación de Telegram, estado de Gmail y solicitud de WhatsApp. **No se cumple para `orders`, `tickets`, `products` ni las métricas**: esas tablas no tienen `client_account_id`, son las del e-commerce único que atienden los Flujos 1 y 2, y el §0.4 prohíbe modificarlas. Todas las cuentas de una instalación ven los mismos pedidos, tickets y catálogo (un comercio por instalación; el multi-tenant queda fuera de alcance, §9).
+
+Consecuencia de seguridad: con el registro abierto, cualquier persona que cree una cuenta puede leer los datos de los clientes finales del comercio (nombre, email, teléfono). Por eso existe `DASHBOARD_ALLOW_REGISTRATION` (por defecto `true`, para la demo): en una instalación accesible desde internet se pone en `false`. Multi-tenant real exigiría una columna `client_account_id` en esas tablas y que n8n la escriba. Está cubierto por `dashboard-api/tests/test_isolation.py` (`test_orders_tickets_and_products_are_shared_by_design`).
+
+### 10.3 Endpoints
+
+- **Agregados**: `POST /auth/refresh` (refresh token rotativo con detección de reutilización) y `DELETE /connections/telegram/code` (cancela el código de vinculación pendiente). `DELETE /connections/telegram` además invalida el código pendiente de esa cuenta.
+- `POST /auth/login` devuelve `access_token` (2 h) **y** `refresh_token` (7 días), no un único JWT.
+- `GET /connections/gmail/callback` no responde JSON: siempre redirige (307) al front, a `{DASHBOARD_FRONTEND_URL}/conexiones?gmail=connected` o `?gmail=error&reason=<código>`, con un catálogo cerrado de motivos (nunca viajan detalles ni tokens).
+- `GET /connections` devuelve `{items: [...]}` con la etiqueta de cada canal; `/me` incluye las conexiones; `/dashboard/summary` acepta `?data_source=` (`measured` para las métricas de la tesis). Paginado fijo de 20.
+- **`POST /products` y `PATCH /products/{id}` NO están implementados**: el spec los marca como opcionales ("si da el tiempo") y la tarea 6.6 quedó sin hacer. El catálogo es de solo lectura.
+
+### 10.4 Conexión de canales
+
+- **Telegram**: se usa un **bot de vínculo dedicado** (`DASHBOARD_BOT_TOKEN_VINCULO`) con un workflow aislado (`workflows/Flujo 3 — Telegram Vínculo de Cuenta.json`, versionado con `"active": false`). Un bot de Telegram admite un único webhook: reutilizar el token del Flujo 2 se lo pisaría. Los códigos de 6 dígitos (15 min) viven **en memoria** de la API: un reinicio los descarta. Para ser real necesita una URL pública HTTPS para el webhook (`WEBHOOK_URL`, p. ej. ngrok).
+- **Gmail**: OAuth2 real en modo testing (scope `openid email gmail.modify`); necesita credenciales de Google del usuario. Sin ellas, `oauth-url` responde 503 controlado.
+- **WhatsApp**: `request-approval` valida el número (E.164) y deja el canal en `pending` con "Meta aprueba en 1-3 días hábiles"; **no llama a Meta**. Es el comportamiento honesto del §4. La cuenta demo trae WhatsApp `connected` como dato semilla.
+- Polling: Dashboard y Pedidos cada **4 s** (el spec pedía 3-5 s); el vínculo de Telegram consulta cada 3 s mientras hay un código pendiente; Tickets, Catálogo y Conexiones se refrescan a mano o al mutar.
+
+### 10.5 Seguridad (§6): qué se hizo distinto o además
+
+- **Tokens en `localStorage`** (access y refresh), no cookie HttpOnly para el refresh como decía el diseño original. El backend igual setea la cookie HttpOnly y `/auth/refresh` la acepta, pero el SPA usa el body. Motivo: mantener la sesión al recargar (criterio de la tarea 5.3) sin resolver CSRF. Riesgo: un XSS podría leer los tokens. **Mitigación**: nginx manda una CSP estricta (`script-src 'self'`, sin `unsafe-inline` ni `unsafe-eval`, `frame-ancestors 'none'`, `connect-src 'self'`), y hay tests que impiden `innerHTML`/`eval`/`console.*` y tokens en URLs. Para producción se recomienda access en memoria + refresh en cookie HttpOnly `Secure` con rotación persistida.
+- **Fail-closed**: la API no arranca si `DASHBOARD_JWT_SECRET`, `DASHBOARD_N8N_SECRET` o `DASHBOARD_ENC_KEY` faltan, están vacíos, son cortos (< 32) o son valores de ejemplo. `docker-compose.yml` ya no trae defaults para ellos.
+- **Rate limit de login** por IP y por email (5 fallos en 5 min → 429), en memoria. Detrás de nginx la IP real se toma de `X-Real-IP` solo si el peer es el proxy configurado (`DASHBOARD_TRUSTED_PROXIES`, por defecto el servicio `dashboard-web`); `X-Forwarded-For` no se usa.
+- **Agregados que el spec no pedía**: `/docs`, `/redoc` y `/openapi.json` apagados por defecto (`DASHBOARD_ENABLE_DOCS`), `DASHBOARD_ALLOW_REGISTRATION`, headers de seguridad en nginx, CORS con métodos y headers explícitos, contenedor de la API sin root, topes de tamaño (login, registro, body de nginx 1 MB), login sin diferencia de tiempo entre email existente e inexistente.
+- El estado de refresh tokens ya rotados, del rate limit y de los códigos de Telegram es **en memoria**: sirve para una sola instancia de la API y se pierde al reiniciarla.
+
+### 10.6 Infra y entorno
+
+- Puertos: PostgreSQL en el host `5433` (internamente `postgres:5432`), API `8000`, portal `8080` (nginx; el front siempre llama a `/api`, que nginx reenvía a `dashboard-api:8000`). En desarrollo, Vite en `5173`.
+- `DASHBOARD_FRONTEND_URL` (adonde vuelve el navegador tras el consentimiento de Google) vale por defecto `http://localhost:8080` en el compose; con Vite se cambia a `:5173` y tiene que estar en `CORS_ORIGINS`. `DASHBOARD_GOOGLE_REDIRECT_URI` es el callback del **backend** y debe coincidir exacto con el cargado en Google Cloud Console.
+- La instancia de n8n no trae credenciales: para que el Flujo 1 real escriba órdenes hay que cargar en su UI una credencial Postgres (`postgres:5432`, BD `ecommerce_tesis`) y una SMTP (`mailpit:1025`, sin auth ni TLS). Hasta entonces el dashboard se prueba con datos ya existentes o simulados por SQL.
+- El §9 dejaba los tests automatizados como opcionales; igual se escribieron (pytest para la API, vitest para el front) porque el spec exige QA de seguridad verificable.
