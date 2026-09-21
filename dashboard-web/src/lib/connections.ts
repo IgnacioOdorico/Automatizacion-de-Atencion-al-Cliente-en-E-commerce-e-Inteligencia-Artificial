@@ -1,4 +1,6 @@
+import { ApiError } from '@/api/client';
 import { CHANNEL_LABELS, CONNECTION_STATUS } from '@/lib/format';
+import { friendlyApiError } from '@/lib/messages';
 import type { Channel, Connection, ConnectionStatus } from '@/types/api';
 
 /**
@@ -67,4 +69,20 @@ export function channelActions(channel: Channel, status: ConnectionStatus): Chan
     canConnect: status !== 'connected' && !waitingForApproval,
     canDisconnect: status !== 'disconnected',
   };
+}
+
+export type ConnectionAction = 'telegram-start';
+
+const ACTION_FALLBACKS: Record<ConnectionAction, string> = {
+  'telegram-start': 'No pudimos generar el código de vinculación. Reintentá en unos segundos.',
+};
+
+/**
+ * Mensaje en pantalla para un fallo de una acción de conexión. Nada falla en
+ * silencio: errores de red y de server (400/502/503/...) terminan en un texto
+ * claro. El 401 lo resuelve el cliente de API (refresh o cierre de sesión).
+ */
+export function connectionActionError(error: unknown, action: ConnectionAction): string {
+  if (!(error instanceof ApiError)) return friendlyApiError(error);
+  return error.detail ?? ACTION_FALLBACKS[action];
 }

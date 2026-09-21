@@ -32,6 +32,13 @@ export interface Connection {
   label?: string;
 }
 
+/** POST /connections/telegram/start: código de 6 dígitos válido 15 minutos. */
+export interface TelegramStartResponse {
+  code: string;
+  expires_at: string;
+  expires_in: number;
+}
+
 export interface Paginated<T> {
   items: T[];
   page: number;

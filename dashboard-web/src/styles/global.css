@@ -1107,3 +1107,55 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Panel de vínculo de Telegram ---------- */
+.link-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-md);
+  background: var(--brand-soft);
+}
+.link-panel__code-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.link-panel__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+.link-panel__timer {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.link-panel__timer strong {
+  color: var(--text-1);
+}
+.link-panel__steps {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.link-panel__waiting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}

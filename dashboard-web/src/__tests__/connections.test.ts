@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildChannelCards, channelActions } from '@/lib/connections';
+import { ApiError } from '@/api/client';
+import { buildChannelCards, channelActions, connectionActionError } from '@/lib/connections';
 import type { Connection } from '@/types/api';
 
 function conn(overrides: Partial<Connection> & Pick<Connection, 'channel'>): Connection {
@@ -114,5 +115,28 @@ describe('channelActions', () => {
       canConnect: false,
       canDisconnect: true,
     });
+  });
+});
+
+describe('connectionActionError — Telegram start', () => {
+  it('sin detalle del server muestra un mensaje propio de la acción', () => {
+    const msg = connectionActionError(
+      new ApiError(500, '500 Internal Server Error'),
+      'telegram-start',
+    );
+    expect(msg).toBe('No pudimos generar el código de vinculación. Reintentá en unos segundos.');
+  });
+
+  it('con detalle del server lo respeta', () => {
+    const msg = connectionActionError(
+      new ApiError(400, 'Código inválido', 'Código inválido'),
+      'telegram-start',
+    );
+    expect(msg).toBe('Código inválido');
+  });
+
+  it('un error de red (no ApiError) explica que no hay conexión con el servidor', () => {
+    const msg = connectionActionError(new TypeError('Failed to fetch'), 'telegram-start');
+    expect(msg).toContain('No se pudo conectar con el servidor');
   });
 });

@@ -19,9 +19,14 @@ const REFERENCE_LABELS: Record<Channel, string> = {
   email: 'Cuenta autorizada',
 };
 
+const DESCRIPTIONS: Record<Channel, string> = {
+  whatsapp: 'Atención por WhatsApp Business. Meta aprueba cada número antes de operar.',
+  telegram: 'Vinculá tu chat de Telegram con un código de 6 dígitos.',
+  email: 'Autorizá tu cuenta de Gmail para responder consultas por correo.',
+};
+
 interface ChannelCardProps {
   model: ChannelCardModel;
-  description: string;
   /** Contenido propio del canal (código de Telegram, formulario, avisos). */
   children?: ReactNode;
   /** Botones de la card (conectar / desconectar). */
@@ -29,7 +34,7 @@ interface ChannelCardProps {
 }
 
 /** Marco común de las cards de canal: cabecera, estado, referencia y acciones. */
-export function ChannelCard({ model, description, children, actions }: ChannelCardProps) {
+export function ChannelCard({ model, children, actions }: ChannelCardProps) {
   const Icon = CHANNEL_ICONS[model.channel];
 
   return (
@@ -42,7 +47,7 @@ export function ChannelCard({ model, description, children, actions }: ChannelCa
         <Badge tone={model.statusMeta.tone}>{model.statusMeta.label}</Badge>
       </header>
 
-      <p className="conn-card__desc">{description}</p>
+      <p className="conn-card__desc">{DESCRIPTIONS[model.channel]}</p>
 
       {model.externalReference && (
         <dl className="conn-card__ref">

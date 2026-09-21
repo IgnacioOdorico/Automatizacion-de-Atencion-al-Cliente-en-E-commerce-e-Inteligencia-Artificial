@@ -9,6 +9,7 @@ import {
   Product,
   RegisterResponse,
   Summary,
+  TelegramStartResponse,
   Ticket,
 } from '@/types/api';
 
@@ -64,5 +65,11 @@ export const dashboardApi = {
   },
   connections(): Promise<{ items: Connection[] }> {
     return apiRequest<{ items: Connection[] }>('/connections');
+  },
+};
+/** Acciones sobre canales (Fase 3 del backend). El listado está en dashboardApi.connections. */
+export const connectionsApi = {
+  telegramStart(): Promise<TelegramStartResponse> {
+    return apiRequest<TelegramStartResponse>('/connections/telegram/start', { method: 'POST' });
   },
 };

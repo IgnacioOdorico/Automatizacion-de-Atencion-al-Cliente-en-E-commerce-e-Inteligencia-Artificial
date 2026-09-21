@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 interface AlertProps {
   variant: 'error' | 'success';
   children: ReactNode;
-  role?: 'alert';
+  role?: 'alert' | 'status';
 }
 
 export function Alert({ variant, children, role }: AlertProps) {

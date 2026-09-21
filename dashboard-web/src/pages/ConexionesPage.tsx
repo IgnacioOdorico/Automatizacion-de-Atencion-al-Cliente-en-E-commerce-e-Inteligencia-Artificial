@@ -1,32 +1,45 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { dashboardApi } from '@/api/endpoints';
 import { ChannelCard } from '@/components/connections/ChannelCard';
+import { TelegramCard } from '@/components/connections/TelegramCard';
 import { PlugIcon } from '@/components/icons';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useTelegramLink } from '@/hooks/useTelegramLink';
 import { buildChannelCards } from '@/lib/connections';
 import { friendlyApiError } from '@/lib/messages';
-
-const CHANNEL_DESCRIPTIONS = {
-  whatsapp: 'Atención por WhatsApp Business. Meta aprueba cada número antes de operar.',
-  telegram: 'Vinculá tu chat de Telegram con un código de 6 dígitos.',
-  email: 'Autorizá tu cuenta de Gmail para responder consultas por correo.',
-} as const;
+import { TELEGRAM_POLL_MS } from '@/lib/telegramLink';
 
 /**
  * Conexiones (GET /connections): una card por canal con su estado real.
  * En BD el canal de correo es `email`; la UI lo muestra como "Gmail".
  */
 export function ConexionesPage() {
+  const queryClient = useQueryClient();
+  const telegram = useTelegramLink();
+
   const { data, isPending, isError, error, refetch, isFetching } = useQuery({
     queryKey: ['connections'],
     queryFn: dashboardApi.connections,
+    // Mientras hay un código de Telegram vigente se consulta el estado hasta
+    // que el workflow n8n confirme el vínculo (sin recargar la página).
+    refetchInterval: telegram.polling ? TELEGRAM_POLL_MS : false,
   });
 
   const cards = useMemo(() => buildChannelCards(data?.items), [data]);
+  const telegramStatus = cards.find((card) => card.channel === 'telegram')?.status;
+
+  const { hasCode, complete } = telegram;
+  useEffect(() => {
+    if (hasCode && telegramStatus === 'connected') {
+      complete();
+      // Perfil y sidebar leen los canales desde /me.
+      void queryClient.invalidateQueries({ queryKey: ['me'] });
+    }
+  }, [hasCode, telegramStatus, complete, queryClient]);
 
   return (
     <div className="page">
@@ -67,13 +80,13 @@ export function ConexionesPage() {
 
       {data && (
         <div className="conn-grid">
-          {cards.map((card) => (
-            <ChannelCard
-              key={card.channel}
-              model={card}
-              description={CHANNEL_DESCRIPTIONS[card.channel]}
-            />
-          ))}
+          {cards.map((card) =>
+            card.channel === 'telegram' ? (
+              <TelegramCard key={card.channel} model={card} link={telegram} />
+            ) : (
+              <ChannelCard key={card.channel} model={card} />
+            ),
+          )}
         </div>
       )}
     </div>
