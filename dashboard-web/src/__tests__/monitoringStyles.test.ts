@@ -86,6 +86,39 @@ describe('Feed de eventos (contraste AA)', () => {
   });
 });
 
+describe('Conversaciones (contraste AA)', () => {
+  const surface = surfaces['bg-surface'];
+  const selected = over(color(".mon-conv[aria-current='true']", 'background'), surface);
+
+  it('cada hilo de la lista, normal y elegido', () => {
+    for (const selector of ['.mon-conv__name', '.mon-conv__preview', '.mon-conv__meta']) {
+      const text = color(selector, 'color');
+      expect(contrastRatio(text, surface), selector).toBeGreaterThanOrEqual(AA);
+      expect(contrastRatio(text, selected), `${selector} elegido`).toBeGreaterThanOrEqual(AA);
+    }
+  });
+
+  it('separador de día', () => {
+    expect(contrastRatio(color('.mon-day', 'color'), surface)).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('burbuja del cliente y de la respuesta del bot, con su hora y marcas', () => {
+    for (const [bubble, meta] of [
+      ['.mon-bubble--customer', '.mon-bubble__meta'],
+      ['.mon-bubble--bot', '.mon-bubble__meta'],
+      ['.mon-bubble--pending', '.mon-bubble--pending'],
+    ]) {
+      const bg = over(color(bubble, 'background'), surface);
+      expect(contrastRatio(color(bubble, 'color'), bg), bubble).toBeGreaterThanOrEqual(AA);
+      expect(contrastRatio(color(meta, 'color'), bg), meta).toBeGreaterThanOrEqual(AA);
+    }
+  });
+
+  it('enlaces a pedido y ticket dentro del hilo', () => {
+    expect(contrastRatio(color('.mon-linkchip', 'color'), surface)).toBeGreaterThanOrEqual(AA);
+  });
+});
+
 /** Cuerpo de TODOS los bloques `@media (prefers-reduced-motion: reduce) { ... }` (llaves anidadas). */
 function reducedMotionBlocks(source: string): string {
   const marker = '@media (prefers-reduced-motion: reduce)';
