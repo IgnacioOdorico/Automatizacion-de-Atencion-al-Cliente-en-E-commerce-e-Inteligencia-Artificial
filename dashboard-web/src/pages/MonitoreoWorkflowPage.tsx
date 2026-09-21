@@ -5,18 +5,32 @@ import { monitoringApi } from '@/api/endpoints';
 import { ActivityIcon } from '@/components/icons';
 import { QueryView } from '@/components/QueryView';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { ExecutionHeader } from '@/components/workflow/ExecutionHeader';
+import { PlaybackBar, PlaybackCaptionPill } from '@/components/workflow/PlaybackBar';
 import { WorkflowCanvas, WorkflowCanvasSkeleton } from '@/components/workflow/WorkflowCanvas';
+import { useNow } from '@/hooks/useNow';
+import { usePlayback } from '@/hooks/usePlayback';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { pickDefaultWorkflow, workflowStats } from '@/lib/executions';
+import { playbackCaption } from '@/lib/playback';
 import { layoutGraph } from '@/lib/workflowGraph';
-import { buildOverlay } from '@/lib/workflowTrace';
+import { buildOverlay, effectivePath, traceNoticeMessages, traceNotes } from '@/lib/workflowTrace';
 
 /** La lista de workflows (con sus contadores de 24 h) se refresca sola. */
 const WORKFLOWS_POLL_MS = 10_000;
 /** El grafo casi no cambia: se pide una vez por workflow. */
 const GRAPH_STALE_MS = 30_000;
+/** Las ejecuciones se refrescan solas. */
+const EXECUTIONS_POLL_MS = 10_000;
+const EXECUTIONS_LIMIT = 20;
+/** Una ejecución que todavía corre se vuelve a pedir seguido, hasta que termine. */
+const RUNNING_POLL_MS = 2000;
+
+const LIVE_STATUSES = new Set(['running', 'new', 'waiting']);
 
 function PageSkeleton() {
   return (
@@ -45,12 +59,14 @@ function NoWorkflows({ available }: { available: boolean }) {
 }
 
 /**
- * Monitoreo > Workflow: el workflow real de n8n dibujado en el portal, para
- * explicar paso a paso qué hace el bot. Esta primera versión muestra el
- * diagrama con zoom y desplazamiento; el camino de cada ejecución se ilumina
- * encima (ver `overlay`).
+ * Monitoreo > Workflow: el workflow real de n8n dibujado en el portal, con el
+ * camino de una ejecución iluminado nodo por nodo, para explicar paso a paso
+ * qué hace el bot.
  */
 export function MonitoreoWorkflowPage() {
+  const now = useNow(5000);
+  const reducedMotion = usePrefersReducedMotion();
+
   const workflows = useQuery({
     queryKey: ['monitoring-workflows'],
     queryFn: () => monitoringApi.workflows(),
@@ -70,7 +86,42 @@ export function MonitoreoWorkflowPage() {
     staleTime: GRAPH_STALE_MS,
   });
   const layout = useMemo(() => (graph.data ? layoutGraph(graph.data) : null), [graph.data]);
-  const overlay = useMemo(() => (graph.data ? buildOverlay(graph.data, null) : null), [graph.data]);
+
+  // Ejecuciones del workflow: por defecto se ve la más reciente.
+  const executions = useQuery({
+    queryKey: ['monitoring-executions', workflowId],
+    queryFn: () => monitoringApi.executions({ workflowId: workflowId as string, limit: EXECUTIONS_LIMIT }),
+    enabled: workflowId !== null,
+    refetchInterval: EXECUTIONS_POLL_MS,
+  });
+  const executionItems = useMemo(() => executions.data?.items ?? [], [executions.data]);
+  const executionId = executionItems[0]?.id ?? null;
+
+  const detail = useQuery({
+    queryKey: ['monitoring-execution', executionId],
+    queryFn: () => monitoringApi.execution(executionId as number),
+    enabled: executionId !== null,
+    refetchInterval: (query) =>
+      LIVE_STATUSES.has(query.state.data?.execution.status ?? '') ? RUNNING_POLL_MS : false,
+  });
+  const detailData = detail.data ?? null;
+
+  // Reproducción del camino.
+  const path = useMemo(() => effectivePath(detailData), [detailData]);
+  const [speed, setSpeed] = useState(1);
+  const [camera, setCamera] = useState(true);
+  const playback = usePlayback({ executionKey: executionId, total: path.length, speed, reducedMotion });
+
+  const overlay = useMemo(
+    () => (graph.data ? buildOverlay(graph.data, detailData, { revealed: playback.reveal }) : null),
+    [graph.data, detailData, playback.reveal],
+  );
+  const notices = useMemo(
+    () => (graph.data ? traceNoticeMessages(traceNotes(graph.data, detailData)) : []),
+    [graph.data, detailData],
+  );
+  const caption = playbackCaption(playback.state, path);
+  const cameraTarget = camera && playback.state.mode !== 'idle' ? (overlay?.current ?? null) : null;
 
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   useEffect(() => setSelectedNode(null), [workflowId]);
@@ -102,6 +153,34 @@ export function MonitoreoWorkflowPage() {
               )}
             </div>
 
+            {detailData ? (
+              <ExecutionHeader execution={detailData.execution} nowMs={now} />
+            ) : executions.isError ? (
+              <p className="wf-notice" role="alert">
+                No pudimos leer las ejecuciones de este workflow.
+                <Button variant="ghost" onClick={() => void executions.refetch()}>
+                  Reintentar
+                </Button>
+              </p>
+            ) : executions.data && executionItems.length === 0 ? (
+              <p className="wf-notice">
+                Todavía no hay ejecuciones de este workflow. Cuando llegue una, vas a ver por dónde pasó.
+              </p>
+            ) : null}
+
+            {executionId !== null && detail.isPending && (
+              <p className="wf-notice" role="status">
+                Cargando el recorrido de la ejecución…
+              </p>
+            )}
+            {detail.isError && (
+              <p className="wf-notice" role="alert">
+                No pudimos cargar el detalle de esta ejecución.
+                <Button variant="ghost" onClick={() => void detail.refetch()}>
+                  Reintentar
+                </Button>
+              </p>
+            )}
             <QueryView
               query={graph}
               loading={<WorkflowCanvasSkeleton />}
@@ -116,17 +195,42 @@ export function MonitoreoWorkflowPage() {
             >
               {(g) =>
                 layout && overlay ? (
-                  <WorkflowCanvas
-                    title={g.name}
-                    layout={layout}
-                    overlay={overlay}
-                    selected={selectedNode}
-                    onSelect={setSelectedNode}
-                    resetKey={g.id}
-                  />
+                  <>
+                    <WorkflowCanvas
+                      title={g.name}
+                      layout={layout}
+                      overlay={overlay}
+                      selected={selectedNode}
+                      onSelect={setSelectedNode}
+                      resetKey={g.id}
+                      camera={cameraTarget}
+                      dock={caption ? <PlaybackCaptionPill caption={caption} /> : null}
+                    />
+                    <PlaybackBar
+                      state={playback.state}
+                      canPlay={path.length > 1}
+                      speed={speed}
+                      onSpeed={setSpeed}
+                      camera={camera}
+                      onCamera={setCamera}
+                      reducedMotion={reducedMotion}
+                      onPlay={playback.play}
+                      onPause={playback.pause}
+                      onRestart={playback.restart}
+                      onShowAll={playback.showAll}
+                    />
+                  </>
                 ) : null
               }
             </QueryView>
+
+            {notices.length > 0 && (
+              <ul className="wf-notices">
+                {notices.map((notice) => (
+                  <li key={notice.id}>{notice.text}</li>
+                ))}
+              </ul>
+            )}
           </>
         )}
       </QueryView>

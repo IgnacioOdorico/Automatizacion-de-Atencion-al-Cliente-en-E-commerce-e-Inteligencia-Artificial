@@ -269,6 +269,9 @@ export function WorkflowCanvas({ title, layout, overlay, selected, onSelect, res
                 <path
                   key={edge.key}
                   className={classes.join(' ')}
+                  data-from={edge.from}
+                  data-to={edge.to}
+                  data-output={edge.outputIndex}
                   d={edge.d}
                   markerEnd={`url(#${arrowId(state.visual)})`}
                 />

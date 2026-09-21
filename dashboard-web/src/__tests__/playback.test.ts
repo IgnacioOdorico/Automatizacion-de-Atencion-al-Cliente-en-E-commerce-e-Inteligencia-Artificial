@@ -5,6 +5,7 @@ import {
   SPEEDS,
   initialPlayback,
   overlayReveal,
+  playbackCaption,
   playbackReducer,
   stepDelayMs,
   type Playback,
@@ -94,5 +95,31 @@ describe('playbackReducer', () => {
     expect(playbackReducer(idle(0), { type: 'play' })).toEqual(idle(0));
     expect(playbackReducer(idle(1), { type: 'play' })).toEqual(idle(1));
     expect(playbackReducer(idle(0), { type: 'restart' })).toEqual(idle(0));
+  });
+});
+
+describe('playbackCaption (el texto "Paso 3 de 10")', () => {
+  const path = ['Webhook', 'Registrar Orden', 'Verificar Stock'];
+
+  it('en reposo no hay leyenda', () => {
+    expect(playbackCaption(initialPlayback(3), path)).toBeNull();
+  });
+
+  it('reproduciendo dice el paso y el nodo en el que está', () => {
+    expect(playbackCaption({ mode: 'playing', revealed: 2, total: 3 }, path)).toEqual({
+      step: 'Paso 2 de 3',
+      node: 'Registrar Orden',
+    });
+  });
+
+  it('en pausa también, y lo aclara', () => {
+    expect(playbackCaption({ mode: 'paused', revealed: 1, total: 3 }, path)).toEqual({
+      step: 'Paso 1 de 3 (en pausa)',
+      node: 'Webhook',
+    });
+  });
+
+  it('si el camino no alcanza (datos inconsistentes) no inventa un nodo', () => {
+    expect(playbackCaption({ mode: 'playing', revealed: 5, total: 3 }, path)?.node).toBeNull();
   });
 });

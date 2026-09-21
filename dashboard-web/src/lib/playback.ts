@@ -67,3 +67,19 @@ export function playbackReducer(state: Playback, action: PlaybackAction): Playba
     }
   }
 }
+
+export interface PlaybackCaption {
+  step: string;
+  /** El nodo en el que está la reproducción (`null` si el camino no lo trae). */
+  node: string | null;
+}
+
+/** Leyenda de la reproducción ("Paso 3 de 10" + nodo actual); `null` en reposo. */
+export function playbackCaption(state: Playback, path: readonly string[]): PlaybackCaption | null {
+  if (state.mode === 'idle') return null;
+  const paused = state.mode === 'paused' ? ' (en pausa)' : '';
+  return {
+    step: `Paso ${state.revealed} de ${state.total}${paused}`,
+    node: path[state.revealed - 1] ?? null,
+  };
+}

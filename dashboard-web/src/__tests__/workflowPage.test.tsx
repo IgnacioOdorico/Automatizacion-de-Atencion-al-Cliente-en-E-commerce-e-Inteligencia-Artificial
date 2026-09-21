@@ -26,6 +26,7 @@ vi.mock('@/api/endpoints', () => ({
 
 const workflows = vi.mocked(monitoringApi.workflows);
 const workflowGraph = vi.mocked(monitoringApi.workflowGraph);
+const executions = vi.mocked(monitoringApi.executions);
 
 const FLUJO1 = makeWorkflowSummary(FLUJO1_ID, flujo1Graph.name, {
   executions_24h: 12,
@@ -43,6 +44,8 @@ let root: Root;
 
 beforeEach(() => {
   installFakeResizeObserver();
+  // Estas pruebas son del selector y del lienzo: sin ejecuciones el diagrama se ve sin pintar.
+  executions.mockReset().mockResolvedValue({ available: true, items: [], has_more: false, next_before: null });
   workflows.mockReset().mockResolvedValue({ available: true, items: [FLUJO2, FLUJO1] });
   workflowGraph.mockReset().mockImplementation(async (id: string): Promise<WorkflowGraph> => {
     if (id === FLUJO1_ID) return flujo1Graph;

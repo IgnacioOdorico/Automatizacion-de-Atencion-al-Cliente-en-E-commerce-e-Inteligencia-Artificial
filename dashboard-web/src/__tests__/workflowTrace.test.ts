@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { edgeKey } from '@/lib/workflowGraph';
-import { buildOverlay, effectivePath, isEdgeTraversed, traceNotes } from '@/lib/workflowTrace';
+import { buildOverlay, effectivePath, isEdgeTraversed, traceNoticeMessages, traceNotes } from '@/lib/workflowTrace';
 import type { ExecutionDetail, GraphEdge } from '@/types/monitoring';
 
 import {
@@ -285,5 +285,57 @@ describe('traceNotes (avisos para el usuario)', () => {
     const notes = traceNotes(flujo2Graph, traceConStock());
     expect(notes.missing.length).toBe(flujo2Graph.nodes.length);
     expect(notes.extra.length).toBe(traceConStock().nodes.length);
+  });
+});
+
+describe('traceNoticeMessages (qué le decimos al usuario)', () => {
+  const none = { missing: [], extra: [], truncated: false, readError: null };
+
+  it('una ejecución sin problemas no dice nada', () => {
+    expect(traceNoticeMessages(none)).toEqual([]);
+  });
+
+  it('una traza que no se pudo leer muestra el motivo que dio la API', () => {
+    const [msg] = traceNoticeMessages({ ...none, readError: 'La ejecución no tiene datos de traza (¿fueron purgados?)' });
+    expect(msg.text).toContain('No se pudo mostrar el detalle');
+    expect(msg.text).toContain('purgados');
+  });
+
+  it('una ejecución truncada (demasiado grande) lo dice', () => {
+    const [msg] = traceNoticeMessages({ ...none, truncated: true });
+    expect(msg.text).toMatch(/demasiado grande/i);
+  });
+
+  it('con truncada y motivo, no repite dos avisos por el mismo problema', () => {
+    const msgs = traceNoticeMessages({ ...none, truncated: true, readError: 'algo' });
+    expect(msgs).toHaveLength(1);
+  });
+
+  it('nodos del diagrama que faltan: cuántos y cuáles', () => {
+    const [msg] = traceNoticeMessages({ ...none, missing: ['A', 'B'] });
+    expect(msg.text).toContain('2 nodos del diagrama');
+    expect(msg.text).toContain('A, B');
+    const [one] = traceNoticeMessages({ ...none, missing: ['A'] });
+    expect(one.text).toContain('1 nodo del diagrama no figura');
+  });
+
+  it('con muchos faltantes lista unos pocos y cuenta el resto', () => {
+    const missing = Array.from({ length: 9 }, (_, i) => `Nodo ${i + 1}`);
+    const [msg] = traceNoticeMessages({ ...none, missing });
+    expect(msg.text).toContain('Nodo 1');
+    expect(msg.text).toContain('Nodo 5');
+    expect(msg.text).not.toContain('Nodo 6');
+    expect(msg.text).toContain('y 4 más');
+  });
+
+  it('nodos de la traza que ya no existen se listan aparte por nombre', () => {
+    const [msg] = traceNoticeMessages({ ...none, extra: [makeTraceNode('Nodo Viejo', 'success'), makeTraceNode('Otro', 'error')] });
+    expect(msg.text).toContain('ya no existen en el workflow');
+    expect(msg.text).toContain('Nodo Viejo, Otro');
+  });
+
+  it('cada aviso trae un id estable para usar de key', () => {
+    const msgs = traceNoticeMessages({ ...none, missing: ['A'], extra: [makeTraceNode('X', 'success')], truncated: true });
+    expect(new Set(msgs.map((m) => m.id)).size).toBe(msgs.length);
   });
 });

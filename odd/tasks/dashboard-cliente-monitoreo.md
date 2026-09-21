@@ -27,7 +27,7 @@ Fuera de alcance: modificar workflows, exponer credenciales o `parameters` de no
 - [ ] M4b Frontend: pestaña Workflow: diagrama SVG del workflow con el camino de la ejecución iluminado, lista de ejecuciones y detalle por nodo; leyenda de MTTD/MTTR/TMR
   - [x] M4b-1 lib pura + tipos + cliente API: layout del grafo, viewport (pan/zoom), estado por nodo/arista desde la traza, reproducción, seguir en vivo, ejecuciones, métricas de la tesis
   - [x] M4b-2 lienzo SVG con pan/zoom (mouse, rueda con Ctrl, pinch, teclado), selector de workflow y estados
-  - [ ] M4b-3 overlay de la ejecución + reproducir camino
+  - [x] M4b-3 overlay de la ejecución + reproducir camino
   - [ ] M4b-4 lista de ejecuciones, seguir en vivo y detalle de nodo
   - [ ] M4b-5 tarjeta de métricas de la tesis, leyenda, ruta y pestaña
   - [ ] M4b-6 revisión visual (1280 y 375 px contra una API de mentira) y cierre
@@ -49,6 +49,7 @@ M1–M3: delegated direct (un writer backend). M4: delegated direct (un writer f
 - **Cierre M4a**: `npm test` 451 passed (29 archivos, base 238/19); `tsc --noEmit` limpio; `npm run build` OK (323 kB de JS, 35 kB de CSS). Revisión visual: ver el reporte del writer (API de mentira local, fuera del repo; 1280 px y 375 px).
 - **M4b-1**: RED (8 archivos por módulos inexistentes: viewport, workflowGraph, workflowTrace, nodeKinds, playback, followLive, executions, thesisMetrics; + 4 de `formatMs` y 5 de `monitoringApi.workflows/workflowGraph/executions/execution`). GREEN: 37 archivos, 618 tests. Mutaciones: cambiar la regla de arista recorrida a "siempre" rompe 3 tests de `workflowTrace`; sacar `relieveOverlaps` del layout rompe el test de tarjetas que se pisan en los Flujos 1 y 2 reales. `tsc --noEmit` limpio.
 - **M4b-2**: RED `workflowCanvas.test.tsx` (módulo inexistente) y 14 tests nuevos de `viewport` (`initialView`, `preferredHeight`, `centerOn`, `isInView`). GREEN: canvas 28, page 12, styles 14, nodeCard 13, viewport 39. jsdom no trae PointerEvent ni ResizeObserver: los tests usan un `MouseEvent` con `pointerId` y un `ResizeObserver` de mentira (`helpers/fakeResizeObserver.ts`). Los tests de página (`workflowPage`) se escribieron DESPUÉS del componente (solo la lib fue RED-first).
+- **M4b-3**: RED 12 tests (`playbackCaption`, `traceNoticeMessages`) y 27 de `workflowOverlay.test.tsx` (overlay por estado y rama del IF, error, purgada/truncada, nodos que faltan o sobran, reproducción con velocidad/pausa/reinicio/resultado final, movimiento reducido, cámara, ejecución en curso). GREEN: overlay 27, playback 18+, workflowTrace 41+. Mutaciones: `reducedMotion` ignorado rompe el test de movimiento reducido; sacar el corte final de `tick` rompe 2 tests. Nota de jsdom: dentro de un mismo `act` React no re-arma el temporizador entre pasos, por eso los tests avanzan el reloj un paso por vez (en el navegador no pasa).
 - Pendiente de verificar: formato de ejecuciones EXITOSAS reales (solo existe la ejecución 1, con error; el resto de los fixtures exitosos se armaron con el formato observado) y del Flujo 2 (no está importado en n8n). Front (M4) y reconstrucción del stack (M5) sin hacer.
 
 ## Decisiones de M4a (front)

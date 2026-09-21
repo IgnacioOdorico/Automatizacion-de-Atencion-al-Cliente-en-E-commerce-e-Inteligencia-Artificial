@@ -153,3 +153,48 @@ export function traceNotes(graph: WorkflowGraph, detail: ExecutionDetail | null)
     readError: detail.error,
   };
 }
+
+export interface TraceNotice {
+  id: string;
+  text: string;
+}
+
+const LISTED = 5;
+
+function listNames(names: readonly string[]): string {
+  const shown = names.slice(0, LISTED).join(', ');
+  const rest = names.length - LISTED;
+  return rest > 0 ? `${shown} y ${rest} más` : shown;
+}
+
+/**
+ * Los avisos que se muestran junto al diagrama cuando la ejecución no calza
+ * del todo con el workflow actual (o no se pudo leer). En palabras del cliente.
+ */
+export function traceNoticeMessages(notes: TraceNotes): TraceNotice[] {
+  const out: TraceNotice[] = [];
+  if (notes.truncated) {
+    out.push({
+      id: 'truncated',
+      text: 'Esta ejecución es demasiado grande y no se muestra el detalle nodo por nodo.',
+    });
+  } else if (notes.readError) {
+    out.push({ id: 'read-error', text: `No se pudo mostrar el detalle de esta ejecución. ${notes.readError}` });
+  }
+  if (notes.missing.length > 0) {
+    const n = notes.missing.length;
+    const subject =
+      n === 1 ? '1 nodo del diagrama no figura' : `${n} nodos del diagrama no figuran`;
+    out.push({
+      id: 'missing',
+      text: `${subject} en esta ejecución (el workflow cambió después de correr): ${listNames(notes.missing)}.`,
+    });
+  }
+  if (notes.extra.length > 0) {
+    out.push({
+      id: 'extra',
+      text: `Esta ejecución pasó por nodos que ya no existen en el workflow: ${listNames(notes.extra.map((n) => n.name))}.`,
+    });
+  }
+  return out;
+}
