@@ -184,6 +184,9 @@ services:
       # front sale por :8080; si desarrollás con Vite (:5173), pisala en .env.
       - DASHBOARD_FRONTEND_URL=${DASHBOARD_FRONTEND_URL:-http://localhost:8080}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+      # Único proxy en el que la API confía para leer X-Real-IP (IP real del cliente
+      # en el rate limit de /auth/login). Un acceso directo a :8000 NO puede spoofearla.
+      - DASHBOARD_TRUSTED_PROXIES=${DASHBOARD_TRUSTED_PROXIES:-dashboard-web}
     depends_on:
       postgres:
         condition: service_healthy

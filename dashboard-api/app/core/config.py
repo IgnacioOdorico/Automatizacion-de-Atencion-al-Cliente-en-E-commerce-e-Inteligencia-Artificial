@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     dashboard_frontend_url: str = "http://localhost:5173"
     telegram_code_ttl_minutes: int = 15
     cors_origins: str = "http://localhost:5173,http://localhost:8080"
+    # Proxies (IP, CIDR o nombre de host) en los que se confía para leer X-Real-IP.
+    # Vacío = no se confía en ningún header (se usa la IP del peer directo).
+    dashboard_trusted_proxies: str = ""
 
     access_token_expire_minutes: int = 120
     refresh_token_expire_days: int = 7

@@ -49,3 +49,8 @@ def test_compose_never_hardcodes_a_secret_literal():
 def test_compose_has_no_known_weak_secret_strings():
     assert "-cambiar" not in COMPOSE
     assert "demo-dashboard" not in COMPOSE and "demo-n8n" not in COMPOSE
+
+
+def test_only_the_web_proxy_is_trusted_for_the_client_ip():
+    # Nunca un rango amplio: un acceso directo a :8000 podría spoofear X-Real-IP.
+    assert _default("DASHBOARD_TRUSTED_PROXIES") == "dashboard-web"

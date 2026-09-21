@@ -127,6 +127,50 @@ def test_login_rate_limit_blocks_sixth_attempt(client):
     assert blocked.status_code == 429
 
 
+def _bad_login(client, email, real_ip=None):
+    headers = {"X-Real-IP": real_ip} if real_ip else {}
+    return client.post(
+        "/auth/login",
+        json={"email": email, "password": "incorrecta"},
+        headers=headers,
+    )
+
+
+def test_login_rate_limit_is_not_evaded_by_spoofing_x_real_ip(client):
+    # Sin proxy de confianza configurado (default), el header lo controla el atacante:
+    # rotarlo no puede darle un bucket nuevo por intento.
+    for i in range(5):
+        assert _bad_login(client, f"spray{i}@example.com", f"203.0.113.{i}").status_code == 401
+    blocked = _bad_login(client, "spray9@example.com", "203.0.113.99")
+    assert blocked.status_code == 429
+
+
+def test_login_rate_limit_is_per_real_client_behind_the_trusted_proxy(
+    client, monkeypatch
+):
+    from app.core import client_ip
+    from app.core.config import settings
+
+    # "testclient" es el peer que ve TestClient: hace de nginx.
+    monkeypatch.setattr(settings, "dashboard_trusted_proxies", "testclient")
+    client_ip.reset_cache()
+    try:
+        for i in range(5):
+            assert _bad_login(client, f"a{i}@example.com", "203.0.113.10").status_code == 401
+        # el cliente A quedó bloqueado...
+        assert _bad_login(client, "a9@example.com", "203.0.113.10").status_code == 429
+        # ...pero otro cliente detrás del mismo proxy NO comparte su bucket (no hay DoS)
+        assert _bad_login(client, "b0@example.com", "203.0.113.20").status_code == 401
+        good = client.post(
+            "/auth/login",
+            json={"email": DEMO_EMAIL, "password": DEMO_PASSWORD},
+            headers={"X-Real-IP": "203.0.113.20"},
+        )
+        assert good.status_code == 200
+    finally:
+        client_ip.reset_cache()
+
+
 def test_refresh_rotates_and_invalidates_old_token(client):
     login = client.post(
         "/auth/login", json={"email": DEMO_EMAIL, "password": DEMO_PASSWORD}

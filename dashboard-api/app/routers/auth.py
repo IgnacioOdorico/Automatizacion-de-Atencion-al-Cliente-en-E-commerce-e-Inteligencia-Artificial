@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.exc import IntegrityError
 
 from app.core import rate_limit
+from app.core.client_ip import get_client_ip
 from app.core.config import settings
 from app.core.deps import get_current_account_id
 from app.core.security import (
@@ -100,8 +101,7 @@ def register(payload: RegisterRequest) -> dict:
 @router.post("/auth/login")
 def login(payload: LoginRequest, request: Request, response: Response) -> dict:
     email = payload.email.lower()
-    client_ip = request.client.host if request.client else "unknown"
-    ip_key = f"ip:{client_ip}"
+    ip_key = f"ip:{get_client_ip(request)}"
     email_key = f"email:{email}"
 
     if rate_limit.is_blocked(ip_key, email_key):
