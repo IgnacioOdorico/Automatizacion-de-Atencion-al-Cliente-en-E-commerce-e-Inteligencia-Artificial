@@ -215,3 +215,39 @@ def test_disconnect_channel_route_still_works_next_to_cancel_code(client, auth_h
     resp = client.delete("/connections/telegram", headers=auth_headers)
     assert resp.status_code == 200
     assert resp.json() == {"channel": "telegram", "status": "disconnected"}
+
+
+def test_disconnect_invalidates_the_pending_code(client, auth_headers):
+    # Un código vivo NO puede reconectar el canal después de desconectarlo.
+    code = client.post("/connections/telegram/start", headers=auth_headers).json()["code"]
+
+    assert client.delete("/connections/telegram", headers=auth_headers).status_code == 200
+
+    assert _confirm(client, code).status_code == 400
+    from app.db import fetch_one
+
+    row = fetch_one(
+        "SELECT status, external_reference FROM channel_connections "
+        "WHERE client_account_id = 1 AND channel = 'telegram'"
+    )
+    assert row["status"] == "disconnected"
+    assert row["external_reference"] is None
+
+
+def test_disconnecting_other_channels_keeps_the_pending_telegram_code(client, auth_headers):
+    code = client.post("/connections/telegram/start", headers=auth_headers).json()["code"]
+
+    assert client.delete("/connections/whatsapp", headers=auth_headers).status_code == 200
+
+    assert _confirm(client, code).status_code == 200
+
+
+def test_disconnect_never_invalidates_another_accounts_code(client, auth_headers):
+    other_headers = _second_account_headers(client)
+    other_code = client.post("/connections/telegram/start", headers=other_headers).json()[
+        "code"
+    ]
+
+    assert client.delete("/connections/telegram", headers=auth_headers).status_code == 200
+
+    assert _confirm(client, other_code, chat_id="999000111").status_code == 200

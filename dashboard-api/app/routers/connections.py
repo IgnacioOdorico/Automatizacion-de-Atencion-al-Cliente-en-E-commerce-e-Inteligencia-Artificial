@@ -112,6 +112,10 @@ def disconnect_channel(
         """,
         {"id": account_id, "channel": channel},
     )
+    if channel == "telegram":
+        # Un código de vinculación vivo no puede reconectar el canal después de
+        # desconectarlo: se invalida el pendiente de ESTA cuenta.
+        telegram_codes.cancel(account_id)
     return {"channel": channel, "status": "disconnected"}
 
 
