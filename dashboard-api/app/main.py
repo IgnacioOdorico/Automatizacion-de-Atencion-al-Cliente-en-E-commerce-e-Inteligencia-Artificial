@@ -6,6 +6,7 @@ from app.routers import (
     auth,
     connections,
     dashboard,
+    monitoring_conversations,
     monitoring_feed,
     orders,
     products,
@@ -41,6 +42,7 @@ def create_app() -> FastAPI:
     application.include_router(tickets.router)
     application.include_router(products.router)
     application.include_router(monitoring_feed.router)
+    application.include_router(monitoring_conversations.router)
     return application
 
 
