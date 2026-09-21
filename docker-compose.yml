@@ -12,8 +12,11 @@
 #    postgres → Base de datos unificada (ambos flujos)
 #    mailpit  → SMTP local para emails de confirmación (Flujo 1)
 #    grafana  → Dashboard de métricas MTTD/MTTR/TMR (para la tesis)
+#    dashboard-api / dashboard-web → Portal del cliente
+#    webhook-gateway + ngrok → (perfil "tunnel", opcional) URL pública para Telegram
 #
 #  Levantar:  docker compose up -d
+#  Con túnel: docker compose --profile tunnel up -d   (ver docs/TUNEL_TELEGRAM.md)
 #  Detener:   docker compose down
 #  Ver logs:  docker compose logs -f n8n
 # ============================================================
@@ -35,12 +38,23 @@ services:
       - "5678:5678"
     environment:
       # WEBHOOK_URL: URL pública HTTPS para que el Telegram Trigger registre su
-      # webhook (n8n 2.x removió el --tunnel interno). Para la demo se usa ngrok:
-      #   1) ngrok http 5678   → devuelve https://XXXX.ngrok-free.dev
-      #   2) export WEBHOOK_URL=https://XXXX.ngrok-free.dev/   (o setearla en un .env)
-      #   3) recrear n8n. Sin esto queda en localhost y Telegram no se registra.
-      # En producción se reemplaza por un dominio propio con HTTPS.
+      # webhook (n8n 2.x removió el --tunnel interno). Para la demo se usa el perfil
+      # "tunnel" de este compose (ngrok + webhook-gateway, ver docs/TUNEL_TELEGRAM.md):
+      #   1) en .env: NGROK_AUTHTOKEN, NGROK_DOMAIN (dominio estático) y
+      #      WEBHOOK_URL=https://<NGROK_DOMAIN>/
+      #   2) docker compose --profile tunnel up -d
+      # Sin esto queda en localhost y Telegram no se registra. En producción se
+      # reemplaza por un dominio propio con HTTPS.
+      # (n8n >= 2.35 renombra esta variable a N8N_WEBHOOK_URL; en 2.12.2 sigue siendo WEBHOOK_URL.)
       - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678/}
+      # Con el túnel n8n queda detrás de 2 proxies (ngrok -> webhook-gateway): en .env
+      # N8N_PROXY_HOPS=2 para que lea bien X-Forwarded-*. Default 0 = no confía en esos
+      # headers (acceso directo a :5678, comportamiento de siempre).
+      - N8N_PROXY_HOPS=${N8N_PROXY_HOPS:-0}
+      # Dónde se abre el EDITOR. Si no se define, n8n usa WEBHOOK_URL como base de la
+      # instancia y los links del editor (OAuth de credenciales, invitaciones, reseteo de
+      # contraseña) apuntarían al dominio público, que el gateway bloquea a propósito.
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL:-http://localhost:5678}
       # Conexión a PostgreSQL (BD interna de n8n + datos del proyecto)
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=postgres
@@ -67,14 +81,14 @@ services:
       - GENERIC_TIMEZONE=America/Argentina/Mendoza
       - TZ=America/Argentina/Mendoza
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:?definir en .env}
-      # Secreto compartido con el dashboard-api (header X-N8N-SECRET del
-      # workflow de vínculo). Debe ser el MISMO valor que DASHBOARD_N8N_SECRET.
-      # Sin default: se define en .env (el dashboard-api no arranca sin él).
-      - DASHBOARD_N8N_SECRET=${DASHBOARD_N8N_SECRET:-}
-      # Token del bot de Telegram dedicado al vínculo de cuenta (llamado desde
-      # el workflow "Flujo 3 — Telegram Vínculo de Cuenta"). Se crea con
-      # @BotFather y se referencia en la credencial como {{ $env.DASHBOARD_BOT_TOKEN_VINCULO }}.
-      - DASHBOARD_BOT_TOKEN_VINCULO=${DASHBOARD_BOT_TOKEN_VINCULO:-}
+      # Secretos del "Flujo 3 — Telegram Vínculo de Cuenta" (token del bot y secreto
+      # X-N8N-SECRET): NO se pasan por variables de entorno a este contenedor. n8n 2.x
+      # bloquea `$env` en expresiones y Code nodes (N8N_BLOCK_ENV_ACCESS_IN_NODE=true por
+      # defecto), y habilitarlo dejaría a CUALQUIER workflow leer N8N_ENCRYPTION_KEY y la
+      # contraseña de la BD. Van como credenciales de n8n (cifradas con N8N_ENCRYPTION_KEY):
+      #   - "Telegram API"  -> token del bot de vínculo (@BotFather)
+      #   - "Header Auth"   -> nombre X-N8N-SECRET, valor = DASHBOARD_N8N_SECRET del .env
+      # Se cargan una vez en la UI de n8n (docs/TUNEL_TELEGRAM.md, paso 5).
     volumes:
       - n8n_data:/home/node/.n8n
     depends_on:
@@ -220,6 +234,75 @@ services:
       - "8080:80"
     depends_on:
       - dashboard-api
+    networks:
+      - tesis_network
+
+  # ----------------------------------------------------------
+  # Webhook Gateway — perfil "tunnel" (NO arranca con `docker compose up -d`)
+  # nginx con ALLOWLIST estricta delante de n8n: lo único que llega a n8n desde
+  # internet es POST /webhook/<uuid>/webhook (webhook del Telegram Trigger). El editor,
+  # /rest/*, /webhook/orden-nueva, /webhook/whatsapp-business, etc. dan 404 acá mismo.
+  # Sin puerto publicado al host: solo ngrok (misma red Docker) le habla.
+  # Config versionada en webhook-gateway/nginx.conf. Guía: docs/TUNEL_TELEGRAM.md
+  # ----------------------------------------------------------
+  webhook-gateway:
+    profiles: ["tunnel"]
+    image: nginx:1.27-alpine
+    container_name: tesis_webhook_gateway
+    restart: unless-stopped
+    volumes:
+      - ./webhook-gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /run
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      # Listener de loopback :8081 (ver nginx.conf); /healthz NO existe en el :80 público.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8081/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - tesis_network
+
+  # ----------------------------------------------------------
+  # ngrok — túnel público HTTPS hacia el gateway (perfil "tunnel")
+  # Publica webhook-gateway:80 en el dominio estático gratuito NGROK_DOMAIN
+  # (sin https://, p. ej. algo.ngrok-free.dev) y deja WEBHOOK_URL=https://<NGROK_DOMAIN>/
+  # estable. NGROK_AUTHTOKEN y NGROK_DOMAIN se definen en .env (sin valores acá; sin
+  # `:?` para no romper `docker compose up -d` a quien no usa el túnel): si faltan, el
+  # contenedor se niega a arrancar y lo dice en sus logs.
+  # Inspector de tráfico apagado (--inspect=false): guardaría en memoria los mensajes de los
+  # clientes. No se publica ningún puerto de ngrok al host.
+  # ----------------------------------------------------------
+  ngrok:
+    profiles: ["tunnel"]
+    image: ngrok/ngrok:3
+    container_name: tesis_ngrok
+    restart: unless-stopped
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
+      - NGROK_DOMAIN=${NGROK_DOMAIN:-}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ -z "$$NGROK_AUTHTOKEN" ] || [ -z "$$NGROK_DOMAIN" ]; then
+          echo "ERROR: faltan NGROK_AUTHTOKEN y/o NGROK_DOMAIN en .env (ver docs/TUNEL_TELEGRAM.md)" >&2
+          exit 1
+        fi
+        case "$$NGROK_DOMAIN" in
+          *://*|*/*)
+            echo "ERROR: NGROK_DOMAIN va solo el dominio, sin https:// ni barras (ej.: algo.ngrok-free.dev)" >&2
+            exit 1 ;;
+        esac
+        exec ngrok http webhook-gateway:80 --url="$$NGROK_DOMAIN" --inspect=false --log=stdout --log-format=logfmt
+    depends_on:
+      webhook-gateway:
+        condition: service_healthy
     networks:
       - tesis_network
 
