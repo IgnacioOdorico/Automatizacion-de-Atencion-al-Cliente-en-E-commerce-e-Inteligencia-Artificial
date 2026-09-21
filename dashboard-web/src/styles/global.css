@@ -1193,3 +1193,97 @@ button {
   justify-content: flex-end;
   gap: 8px;
 }
+
+/* ============================================================
+   Fase 7 — Estados de carga / vacío / error
+   ============================================================ */
+
+/* Texto solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Error de carga: mismo marco que el estado vacío, con icono en rojo */
+.error-state {
+  border-style: solid;
+  border-color: rgba(239, 68, 68, 0.22);
+}
+.error-state__icon {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.error-state--sm {
+  padding: 32px 20px;
+  gap: 10px;
+}
+.error-state--sm .empty-state__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+}
+
+/* Franja de aviso: falló una actualización pero hay datos previos en pantalla */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-md);
+  background: var(--danger-soft);
+  color: #fca5a5;
+}
+.error-banner > svg {
+  flex: none;
+}
+.error-banner__text {
+  flex: 1;
+  margin: 0;
+  font-size: 13.5px;
+}
+.error-banner .btn {
+  height: 34px;
+  flex: none;
+}
+
+/* Esqueletos: misma geometría que el contenido para no saltar al cargar */
+.table-skeleton__row {
+  display: grid;
+  align-items: center;
+  gap: 18px;
+  height: 66px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+.table-skeleton__row:last-child {
+  border-bottom: none;
+}
+.table-skeleton__row--head {
+  height: 41px;
+  background: rgba(255, 255, 255, 0.015);
+}
+.stat-card {
+  min-height: 124px;
+}
+.dash-section__title-skeleton {
+  margin: 3px 0 15px;
+}
+.conn-card--skeleton {
+  min-height: 210px;
+}
+
+/* El polling está fallando: el indicador se apaga */
+.live-badge--paused .live-badge__dot {
+  background: var(--text-3);
+  animation: none;
+  box-shadow: none;
+}

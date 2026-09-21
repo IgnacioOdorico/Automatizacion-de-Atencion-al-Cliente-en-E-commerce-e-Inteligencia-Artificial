@@ -147,7 +147,7 @@ describe('connectionActionError — Telegram start', () => {
 
   it('un error de red (no ApiError) explica que no hay conexión con el servidor', () => {
     const msg = connectionActionError(new TypeError('Failed to fetch'), 'telegram-start');
-    expect(msg).toContain('No se pudo conectar con el servidor');
+    expect(msg).toContain('No pudimos comunicarnos con el servidor');
   });
 });
 

@@ -3,13 +3,13 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { dashboardApi } from '@/api/endpoints';
 import { Pagination } from '@/components/Pagination';
+import { QueryView } from '@/components/QueryView';
 import { BoxIcon } from '@/components/icons';
-import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 import { formatCurrency } from '@/lib/format';
-import { friendlyApiError } from '@/lib/messages';
 import type { Product } from '@/types/api';
 
 function stockBadge(product: Product): { label: string; tone: 'success' | 'warning' | 'danger' } {
@@ -27,11 +27,12 @@ export function CatalogoPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isPending, isError, error, refetch, isFetching } = useQuery({
+  const query = useQuery({
     queryKey: ['products', search, page],
     queryFn: () => dashboardApi.products({ search: search || undefined, page }),
     placeholderData: keepPreviousData,
   });
+  const { refetch, isFetching } = query;
 
   const submitSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -78,79 +79,76 @@ export function CatalogoPage() {
         </div>
       </form>
 
-      {isError && (
-        <Alert variant="error" role="alert">
-          {friendlyApiError(error)}
-        </Alert>
-      )}
-
-      {isPending && <div className="skeleton" style={{ height: 320, borderRadius: 16 }} />}
-
-      {data && data.items.length === 0 && (
-        <EmptyState
-          icon={<BoxIcon width={24} height={24} />}
-          title={search ? `Sin resultados para "${search}"` : 'Catálogo vacío'}
-          text={
-            search
-              ? 'Probá con otro término o limpiá la búsqueda para ver todos los productos.'
-              : 'Los productos cargados en la tienda aparecen acá.'
-          }
-          action={
-            search ? (
-              <Button variant="ghost" onClick={clearSearch}>
-                Limpiar búsqueda
-              </Button>
-            ) : undefined
-          }
-        />
-      )}
-
-      {data && data.items.length > 0 && (
-        <>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Categoría</th>
-                  <th className="table__num">Precio</th>
-                  <th className="table__num">Stock</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((product) => {
-                  const stock = stockBadge(product);
-                  return (
-                    <tr key={product.id}>
-                      <td>
-                        <div className="table__cell-main">{product.name}</div>
-                        <div className="table__cell-sub">{product.sku}</div>
-                      </td>
-                      <td>{product.category ?? '—'}</td>
-                      <td className="table__num">{formatCurrency(product.price)}</td>
-                      <td className="table__num">
-                        {product.stock}
-                        <div className="table__cell-sub">mín. {product.stock_min}</div>
-                      </td>
-                      <td>
-                        <Badge tone={stock.tone}>{stock.label}</Badge>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <Pagination
-            page={data.page}
-            totalPages={data.total_pages}
-            total={data.total}
-            onPageChange={setPage}
+      <QueryView
+        query={query}
+        loading={<TableSkeleton columns={5} rows={8} />}
+        isEmpty={(data) => data.items.length === 0}
+        empty={
+          <EmptyState
+            icon={<BoxIcon width={24} height={24} />}
+            title={search ? `Sin resultados para "${search}"` : 'Catálogo vacío'}
+            text={
+              search
+                ? 'Probá con otro término o limpiá la búsqueda para ver todos los productos.'
+                : 'Los productos cargados en la tienda aparecen acá.'
+            }
+            action={
+              search ? (
+                <Button variant="ghost" onClick={clearSearch}>
+                  Limpiar búsqueda
+                </Button>
+              ) : undefined
+            }
           />
-        </>
-      )}
+        }
+      >
+        {(data) => (
+          <>
+            <div className="table-wrap">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th className="table__num">Precio</th>
+                    <th className="table__num">Stock</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.items.map((product) => {
+                    const stock = stockBadge(product);
+                    return (
+                      <tr key={product.id}>
+                        <td>
+                          <div className="table__cell-main">{product.name}</div>
+                          <div className="table__cell-sub">{product.sku}</div>
+                        </td>
+                        <td>{product.category ?? '—'}</td>
+                        <td className="table__num">{formatCurrency(product.price)}</td>
+                        <td className="table__num">
+                          {product.stock}
+                          <div className="table__cell-sub">mín. {product.stock_min}</div>
+                        </td>
+                        <td>
+                          <Badge tone={stock.tone}>{stock.label}</Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <Pagination
+              page={data.page}
+              totalPages={data.total_pages}
+              total={data.total}
+              onPageChange={setPage}
+            />
+          </>
+        )}
+      </QueryView>
     </div>
   );
 }

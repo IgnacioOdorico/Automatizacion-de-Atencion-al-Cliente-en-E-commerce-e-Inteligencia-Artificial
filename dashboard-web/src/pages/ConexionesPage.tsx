@@ -6,10 +6,9 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { GmailCard } from '@/components/connections/GmailCard';
 import { TelegramCard } from '@/components/connections/TelegramCard';
 import { WhatsAppCard } from '@/components/connections/WhatsAppCard';
-import { PlugIcon } from '@/components/icons';
-import { Alert } from '@/components/ui/Alert';
+import { QueryView } from '@/components/QueryView';
 import { Button } from '@/components/ui/Button';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useGmailReturn } from '@/hooks/useGmailReturn';
 import { useTelegramLink } from '@/hooks/useTelegramLink';
 import {
@@ -18,8 +17,25 @@ import {
   disconnectCopy,
   type ChannelCardModel,
 } from '@/lib/connections';
-import { friendlyApiError } from '@/lib/messages';
 import { TELEGRAM_POLL_MS } from '@/lib/telegramLink';
+
+function ConnectionsSkeleton() {
+  return (
+    <div className="conn-grid" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="card conn-card conn-card--skeleton">
+          <div className="conn-card__head">
+            <Skeleton height={40} width={40} radius={11} />
+            <Skeleton height={16} width="38%" />
+          </div>
+          <Skeleton height={13} />
+          <Skeleton height={13} width="70%" />
+          <Skeleton height={40} width={150} radius={8} />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 /**
  * Conexiones (GET /connections): una card por canal con su estado real.
@@ -29,13 +45,14 @@ export function ConexionesPage() {
   const queryClient = useQueryClient();
   const telegram = useTelegramLink();
 
-  const { data, isPending, isError, error, refetch, isFetching } = useQuery({
+  const query = useQuery({
     queryKey: ['connections'],
     queryFn: dashboardApi.connections,
     // Mientras hay un código de Telegram vigente se consulta el estado hasta
     // que el workflow n8n confirme el vínculo (sin recargar la página).
     refetchInterval: telegram.polling ? TELEGRAM_POLL_MS : false,
   });
+  const { data, refetch, isFetching } = query;
 
   /** Tras mutar un canal: releer la lista y /me (Perfil y sidebar leen los canales de ahí). */
   const refreshConnections = useCallback(() => {
@@ -87,69 +104,49 @@ export function ConexionesPage() {
             desde acá.
           </p>
         </div>
-        <Button variant="ghost" onClick={() => refetch()} loading={isFetching && !isPending}>
+        <Button variant="ghost" onClick={() => refetch()} loading={isFetching}>
           Actualizar
         </Button>
       </header>
 
-      {isError && (
-        <Alert variant="error" role="alert">
-          {friendlyApiError(error)}
-        </Alert>
-      )}
-
-      {isPending && (
-        <div className="conn-grid">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton" style={{ height: 210, borderRadius: 16 }} />
-          ))}
-        </div>
-      )}
-
-      {!isPending && !data && (
-        <EmptyState
-          icon={<PlugIcon width={24} height={24} />}
-          title="No se pudieron cargar las conexiones"
-          text="Reintentá con el botón Actualizar. Si persiste, revisá la conexión con la API."
-        />
-      )}
-
-      {data && (
-        <div className="conn-grid">
-          {cards.map((card) => {
-            switch (card.channel) {
-              case 'telegram':
-                return (
-                  <TelegramCard
-                    key={card.channel}
-                    model={card}
-                    link={telegram}
-                    onDisconnect={() => askDisconnect(card)}
-                  />
-                );
-              case 'email':
-                return (
-                  <GmailCard
-                    key={card.channel}
-                    model={card}
-                    notice={gmailReturn.notice}
-                    onNoticeDismiss={gmailReturn.dismiss}
-                    onDisconnect={() => askDisconnect(card)}
-                  />
-                );
-              default:
-                return (
-                  <WhatsAppCard
-                    key={card.channel}
-                    model={card}
-                    onChanged={refreshConnections}
-                    onDisconnect={() => askDisconnect(card)}
-                  />
-                );
-            }
-          })}
-        </div>
-      )}
+      <QueryView query={query} loading={<ConnectionsSkeleton />}>
+        {() => (
+          <div className="conn-grid">
+            {cards.map((card) => {
+              switch (card.channel) {
+                case 'telegram':
+                  return (
+                    <TelegramCard
+                      key={card.channel}
+                      model={card}
+                      link={telegram}
+                      onDisconnect={() => askDisconnect(card)}
+                    />
+                  );
+                case 'email':
+                  return (
+                    <GmailCard
+                      key={card.channel}
+                      model={card}
+                      notice={gmailReturn.notice}
+                      onNoticeDismiss={gmailReturn.dismiss}
+                      onDisconnect={() => askDisconnect(card)}
+                    />
+                  );
+                default:
+                  return (
+                    <WhatsAppCard
+                      key={card.channel}
+                      model={card}
+                      onChanged={refreshConnections}
+                      onDisconnect={() => askDisconnect(card)}
+                    />
+                  );
+              }
+            })}
+          </div>
+        )}
+      </QueryView>
 
       {disconnecting && (
         <ConfirmDialog

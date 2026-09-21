@@ -2,12 +2,11 @@ import { useEffect, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { dashboardApi } from '@/api/endpoints';
-import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { Spinner } from '@/components/ui/Spinner';
 import { orderStatusMeta } from '@/lib/domain';
 import { formatCurrency, formatDateTime } from '@/lib/format';
-import { friendlyApiError } from '@/lib/messages';
 
 interface OrderDetailModalProps {
   orderId: number | null;
@@ -28,7 +27,7 @@ function DlItem({ label, value }: { label: string; value: ReactNode }) {
  * raw_payload JSONB original del webhook, renderizado legible.
  */
 export function OrderDetailModal({ orderId, onClose }: OrderDetailModalProps) {
-  const { data, isPending, isError, error } = useQuery({
+  const { data, isPending, isError, error, refetch, isFetching } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => dashboardApi.order(orderId as number),
     enabled: orderId !== null,
@@ -74,9 +73,7 @@ export function OrderDetailModal({ orderId, onClose }: OrderDetailModalProps) {
           )}
 
           {isError && (
-            <Alert variant="error" role="alert">
-              {friendlyApiError(error)}
-            </Alert>
+            <ErrorState small error={error} onRetry={() => void refetch()} retrying={isFetching} />
           )}
 
           {data && (

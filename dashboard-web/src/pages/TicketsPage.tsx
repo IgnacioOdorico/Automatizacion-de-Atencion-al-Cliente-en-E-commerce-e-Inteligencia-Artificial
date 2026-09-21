@@ -3,15 +3,15 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { dashboardApi } from '@/api/endpoints';
 import { Pagination } from '@/components/Pagination';
+import { QueryView } from '@/components/QueryView';
 import { RefreshIcon, TicketIcon } from '@/components/icons';
-import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Select, type SelectOption } from '@/components/ui/Select';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 import { TICKET_STATUSES, priorityMeta, ticketStatusMeta } from '@/lib/domain';
 import { CHANNEL_LABELS, formatDateTime } from '@/lib/format';
-import { friendlyApiError } from '@/lib/messages';
 
 const STATUS_OPTIONS: SelectOption[] = [
   { value: '', label: 'Todos los estados' },
@@ -27,11 +27,12 @@ export function TicketsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isPending, isError, error, refetch, isFetching } = useQuery({
+  const query = useQuery({
     queryKey: ['tickets', statusFilter, page],
     queryFn: () => dashboardApi.tickets({ status: statusFilter || undefined, page }),
     placeholderData: keepPreviousData,
   });
+  const { refetch, isFetching } = query;
 
   const changeStatus = (value: string) => {
     setStatusFilter(value);
@@ -64,80 +65,83 @@ export function TicketsPage() {
         />
       </div>
 
-      {isError && (
-        <Alert variant="error" role="alert">
-          {friendlyApiError(error)}
-        </Alert>
-      )}
-
-      {isPending && <div className="skeleton" style={{ height: 320, borderRadius: 16 }} />}
-
-      {data && data.items.length === 0 && (
-        <EmptyState
-          icon={<TicketIcon width={24} height={24} />}
-          title={filterMeta ? `Sin tickets en estado "${filterMeta.label}"` : 'Sin tickets todavía'}
-          text="Los reclamos y consultas que derive el chatbot aparecen acá con su canal y prioridad."
-        />
-      )}
-
-      {data && data.items.length > 0 && (
-        <>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Asunto</th>
-                  <th>Canal</th>
-                  <th>Prioridad</th>
-                  <th>Estado</th>
-                  <th>Creado</th>
-                  <th>Resuelto</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((ticket) => {
-                  const status = ticketStatusMeta(ticket.status);
-                  const priority = priorityMeta(ticket.priority);
-                  return (
-                    <tr key={ticket.id}>
-                      <td>
-                        <div className="table__cell-main">{ticket.subject ?? '—'}</div>
-                        {ticket.user_id && (
-                          <div className="table__cell-sub">{ticket.user_id}</div>
-                        )}
-                      </td>
-                      <td>{CHANNEL_LABELS[ticket.channel] ?? ticket.channel}</td>
-                      <td>
-                        <Badge tone={priority.tone}>{priority.label}</Badge>
-                      </td>
-                      <td>
-                        <Badge tone={status.tone}>{status.label}</Badge>
-                      </td>
-                      <td className="table__dates">{formatDateTime(ticket.created_at)}</td>
-                      <td className="table__dates">
-                        {ticket.resolved_at ? (
-                          formatDateTime(ticket.resolved_at)
-                        ) : ticket.status === 'resolved' ? (
-                          <span className="table__cell-sub">Cerrado sin fecha registrada</span>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <Pagination
-            page={data.page}
-            totalPages={data.total_pages}
-            total={data.total}
-            onPageChange={setPage}
+      <QueryView
+        query={query}
+        loading={<TableSkeleton columns={6} rows={5} />}
+        isEmpty={(data) => data.items.length === 0}
+        empty={
+          <EmptyState
+            icon={<TicketIcon width={24} height={24} />}
+            title={
+              filterMeta ? `Sin tickets en estado "${filterMeta.label}"` : 'Sin tickets todavía'
+            }
+            text={
+              filterMeta
+                ? 'Probá con otro estado o quitá el filtro para ver todos los tickets.'
+                : 'Los reclamos y consultas que derive el chatbot aparecen acá con su canal y prioridad.'
+            }
           />
-        </>
-      )}
+        }
+      >
+        {(data) => (
+          <>
+            <div className="table-wrap">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Asunto</th>
+                    <th>Canal</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                    <th>Creado</th>
+                    <th>Resuelto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.items.map((ticket) => {
+                    const status = ticketStatusMeta(ticket.status);
+                    const priority = priorityMeta(ticket.priority);
+                    return (
+                      <tr key={ticket.id}>
+                        <td>
+                          <div className="table__cell-main">{ticket.subject ?? '—'}</div>
+                          {ticket.user_id && (
+                            <div className="table__cell-sub">{ticket.user_id}</div>
+                          )}
+                        </td>
+                        <td>{CHANNEL_LABELS[ticket.channel] ?? ticket.channel}</td>
+                        <td>
+                          <Badge tone={priority.tone}>{priority.label}</Badge>
+                        </td>
+                        <td>
+                          <Badge tone={status.tone}>{status.label}</Badge>
+                        </td>
+                        <td className="table__dates">{formatDateTime(ticket.created_at)}</td>
+                        <td className="table__dates">
+                          {ticket.resolved_at ? (
+                            formatDateTime(ticket.resolved_at)
+                          ) : ticket.status === 'resolved' ? (
+                            <span className="table__cell-sub">Cerrado sin fecha registrada</span>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <Pagination
+              page={data.page}
+              totalPages={data.total_pages}
+              total={data.total}
+              onPageChange={setPage}
+            />
+          </>
+        )}
+      </QueryView>
     </div>
   );
 }
