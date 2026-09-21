@@ -492,12 +492,72 @@ Esta opción es ideal para **debugging** y ver qué hace cada nodo en detalle:
 
 ---
 
+## 🖥️ Dashboard del cliente
+
+Portal web para el dueño del e-commerce: métricas en vivo (pedidos de hoy, tickets abiertos, MTTD/MTTR/TMR), pedidos, tickets, catálogo, conexión de canales (WhatsApp, Telegram, Gmail) y perfil. **Lee la misma BD que los Flujos 1 y 2 sin modificarlos**; solo agrega las tablas `client_accounts` y `channel_connections`.
+
+| Servicio | URL |
+|---|---|
+| Portal (React + nginx) | http://localhost:8080 |
+| API (FastAPI) | http://localhost:8000 (`/health`; `/docs` viene apagado) |
+
+### Levantarlo
+
+1. Completá en `.env` las variables `DASHBOARD_*` (ver abajo). Sin las tres obligatorias la API **no arranca** a propósito (fail-closed).
+2. `docker compose up -d --build`
+3. La primera vez sobre una BD existente, aplicá la migración y el seed (son idempotentes):
+
+```powershell
+Get-Content migracion_dashboard_cliente.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
+Get-Content seed_dashboard.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
+```
+
+Cuenta demo del seed: `ventas@tecnoshopmza.com.ar` / `Demo2026!` (solo para la demo: no cargues `seed_dashboard.sql` en una instalación real).
+
+### Variables de `.env`
+
+| Variable | Para qué |
+|---|---|
+| `DASHBOARD_JWT_SECRET`, `DASHBOARD_N8N_SECRET`, `DASHBOARD_ENC_KEY` | **Obligatorias.** Firma de JWT, secreto compartido con n8n (header `X-N8N-SECRET`) y clave Fernet que cifra las credenciales de canales. |
+| `DASHBOARD_BOT_TOKEN_VINCULO` | Token del bot de Telegram dedicado al vínculo (lo lee n8n). |
+| `DASHBOARD_GOOGLE_CLIENT_ID`, `DASHBOARD_GOOGLE_CLIENT_SECRET`, `DASHBOARD_GOOGLE_REDIRECT_URI` | Conexión de Gmail (OAuth2). |
+| `DASHBOARD_FRONTEND_URL` | Adonde vuelve el navegador tras Google. Default `http://localhost:8080`; con Vite, `http://localhost:5173`. |
+| `CORS_ORIGINS`, `DASHBOARD_TRUSTED_PROXIES` | Orígenes permitidos (nunca `*`) y proxy en el que se confía para la IP del cliente. |
+| `DASHBOARD_ENABLE_DOCS`, `DASHBOARD_ALLOW_REGISTRATION` | Prender `/docs` (dev) y cerrar el alta de cuentas (instalación pública). |
+
+Generar los secretos (usá valores distintos para cada uno; el segundo necesita `pip install cryptography`):
+
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(48))"                                  # DASHBOARD_JWT_SECRET y DASHBOARD_N8N_SECRET
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"     # DASHBOARD_ENC_KEY
+```
+
+### Credenciales que te tocan a vos
+
+- **Gmail**: en Google Cloud Console creá un cliente OAuth (Web) en modo testing con tu cuenta como usuario de prueba, y cargá como URI de redirección **exactamente** el valor de `DASHBOARD_GOOGLE_REDIRECT_URI` (`http://localhost:8000/connections/gmail/callback`).
+- **Telegram**: creá un bot nuevo con @BotFather (no reutilices el del Flujo 2), poné su token en `DASHBOARD_BOT_TOKEN_VINCULO`, importá `workflows/Flujo 3 — Telegram Vínculo de Cuenta.json`, cargale la credencial y activalo.
+
+### Límites honestos
+
+- Gmail y Telegram **reales** requieren esas credenciales; sin ellas la pantalla de Conexiones responde con un error controlado (Gmail) o el código nunca se confirma (Telegram).
+- El webhook de Telegram necesita una **URL pública HTTPS** (`WEBHOOK_URL`, por ejemplo con ngrok).
+- WhatsApp queda en `pending` por diseño ("Meta aprueba en 1-3 días hábiles"); no llama a Meta.
+- Pedidos, tickets y catálogo son **globales**: todas las cuentas ven los mismos datos (un comercio por instalación). Detalle y demás desvíos: `SPEC_DASHBOARD_CLIENTE.md` §10.
+- Para que el Flujo 1 real escriba órdenes, la instancia de n8n necesita sus credenciales de Postgres (`postgres:5432`) y SMTP (`mailpit:1025`).
+
+Tests: `cd dashboard-api; .venv\Scripts\python -m pytest -q` (los de integración usan una BD aparte, `ecommerce_tesis_test` en `localhost:5433`, y se saltean si no está) y `cd dashboard-web; npm test; npm run build`. Más detalle del front y de la demo en vivo en `dashboard-web/README.md`.
+
+---
+
 ## 📁 Estructura del proyecto
 
 ```
-├── docker-compose.yml              ← Levanta los 4 servicios
+├── docker-compose.yml              ← Levanta los servicios (n8n, PostgreSQL, Mailpit, Grafana, dashboard-api, dashboard-web)
 ├── init_simple.sql                 ← Crea tablas y vistas en PostgreSQL
 ├── seed_expand.sql                 ← Carga productos, FAQs y datos históricos
+├── migracion_dashboard_cliente.sql ← Tablas del dashboard (client_accounts, channel_connections)
+├── seed_dashboard.sql              ← Cuenta demo del dashboard
+├── demo_en_vivo.ps1                ← Dispara una orden en vivo contra n8n (para filmar)
 ├── backup.ps1                      ← Backup completo (BD + workflows)
 ├── restore.ps1                     ← Restaurar desde backup
 ├── CREDENCIALES.example.md         ← Guía detallada de credenciales
@@ -508,6 +568,10 @@ Esta opción es ideal para **debugging** y ver qué hace cada nodo en detalle:
 │   ├── Flujo 1 - Pipeline de Procesamiento de Órdenes PRODUCCION.json
 │   ├── Flujo 2 - Chatbot Omnicanal IA.json
 │   └── Flujo 2 - Chatbot Omnicanal IA PRODUCCION.json
+│
+├── dashboard-api/                  ← Backend FastAPI del portal (pytest)
+├── dashboard-web/                  ← Frontend React + Vite servido por nginx (vitest)
+├── SPEC_DASHBOARD_CLIENTE.md       ← Spec del dashboard; §10 lista los desvíos reales
 │
 ├── docs/
 │   ├── TESIS_FINAL_UTN_v3.pdf      ← Documento final de tesis

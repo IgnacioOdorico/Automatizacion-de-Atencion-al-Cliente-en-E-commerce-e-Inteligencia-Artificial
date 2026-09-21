@@ -63,12 +63,14 @@ El front persiste **ambos tokens en `localStorage`** y el cliente de fetch:
 
 **Trade-off documentado (aceptado para la demo):** `localStorage` es vulnerable a XSS; una cookie HttpOnly no lo es pero exige manejo de CSRF y complica la rotación del refresh. Para un portfolio/tesis la persistencia de sesión entre recargas (AC de la tarea 5.3) pesa más que el riesgo teórico de XSS en un entorno de demo sin terceros. En producción se recomienda: access en memoria, refresh solo en cookie HttpOnly `SameSite=Lax` + estado de rotación en BD (los endpoints ya soportan ambas vías: `/auth/refresh` acepta el body o la cookie). El refresh del body se persiste así la cookie que setea el backend queda como refuerzo, no como dependencia.
 
-## Nota prod: redirect del Gmail callback
+**Mitigación del riesgo XSS (Fase 8):** nginx manda una `Content-Security-Policy` estricta (ver `security-headers.conf`: `script-src 'self'`, sin `unsafe-inline` ni `unsafe-eval`, `connect-src 'self'`, `frame-ancestors 'none'`) junto con `X-Content-Type-Options`, `X-Frame-Options` y `Referrer-Policy`. `src/__tests__/securityGuards.test.ts` impide `console.*`, `innerHTML`/`eval` y tokens en URLs, y que algo distinto de `tokenStorage` toque `localStorage`. Si agregás un recurso externo (otra fuente, un CDN) hay que ampliar la CSP a propósito.
 
-El callback de Gmail redirige a `DASHBOARD_FRONTEND_URL` (env de `dashboard-api`, default `http://localhost:5173`). Para la demo servida desde nginx (`:8080`) conviene setear en `.env`:
+## Redirect del Gmail callback
+
+El callback de Gmail redirige a `DASHBOARD_FRONTEND_URL` (env de `dashboard-api`). En `docker-compose.yml` su default es `http://localhost:8080` (el portal servido por nginx). Si desarrollás con `npm run dev`, seteala en `.env` a `http://localhost:5173` (y esa URL tiene que estar en `CORS_ORIGINS`):
 
 ```
-DASHBOARD_FRONTEND_URL=http://localhost:8080
+DASHBOARD_FRONTEND_URL=http://localhost:5173
 ```
 
 ## Estructura
