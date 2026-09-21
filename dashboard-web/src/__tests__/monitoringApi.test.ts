@@ -102,4 +102,40 @@ describe('monitoringApi: URLs (solo GET, con el JWT)', () => {
     await monitoringApi.thread({ channel: 'telegram', userId: '123', before: 'cur' });
     expect(paramsOf(lastUrl()).get('before')).toBe('cur');
   });
+
+  it('workflows: lista de workflows de n8n', async () => {
+    await monitoringApi.workflows();
+    expect(lastUrl()).toBe('/api/monitoring/workflows');
+    expect(fetchMock.mock.calls[0][1]?.method).toBe('GET');
+  });
+
+  it('workflowGraph: el id va en el path, codificado', async () => {
+    await monitoringApi.workflowGraph('797bI0eXTmiaSmvJ');
+    expect(lastUrl()).toBe('/api/monitoring/workflows/797bI0eXTmiaSmvJ/graph');
+
+    await monitoringApi.workflowGraph('a/b c');
+    expect(lastUrl()).toBe('/api/monitoring/workflows/a%2Fb%20c/graph');
+  });
+
+  it('executions: filtros por estado y workflow, y cursor numerico `before`', async () => {
+    await monitoringApi.executions();
+    expect(lastUrl()).toBe('/api/monitoring/executions');
+
+    await monitoringApi.executions({ limit: 20, status: 'error', workflowId: 'wf1', before: 15 });
+    const params = paramsOf(lastUrl());
+    expect(params.get('limit')).toBe('20');
+    expect(params.get('status')).toBe('error');
+    expect(params.get('workflow_id')).toBe('wf1');
+    expect(params.get('before')).toBe('15');
+  });
+
+  it('executions: un filtro vacío no se manda', async () => {
+    await monitoringApi.executions({ status: '', workflowId: undefined });
+    expect(lastUrl()).toBe('/api/monitoring/executions');
+  });
+
+  it('execution: el detalle va por id numerico', async () => {
+    await monitoringApi.execution(15);
+    expect(lastUrl()).toBe('/api/monitoring/executions/15');
+  });
 });

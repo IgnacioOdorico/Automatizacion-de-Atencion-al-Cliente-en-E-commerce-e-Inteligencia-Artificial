@@ -153,3 +153,130 @@ export interface ThreadParams {
   limit?: number;
   before?: string;
 }
+
+// ---------- Workflows de n8n (GET /monitoring/workflows, executions) ----------
+
+export interface WorkflowLastExecution {
+  id: number;
+  status: string;
+  started_at: string;
+  duration_ms: number | null;
+}
+
+export interface WorkflowSummary {
+  id: string;
+  name: string;
+  active: boolean;
+  updated_at: string | null;
+  executions_24h: number;
+  errors_24h: number;
+  last_execution: WorkflowLastExecution | null;
+}
+
+export interface WorkflowsResponse {
+  /** `false` si las tablas de n8n no existen o no se pueden leer. */
+  available: boolean;
+  items: WorkflowSummary[];
+}
+
+export interface GraphNode {
+  name: string;
+  type: string;
+  /** Última parte de `type` (`webhook`, `postgres`, `if`, ...). */
+  short_type: string | null;
+  /** Coordenadas de n8n (pueden ser negativas). */
+  position: [number, number];
+  disabled: boolean;
+}
+
+export interface GraphEdge {
+  from: string;
+  to: string;
+  /** En un `if`: 0 = verdadero, 1 = falso; en un `switch`, el índice de la regla. */
+  output_index: number;
+  input_index: number;
+  /** `main` para el flujo de datos; `ai_*` para los sub-nodos de IA. */
+  kind: string;
+}
+
+export interface GraphBounds {
+  min_x: number;
+  min_y: number;
+  max_x: number;
+  max_y: number;
+}
+
+export interface WorkflowGraph {
+  id: string;
+  name: string;
+  active: boolean;
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  bounds: GraphBounds;
+}
+
+/** Estado de una ejecución en n8n; `string` a propósito (un valor nuevo no rompe la pantalla). */
+export type ExecutionStatus = string;
+
+export interface ExecutionSummary {
+  id: number;
+  workflow_id: string | null;
+  workflow_name: string | null;
+  status: ExecutionStatus;
+  mode: string;
+  started_at: string;
+  stopped_at: string | null;
+  duration_ms: number | null;
+  error_message: string | null;
+}
+
+export interface ExecutionsPage {
+  available: boolean;
+  /** Del id más nuevo al más viejo. */
+  items: ExecutionSummary[];
+  has_more: boolean;
+  /** Id de la última ejecución de la página, para pedir las anteriores. */
+  next_before: number | null;
+}
+
+export interface ExecutionsParams {
+  limit?: number;
+  before?: number;
+  status?: string;
+  workflowId?: string;
+}
+
+export interface TraceNodeError {
+  message: string;
+  description: string | null;
+}
+
+export interface TraceNode {
+  name: string;
+  /** `null` si el nodo ya no existe en el workflow. */
+  short_type: string | null;
+  /** `success | error | skipped` (excepcionalmente `running | waiting | canceled`). */
+  status: string;
+  started_at: string | null;
+  duration_ms: number | null;
+  items_out: number;
+  /** Cantidad de items por salida (`output_index`) de la última corrida. */
+  outputs: number[];
+  runs: number;
+  error: TraceNodeError | null;
+  /** Ya redactado por el backend: normalmente una lista JSON; en el peor caso, un texto recortado. */
+  output_preview: unknown;
+  output_truncated: boolean;
+}
+
+export interface ExecutionDetail {
+  execution: ExecutionSummary;
+  workflow_id: string | null;
+  nodes: TraceNode[];
+  /** Nombres de los nodos ejecutados, en orden de ejecución. */
+  path: string[];
+  last_node_executed: string | null;
+  truncated: boolean;
+  /** Texto legible si no se pudo leer la traza (o `null`). */
+  error: string | null;
+}

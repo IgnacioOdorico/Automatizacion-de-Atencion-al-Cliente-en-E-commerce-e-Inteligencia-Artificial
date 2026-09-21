@@ -144,6 +144,17 @@ export function formatTmr(seconds: number | null | undefined): string {
 }
 
 /**
+ * Duración de un nodo o de una ejecución de n8n (viene en milisegundos): menos
+ * de 1 ms no es "0", en ms hasta el segundo y desde ahí como formatTmr.
+ */
+export function formatMs(ms: number | null | undefined): string {
+  if (ms === null || ms === undefined || Number.isNaN(ms)) return '—';
+  if (ms < 1) return '<1 ms';
+  if (ms < 1000) return `${Math.round(ms)} ms`;
+  return formatTmr(ms / 1000);
+}
+
+/**
  * Duración legible a partir de segundos: "12s", "1m 30s", "2h 5m", "1d 4h".
  * La API devuelve promedios en segundos (v_metrics_summary), a veces como
  * string ("90.00") porque son columnas NUMERIC — acá se tolera ambas formas.

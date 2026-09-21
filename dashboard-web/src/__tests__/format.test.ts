@@ -10,6 +10,7 @@ import {
   formatDuration,
   formatEventClock,
   formatMetricDuration,
+  formatMs,
   formatRelative,
   formatTime,
   formatTmr,
@@ -256,3 +257,28 @@ describe('formatEventClock (hora absoluta en la tarjeta del feed)', () => {
   });
 });
 
+
+describe('formatMs (duración de un nodo o de una ejecución de n8n)', () => {
+  it('menos de un milisegundo no es cero', () => {
+    expect(formatMs(0)).toBe('<1 ms');
+    expect(formatMs(0.4)).toBe('<1 ms');
+  });
+
+  it('milisegundos enteros por debajo del segundo', () => {
+    expect(formatMs(1)).toBe('1 ms');
+    expect(formatMs(435)).toBe('435 ms');
+    expect(formatMs(999.4)).toBe('999 ms');
+  });
+
+  it('desde el segundo, con un decimal (formato del portal)', () => {
+    expect(formatMs(1000)).toBe('1,0 s');
+    expect(formatMs(1400)).toBe('1,4 s');
+    expect(formatMs(65_000)).toBe('1m 5s');
+  });
+
+  it('sin dato es un guion', () => {
+    expect(formatMs(null)).toBe('—');
+    expect(formatMs(undefined)).toBe('—');
+    expect(formatMs(Number.NaN)).toBe('—');
+  });
+});

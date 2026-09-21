@@ -22,9 +22,14 @@ import type {
   ConversationsParams,
   EventsPage,
   EventsParams,
+  ExecutionDetail,
+  ExecutionsPage,
+  ExecutionsParams,
   MonitoringSummary,
   ThreadPage,
   ThreadParams,
+  WorkflowGraph,
+  WorkflowsResponse,
 } from '@/types/monitoring';
 
 export const authApi = {
@@ -158,5 +163,27 @@ export const monitoringApi = {
       before: params.before,
     });
     return apiRequest<ThreadPage>(`/monitoring/conversations/thread${query}`);
+  },
+  /** Workflows de n8n (`available: false` si n8n no está disponible). */
+  workflows(): Promise<WorkflowsResponse> {
+    return apiRequest<WorkflowsResponse>('/monitoring/workflows');
+  },
+  /** Grafo sanitizado (nombre, tipo, posición y conexiones): se pide una vez por workflow. */
+  workflowGraph(id: string): Promise<WorkflowGraph> {
+    return apiRequest<WorkflowGraph>(`/monitoring/workflows/${encodeURIComponent(id)}/graph`);
+  },
+  /** Ejecuciones, de la más nueva a la más vieja; `before` es el id de una ejecución. */
+  executions(params: ExecutionsParams = {}): Promise<ExecutionsPage> {
+    const query = queryString({
+      limit: params.limit,
+      before: params.before,
+      status: params.status,
+      workflow_id: params.workflowId,
+    });
+    return apiRequest<ExecutionsPage>(`/monitoring/executions${query}`);
+  },
+  /** Traza por nodo de una ejecución (con salidas ya redactadas por el backend). */
+  execution(id: number): Promise<ExecutionDetail> {
+    return apiRequest<ExecutionDetail>(`/monitoring/executions/${id}`);
   },
 };
