@@ -27,6 +27,9 @@ export function Shell() {
 
   return (
     <div className="shell">
+      <a className="skip-link" href="#contenido">
+        Saltar al contenido
+      </a>
       <aside className="sidebar">
         <div className="sidebar__brand">
           <Brand />
@@ -72,7 +75,7 @@ export function Shell() {
         </div>
       </aside>
 
-      <main className="shell__main">
+      <main className="shell__main" id="contenido" tabIndex={-1}>
         <header className="topbar">
           <div className="topbar__title">{current?.label ?? 'Portal'}</div>
         </header>

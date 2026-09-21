@@ -52,7 +52,7 @@ button {
   outline: none;
 }
 :focus-visible {
-  outline: 2px solid var(--brand-ring);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -81,12 +81,12 @@ button {
 }
 
 .btn--primary {
-  background: linear-gradient(180deg, #7174f3 0%, var(--brand) 100%);
+  background: linear-gradient(180deg, #6063f0 0%, #5558ec 100%);
   color: #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .btn--primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #7d80f5 0%, var(--brand-hover) 100%);
+  background: linear-gradient(180deg, #5a5eed 0%, #4f46e5 100%);
 }
 .btn--primary:disabled {
   box-shadow: none;
@@ -1452,5 +1452,170 @@ button {
   .table--stack .table__dates {
     text-align: left;
     white-space: normal;
+  }
+}
+
+/* ============================================================
+   Fase 7 — Transiciones y micro-interacciones (sobrias)
+   ============================================================ */
+
+/* Enlace "saltar al contenido": solo aparece al enfocarlo con el teclado */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text-1);
+  font-weight: 600;
+  transform: translateY(-160%);
+  transition: transform 0.15s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Entrada de cada pantalla */
+.page {
+  animation: page-in 0.24s ease-out;
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Hover en cards: el borde se define y se levanta 1px */
+.stat-card,
+.conn-card {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.stat-card:hover,
+.conn-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.32), 0 12px 32px rgba(0, 0, 0, 0.24);
+}
+.stat-card:hover {
+  border-color: var(--border-strong);
+}
+.stat-card--accent:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* El cambio de estado de una conexión (badge) se anima en lugar de saltar */
+.badge {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Modales: el fondo aparece y el diálogo sube apenas */
+.modal-backdrop {
+  animation: fade-in 0.15s ease-out;
+}
+.modal {
+  animation: modal-in 0.2s ease-out;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+/* Filas de tabla: hover suave y fila clickeable accesible por teclado */
+.table tbody tr {
+  transition: background-color 0.12s ease;
+}
+.table__row-click:focus-within {
+  background: var(--bg-hover);
+}
+.table__link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-1);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.table__link:hover {
+  color: #a5b4fc;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Pedido que acaba de entrar (polling): la fila se ilumina y se apaga sola */
+.table__row-fresh td {
+  animation: row-fresh 3s ease-out;
+}
+@keyframes row-fresh {
+  0% {
+    background-color: var(--brand-soft-strong);
+  }
+  65% {
+    background-color: var(--brand-soft);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Métrica que cambió de valor */
+.stat-card__value {
+  animation: value-tick 0.6s ease-out;
+}
+@keyframes value-tick {
+  from {
+    opacity: 0.3;
+    transform: translateY(5px);
+    color: #a5b4fc;
+  }
+}
+
+/* Cambio de filtro/página con datos previos a la vista: atenuados sin saltar */
+.table-wrap {
+  transition: opacity 0.15s ease;
+}
+.is-refreshing {
+  opacity: 0.55;
+}
+
+/* Quien pide menos movimiento, no lo recibe: sin animaciones ni transiciones */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* El spinner es feedback esencial de "cargando": gira despacio en vez de apagarse */
+  .spinner {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
+  }
+  .skeleton {
+    animation: none !important;
+  }
+  /* Sin animación, la fila nueva queda marcada de forma estática mientras dura el aviso */
+  .table__row-fresh td {
+    background-color: var(--brand-soft);
   }
 }

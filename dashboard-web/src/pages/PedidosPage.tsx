@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Select, type SelectOption } from '@/components/ui/Select';
 import { TableSkeleton } from '@/components/ui/Skeleton';
+import { useFreshRows } from '@/hooks/useFreshRows';
 import { ORDER_STATUSES, orderStatusMeta } from '@/lib/domain';
 import { formatCurrency, formatDateTime } from '@/lib/format';
 
@@ -35,6 +36,13 @@ export function PedidosPage() {
     placeholderData: keepPreviousData,
   });
   const { refetch } = query;
+
+  // Pedido que entra entre dos polls: se resalta unos segundos (efecto "en vivo").
+  const orderIds = query.data?.items.map((order) => order.id);
+  const freshIds = useFreshRows(
+    `${statusFilter}|${page}`,
+    query.isPlaceholderData ? undefined : orderIds,
+  );
 
   const changeStatus = (value: string) => {
     setStatusFilter(value);
@@ -88,7 +96,7 @@ export function PedidosPage() {
       >
         {(data) => (
           <>
-            <div className="table-wrap">
+            <div className={`table-wrap${query.isPlaceholderData ? ' is-refreshing' : ''}`}>
               <table className="table table--stack">
                 <thead>
                   <tr>
@@ -106,11 +114,18 @@ export function PedidosPage() {
                     return (
                       <tr
                         key={order.id}
-                        className="table__row-click"
+                        className={`table__row-click${freshIds.has(order.id) ? ' table__row-fresh' : ''}`}
                         onClick={() => setDetailId(order.id)}
                       >
                         <td data-label="Pedido">
-                          <div className="table__cell-main">{order.order_number}</div>
+                          <button
+                            type="button"
+                            className="table__link"
+                            aria-label={`Ver detalle del pedido ${order.order_number}`}
+                            onClick={() => setDetailId(order.id)}
+                          >
+                            {order.order_number}
+                          </button>
                         </td>
                         <td data-label="Cliente">
                           <div className="table__cell-main" title={order.customer_name}>

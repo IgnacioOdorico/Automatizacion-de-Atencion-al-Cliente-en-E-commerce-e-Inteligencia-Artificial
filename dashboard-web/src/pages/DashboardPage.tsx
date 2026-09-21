@@ -35,7 +35,10 @@ function StatCards({ cards }: { cards: StatCard[] }) {
           className={`card stat-card${card.accent ? ' stat-card--accent' : ''}`}
         >
           <div className="stat-card__label">{card.label}</div>
-          <div className="stat-card__value">{card.value}</div>
+          {/* key = valor: al cambiar se remonta y dispara el "tick" (se nota el dato que se movió). */}
+          <div key={String(card.value)} className="stat-card__value">
+            {card.value}
+          </div>
           {card.hint && <div className="stat-card__hint">{card.hint}</div>}
         </div>
       ))}

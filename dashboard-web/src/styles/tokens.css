@@ -18,11 +18,13 @@
   --border: rgba(153, 168, 190, 0.13);
   --border-strong: rgba(153, 168, 190, 0.24);
   --border-focus: rgba(99, 102, 241, 0.5);
+  /* Anillo de foco de teclado: sólido y claro (>= 3:1 sobre cualquier superficie) */
+  --focus-ring: #818cf8;
 
   /* Texto */
   --text-1: #e9edf4;
   --text-2: #a7b0bf;
-  --text-3: #697285;
+  --text-3: #7c8699; /* AA (>= 4.5:1) sobre canvas, sidebar, surface y surface-2 */
 
   /* Marca — Indigo */
   --brand: #6366f1;

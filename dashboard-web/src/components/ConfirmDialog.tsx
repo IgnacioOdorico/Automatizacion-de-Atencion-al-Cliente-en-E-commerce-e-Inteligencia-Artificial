@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useId } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 
 interface ConfirmDialogProps {
   title: string;
@@ -14,7 +15,7 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-/** Confirmación modal de una acción destructiva (mismo patrón que OrderDetailModal). */
+/** Confirmación modal de una acción destructiva (foco en "Volver": lo seguro es lo primero). */
 export function ConfirmDialog({
   title,
   message,
@@ -24,42 +25,35 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !loading) onCancel();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [loading, onCancel]);
+  const titleId = useId();
 
   return (
-    <div
-      className="modal-backdrop"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !loading) onCancel();
-      }}
+    <Modal
+      role="alertdialog"
+      size="sm"
+      labelledBy={titleId}
+      onClose={onCancel}
+      dismissible={!loading}
     >
-      <div className="modal modal--sm" role="alertdialog" aria-modal="true" aria-label={title}>
-        <header className="modal__head">
-          <h3>{title}</h3>
-        </header>
-        <div className="modal__body">
-          <p className="modal__text">{message}</p>
-          {error && (
-            <Alert variant="error" role="alert">
-              {error}
-            </Alert>
-          )}
-          <div className="modal__actions">
-            <Button variant="ghost" onClick={onCancel} disabled={loading} autoFocus>
-              Volver
-            </Button>
-            <Button onClick={onConfirm} loading={loading}>
-              {confirmLabel}
-            </Button>
-          </div>
+      <header className="modal__head">
+        <h3 id={titleId}>{title}</h3>
+      </header>
+      <div className="modal__body">
+        <p className="modal__text">{message}</p>
+        {error && (
+          <Alert variant="error" role="alert">
+            {error}
+          </Alert>
+        )}
+        <div className="modal__actions">
+          <Button variant="ghost" onClick={onCancel} disabled={loading} autoFocus>
+            Volver
+          </Button>
+          <Button onClick={onConfirm} loading={loading}>
+            {confirmLabel}
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
