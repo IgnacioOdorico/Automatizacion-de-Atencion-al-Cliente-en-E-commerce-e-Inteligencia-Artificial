@@ -9,6 +9,7 @@ import {
   gmailReturnNotice,
   isGoogleConsentUrl,
   parseGmailReturn,
+  whatsappStatusNote,
 } from '@/lib/connections';
 import type { Connection } from '@/types/api';
 
@@ -258,5 +259,40 @@ describe('connectionsAliasPath', () => {
   it('sin query o con query vacío deja la ruta limpia', () => {
     expect(connectionsAliasPath('')).toBe('/conexiones');
     expect(connectionsAliasPath('?')).toBe('/conexiones');
+  });
+});
+
+describe('connectionActionError — WhatsApp', () => {
+  it('422 (número rechazado por el server) explica el formato', () => {
+    const msg = connectionActionError(new ApiError(422, '422 Unprocessable Entity'), 'whatsapp-request');
+    expect(msg).toContain('formato internacional');
+  });
+
+  it('respeta el detalle de otros errores del server', () => {
+    const msg = connectionActionError(new ApiError(400, 'x', 'Número inválido'), 'whatsapp-request');
+    expect(msg).toBe('Número inválido');
+  });
+
+  it('sin detalle usa el mensaje propio de la solicitud', () => {
+    const msg = connectionActionError(new ApiError(500, '500 Internal Server Error'), 'whatsapp-request');
+    expect(msg).toBe('No pudimos enviar la solicitud de aprobación. Reintentá en unos segundos.');
+  });
+});
+
+describe('whatsappStatusNote', () => {
+  it('pendiente: explica que Meta aprueba en 1-3 días hábiles', () => {
+    expect(whatsappStatusNote('pending')).toContain('Meta aprueba en 1-3 días hábiles');
+  });
+
+  it('conectado (cuenta seed): se ve como aprobado por Meta', () => {
+    expect(whatsappStatusNote('connected')).toContain('aprobado por Meta');
+  });
+
+  it('error: sugiere reenviar la solicitud o desconectar', () => {
+    expect(whatsappStatusNote('error')).toContain('Reenviá');
+  });
+
+  it('desconectado: sin nota', () => {
+    expect(whatsappStatusNote('disconnected')).toBeNull();
   });
 });

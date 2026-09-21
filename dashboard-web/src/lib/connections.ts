@@ -71,11 +71,13 @@ export function channelActions(channel: Channel, status: ConnectionStatus): Chan
   };
 }
 
-export type ConnectionAction = 'telegram-start' | 'gmail-connect';
+export type ConnectionAction = 'telegram-start' | 'gmail-connect' | 'whatsapp-request';
 
 const ACTION_FALLBACKS: Record<ConnectionAction, string> = {
   'telegram-start': 'No pudimos generar el código de vinculación. Reintentá en unos segundos.',
   'gmail-connect': 'No pudimos iniciar la conexión con Gmail. Reintentá en unos segundos.',
+  'whatsapp-request':
+    'No pudimos enviar la solicitud de aprobación. Reintentá en unos segundos.',
 };
 
 /**
@@ -96,7 +98,25 @@ export function connectionActionError(error: unknown, action: ConnectionAction):
       return 'Google no respondió correctamente. Reintentá en unos minutos.';
     }
   }
+  if (action === 'whatsapp-request' && error.status === 422) {
+    // pydantic devuelve el detalle como array: el front lo trata como sin detalle.
+    return 'El número no tiene un formato válido. Usá el formato internacional, ej. +54 9 261 555 1234.';
+  }
   return error.detail ?? ACTION_FALLBACKS[action];
+}
+
+/** Nota explicativa del estado de WhatsApp (la aprobación la resuelve Meta, off-band). */
+export function whatsappStatusNote(status: ConnectionStatus): string | null {
+  switch (status) {
+    case 'pending':
+      return 'Solicitud enviada: Meta aprueba en 1-3 días hábiles. Cuando la aprueben, esta tarjeta pasa a Conectado.';
+    case 'connected':
+      return 'Número aprobado por Meta: el canal está operativo.';
+    case 'error':
+      return 'Hubo un problema con este canal. Reenviá la solicitud o desconectalo.';
+    default:
+      return null;
+  }
 }
 
 /** Host de la pantalla de consentimiento de Google (google_oauth.AUTH_URL en el backend). */

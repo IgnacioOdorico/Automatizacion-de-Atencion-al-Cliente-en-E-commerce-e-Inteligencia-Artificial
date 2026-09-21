@@ -12,6 +12,7 @@ import {
   Summary,
   TelegramStartResponse,
   Ticket,
+  WhatsAppApprovalResponse,
 } from '@/types/api';
 
 export const authApi = {
@@ -75,5 +76,11 @@ export const connectionsApi = {
   },
   gmailOAuthUrl(): Promise<GmailOAuthUrlResponse> {
     return apiRequest<GmailOAuthUrlResponse>('/connections/gmail/oauth-url');
+  },
+  whatsappRequestApproval(phone: string): Promise<WhatsAppApprovalResponse> {
+    return apiRequest<WhatsAppApprovalResponse>('/connections/whatsapp/request-approval', {
+      method: 'POST',
+      body: { phone },
+    });
   },
 };

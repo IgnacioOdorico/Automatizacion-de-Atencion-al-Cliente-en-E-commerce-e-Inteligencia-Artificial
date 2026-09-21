@@ -1,10 +1,10 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { dashboardApi } from '@/api/endpoints';
-import { ChannelCard } from '@/components/connections/ChannelCard';
 import { GmailCard } from '@/components/connections/GmailCard';
 import { TelegramCard } from '@/components/connections/TelegramCard';
+import { WhatsAppCard } from '@/components/connections/WhatsAppCard';
 import { PlugIcon } from '@/components/icons';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -30,6 +30,12 @@ export function ConexionesPage() {
     // que el workflow n8n confirme el vínculo (sin recargar la página).
     refetchInterval: telegram.polling ? TELEGRAM_POLL_MS : false,
   });
+
+  /** Tras mutar un canal: releer la lista y /me (Perfil y sidebar leen los canales de ahí). */
+  const refreshConnections = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: ['connections'] });
+    void queryClient.invalidateQueries({ queryKey: ['me'] });
+  }, [queryClient]);
 
   const cards = useMemo(() => buildChannelCards(data?.items), [data]);
   const telegramStatus = cards.find((card) => card.channel === 'telegram')?.status;
@@ -98,7 +104,9 @@ export function ConexionesPage() {
                   />
                 );
               default:
-                return <ChannelCard key={card.channel} model={card} />;
+                return (
+                  <WhatsAppCard key={card.channel} model={card} onChanged={refreshConnections} />
+                );
             }
           })}
         </div>

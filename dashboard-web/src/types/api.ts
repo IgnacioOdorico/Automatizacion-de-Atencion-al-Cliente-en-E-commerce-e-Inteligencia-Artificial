@@ -46,6 +46,13 @@ export interface GmailOAuthUrlResponse {
   expires_in: number;
 }
 
+/** POST /connections/whatsapp/request-approval: `pending`, o `connected` si ya estaba aprobado. */
+export interface WhatsAppApprovalResponse {
+  channel: 'whatsapp';
+  status: ConnectionStatus;
+  message: string;
+}
+
 export interface Paginated<T> {
   items: T[];
   page: number;

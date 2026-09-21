@@ -47,3 +47,22 @@ export function validateRegister(input: {
   if (password) errors.password = password;
   return errors;
 }
+/** Quita los separadores que la gente escribe (espacios, guiones, puntos, paréntesis). */
+export function normalizePhone(value: string): string {
+  return value.replace(/[\s\-.()]/g, '');
+}
+
+/** E.164: "+" y 7 a 15 dígitos sin cero inicial. Consistente con el regex del backend. */
+const E164_RE = /^\+[1-9]\d{6,14}$/;
+
+export function validatePhone(value: string): string | null {
+  const phone = normalizePhone(value);
+  if (!phone) return 'Ingresá el número de WhatsApp.';
+  if (!phone.startsWith('+')) {
+    return 'Ingresá el número en formato internacional, con + y código de país (ej. +54 9 261 555 1234).';
+  }
+  if (!E164_RE.test(phone)) {
+    return 'El número no es válido: después del + van entre 7 y 15 dígitos, sin empezar con 0.';
+  }
+  return null;
+}
