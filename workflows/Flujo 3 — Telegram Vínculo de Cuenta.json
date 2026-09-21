@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## 🔗 Vínculo de Telegram\n\nEste workflow AISLADO conecta la cuenta del dashboard con Telegram usando el **bot dedicado de vínculo**.\n\n**Por qué un bot dedicado (no reutilizar el del Flujo 2):** un bot de Telegram solo admite UN webhook a la vez. Dos telegramTrigger con el mismo token se pisan el webhook y romperían el Flujo 2.\n\n## Setup (una sola vez)\n1. Crear el bot con @BotFather (p. ej. `/newbot tesis_vinculo_bot`) y obtener el token.\n2. Configurar la credencial \"Telegram Bot Vínculo\" (nodo Trigger) poniendo como bot token la variable `DASHBOARD_BOT_TOKEN_VINCULO` definida en el `.env` del contenedor n8n. En el campo token de la credencial se puede usar la expresión `{{ $env.DASHBOARD_BOT_TOKEN_VINCULO }}`.\n3. `DASHBOARD_N8N_SECRET` (misma variable que usa el dashboard-api) debe coincidir con el header `X-N8N-SECRET` de este workflow — se resuelve con `{{ $env.DASHBOARD_N8N_SECRET }}`.\n4. Requiere `WEBHOOK_URL` pública HTTPS (ngrok) para que el trigger registre su webhook, igual que el Flujo 2.\n\n**Flujo:** el cliente con \"Conectar Telegram\" en el panel obtiene un código de 6 dígitos. Lo envía por chat a este bot → el workflow valida `\\\\d{6}` → llama a `POST http://dashboard-api:8000/connections/telegram/confirm` con `X-N8N-SECRET` → responde confirmación al chat.\n\nEl workflow se importa con `active: false` (mismo patrón que Flujo 1 y 2). Se activa desde la UI de n8n.",
+        "content": "## 🔗 Vínculo de Telegram\n\nEste workflow AISLADO conecta la cuenta del dashboard con Telegram usando el **bot dedicado de vínculo**.\n\n**Por qué un bot dedicado (no reutilizar el del Flujo 2):** un bot de Telegram solo admite UN webhook a la vez. Dos telegramTrigger con el mismo token se pisan el webhook y romperían el Flujo 2.\n\n## Setup (una sola vez)\n1. Crear el bot con @BotFather (p. ej. `/newbot tesis_vinculo_bot`) y obtener el token.\n2. Crear la credencial **Telegram API** con ese token y asignarla al Trigger y al nodo \"Responder Confirmación\". El token vive solo en la credencial (cifrada por n8n), no en el `.env`.\n3. Crear la credencial **Header Auth** con nombre `X-N8N-SECRET` y como valor el mismo `DASHBOARD_N8N_SECRET` del `.env` del dashboard-api; asignarla al nodo \"Confirmar Vínculo (API)\". No se usa `$env`: n8n 2.x lo bloquea por defecto y habilitarlo expondría todas las variables del contenedor a cualquier workflow.\n4. Requiere una URL pública HTTPS (`WEBHOOK_URL`, perfil `tunnel` del compose: ver docs/TUNEL_TELEGRAM.md) para que el trigger registre su webhook.\n\n**Flujo:** el cliente con \"Conectar Telegram\" en el panel obtiene un código de 6 dígitos. Lo envía por chat a este bot → el workflow valida `\\\\d{6}` → llama a `POST http://dashboard-api:8000/connections/telegram/confirm` con `X-N8N-SECRET` → responde confirmación al chat.\n\nEl workflow se importa con `active: false` (mismo patrón que Flujo 1 y 2). Se activa desde la UI de n8n.",
         "height": 420,
         "width": 460,
         "color": 3
@@ -31,11 +31,11 @@
       ],
       "id": "telegram-vinculo-trigger-001",
       "typeVersion": 1.1,
-      "webhookId": "telegram-vinculo-webhook-001",
+      "webhookId": "4136e4af-6173-4ec6-884b-8174d0df7a56",
       "credentials": {
         "telegramApi": {
           "id": "PENDIENTE_TELEGRAM_VINCULO",
-          "name": "Telegram Bot Vínculo — PENDIENTE CREDENCIAL (DASHBOARD_BOT_TOKEN_VINCULO)"
+          "name": "Telegram Bot Vínculo — PENDIENTE CREDENCIAL (token de @BotFather)"
         }
       }
     },
@@ -89,15 +89,8 @@
       "parameters": {
         "method": "POST",
         "url": "http://dashboard-api:8000/connections/telegram/confirm",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-N8N-SECRET",
-              "value": "={{ $env.DASHBOARD_N8N_SECRET }}"
-            }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ code: $json.text, chat_id: $json.chat_id }) }}",
@@ -110,7 +103,13 @@
         0
       ],
       "id": "vinculo-confirm-api-001",
-      "name": "Confirmar Vínculo (API)"
+      "name": "Confirmar Vínculo (API)",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PENDIENTE_HEADER_AUTH_VINCULO",
+          "name": "Header Auth X-N8N-SECRET — PENDIENTE CREDENCIAL (valor = DASHBOARD_N8N_SECRET)"
+        }
+      }
     },
     {
       "parameters": {
@@ -129,7 +128,7 @@
       "credentials": {
         "telegramApi": {
           "id": "PENDIENTE_TELEGRAM_VINCULO",
-          "name": "Telegram Bot Vínculo — PENDIENTE CREDENCIAL (DASHBOARD_BOT_TOKEN_VINCULO)"
+          "name": "Telegram Bot Vínculo — PENDIENTE CREDENCIAL (token de @BotFather)"
         }
       }
     }
