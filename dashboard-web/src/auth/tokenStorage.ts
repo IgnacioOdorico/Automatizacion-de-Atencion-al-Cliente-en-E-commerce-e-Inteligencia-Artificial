@@ -28,6 +28,12 @@ function decodePayload(token: string): Record<string, unknown> | null {
  * (dev por Vite proxy y prod por nginx son same-origin, así que ambas vías
  * funcionan). Riesgo XSS <-> riesgo de sesión muerta en cada reload: para la
  * demo se eligió persistencia.
+ *
+ * Mitigación del riesgo XSS (Fase 8): nginx manda una CSP estricta (script-src
+ * 'self', sin unsafe-inline/unsafe-eval; ver security-headers.conf) y hay guardas
+ * (`securityGuards.test.ts`) que impiden sinks de XSS, logs y tokens en URLs. Desvío
+ * documentado del diseño original (cookie HttpOnly para el refresh) en
+ * SPEC_DASHBOARD_CLIENTE.md §10.
  */
 export const tokenStorage = {
   getAccessToken(): string | null {
