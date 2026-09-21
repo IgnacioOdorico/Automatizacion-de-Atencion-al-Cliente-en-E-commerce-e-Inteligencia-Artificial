@@ -6,11 +6,15 @@ import { CatalogoPage } from '@/pages/CatalogoPage';
 import { ConexionesPage } from '@/pages/ConexionesPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { MonitoreoConversacionesPage } from '@/pages/MonitoreoConversacionesPage';
+import { MonitoreoEnVivoPage } from '@/pages/MonitoreoEnVivoPage';
+import { MonitoreoPage } from '@/pages/MonitoreoPage';
 import { PedidosPage } from '@/pages/PedidosPage';
 import { PerfilPage } from '@/pages/PerfilPage';
 import { RegistroPage } from '@/pages/RegistroPage';
 import { TicketsPage } from '@/pages/TicketsPage';
 import { connectionsAliasPath } from '@/lib/connections';
+import { DEFAULT_TAB_PATH } from '@/lib/monitoringTabs';
 
 /**
  * El callback de Gmail del backend redirige directo a /conexiones. Este alias de
@@ -37,6 +41,11 @@ export function App() {
           <Route path="/pedidos" element={<PedidosPage />} />
           <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/catalogo" element={<CatalogoPage />} />
+          <Route path="/monitoreo" element={<MonitoreoPage />}>
+            <Route index element={<Navigate to={DEFAULT_TAB_PATH} replace />} />
+            <Route path="en-vivo" element={<MonitoreoEnVivoPage />} />
+            <Route path="conversaciones" element={<MonitoreoConversacionesPage />} />
+          </Route>
           <Route path="/conexiones" element={<ConexionesPage />} />
           <Route path="/perfil" element={<PerfilPage />} />
         </Route>

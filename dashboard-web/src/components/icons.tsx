@@ -23,7 +23,14 @@ export const GridIcon = (props: IconProps) => (
   </svg>
 );
 
-export const PackageIcon = (props: IconProps) => (
+/** Línea de pulso: el monitoreo en vivo. */
+export const ActivityIcon = (props: IconProps) => (
+  <svg {...base(props)}>
+    <path d="M3 12h4l3-8 4 16 3-8h4" />
+  </svg>
+);
+
+export const PackageIcon =(props: IconProps) => (
   <svg {...base(props)}>
     <path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z" />
     <path d="M3 7.5 12 12l9-4.5" />

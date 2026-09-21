@@ -1,6 +1,7 @@
 import type { FC, SVGProps } from 'react';
 
 import {
+  ActivityIcon,
   BoxIcon,
   GridIcon,
   PackageIcon,
@@ -37,6 +38,11 @@ export const NAV_ITEMS: NavItem[] = [
     icon: BoxIcon,
   },
   {
+    path: '/monitoreo',
+    label: 'Monitoreo',
+    icon: ActivityIcon,
+  },
+  {
     path: '/conexiones',
     label: 'Conexiones',
     icon: PlugIcon,
@@ -49,5 +55,6 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export function navItemForPath(pathname: string): NavItem | undefined {
-  return NAV_ITEMS.find((item) => item.path === pathname);
+  // Las secciones con pestañas (/monitoreo/en-vivo) siguen perteneciendo a su ítem.
+  return NAV_ITEMS.find((item) => pathname === item.path || pathname.startsWith(`${item.path}/`));
 }

@@ -1627,3 +1627,47 @@ button {
     background-color: var(--brand-soft);
   }
 }
+
+/* ============================================================
+   Monitoreo — pestañas y estructura común
+   ============================================================ */
+
+/* Pestañas segmentadas (una sub-ruta cada una) */
+.mon-tabs {
+  display: flex;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 20px;
+  padding: 4px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  scrollbar-width: none;
+}
+.mon-tab {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--text-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.mon-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+.mon-tab[aria-selected='true'] {
+  background: var(--brand-soft);
+  color: var(--text-1);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+.mon-panel {
+  min-width: 0;
+}
