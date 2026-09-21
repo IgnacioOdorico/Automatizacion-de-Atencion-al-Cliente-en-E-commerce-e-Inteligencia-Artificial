@@ -3,11 +3,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { dashboardApi } from '@/api/endpoints';
 import { ChannelCard } from '@/components/connections/ChannelCard';
+import { GmailCard } from '@/components/connections/GmailCard';
 import { TelegramCard } from '@/components/connections/TelegramCard';
 import { PlugIcon } from '@/components/icons';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useGmailReturn } from '@/hooks/useGmailReturn';
 import { useTelegramLink } from '@/hooks/useTelegramLink';
 import { buildChannelCards } from '@/lib/connections';
 import { friendlyApiError } from '@/lib/messages';
@@ -31,6 +33,8 @@ export function ConexionesPage() {
 
   const cards = useMemo(() => buildChannelCards(data?.items), [data]);
   const telegramStatus = cards.find((card) => card.channel === 'telegram')?.status;
+  const gmailCard = cards.find((card) => card.channel === 'email') ?? cards[cards.length - 1];
+  const gmailReturn = useGmailReturn(gmailCard, Boolean(data));
 
   const { hasCode, complete } = telegram;
   useEffect(() => {
@@ -80,13 +84,23 @@ export function ConexionesPage() {
 
       {data && (
         <div className="conn-grid">
-          {cards.map((card) =>
-            card.channel === 'telegram' ? (
-              <TelegramCard key={card.channel} model={card} link={telegram} />
-            ) : (
-              <ChannelCard key={card.channel} model={card} />
-            ),
-          )}
+          {cards.map((card) => {
+            switch (card.channel) {
+              case 'telegram':
+                return <TelegramCard key={card.channel} model={card} link={telegram} />;
+              case 'email':
+                return (
+                  <GmailCard
+                    key={card.channel}
+                    model={card}
+                    notice={gmailReturn.notice}
+                    onNoticeDismiss={gmailReturn.dismiss}
+                  />
+                );
+              default:
+                return <ChannelCard key={card.channel} model={card} />;
+            }
+          })}
         </div>
       )}
     </div>

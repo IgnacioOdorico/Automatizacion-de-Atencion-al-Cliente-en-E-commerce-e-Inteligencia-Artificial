@@ -39,6 +39,13 @@ export interface TelegramStartResponse {
   expires_in: number;
 }
 
+/** GET /connections/gmail/oauth-url: URL de consentimiento de Google con `state` firmado. */
+export interface GmailOAuthUrlResponse {
+  url: string;
+  state: string;
+  expires_in: number;
+}
+
 export interface Paginated<T> {
   items: T[];
   page: number;

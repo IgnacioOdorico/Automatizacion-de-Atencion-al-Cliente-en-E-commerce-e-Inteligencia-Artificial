@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Shell } from '@/components/Shell';
@@ -10,11 +10,22 @@ import { PedidosPage } from '@/pages/PedidosPage';
 import { PerfilPage } from '@/pages/PerfilPage';
 import { RegistroPage } from '@/pages/RegistroPage';
 import { TicketsPage } from '@/pages/TicketsPage';
+import { connectionsAliasPath } from '@/lib/connections';
+
+/**
+ * El callback de Gmail del backend redirige a /connections?gmail=connected,
+ * pero la ruta del front es /conexiones: el alias conserva el query string.
+ */
+function ConnectionsAlias() {
+  const { search } = useLocation();
+  return <Navigate to={connectionsAliasPath(search)} replace />;
+}
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/connections" element={<ConnectionsAlias />} />
       <Route path="/registro" element={<RegistroPage />} />
 
       {/* Rutas internas protegidas (spec auth): sin sesión -> /login */}

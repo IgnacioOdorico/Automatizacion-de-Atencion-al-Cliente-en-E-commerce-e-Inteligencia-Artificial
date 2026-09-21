@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '@/api/client';
-import { buildChannelCards, channelActions, connectionActionError } from '@/lib/connections';
+import {
+  buildChannelCards,
+  channelActions,
+  connectionActionError,
+  connectionsAliasPath,
+  gmailReturnNotice,
+  isGoogleConsentUrl,
+  parseGmailReturn,
+} from '@/lib/connections';
 import type { Connection } from '@/types/api';
 
 function conn(overrides: Partial<Connection> & Pick<Connection, 'channel'>): Connection {
@@ -138,5 +146,117 @@ describe('connectionActionError — Telegram start', () => {
   it('un error de red (no ApiError) explica que no hay conexión con el servidor', () => {
     const msg = connectionActionError(new TypeError('Failed to fetch'), 'telegram-start');
     expect(msg).toContain('No se pudo conectar con el servidor');
+  });
+});
+
+describe('connectionActionError — Gmail', () => {
+  it('503 (faltan credenciales de Google en el server) da un mensaje claro y accionable', () => {
+    const msg = connectionActionError(
+      new ApiError(
+        503,
+        'Google OAuth no configurado (DASHBOARD_GOOGLE_CLIENT_ID / DASHBOARD_GOOGLE_REDIRECT_URI)',
+        'Google OAuth no configurado (DASHBOARD_GOOGLE_CLIENT_ID / DASHBOARD_GOOGLE_REDIRECT_URI)',
+      ),
+      'gmail-connect',
+    );
+    expect(msg).toContain('Gmail todavía no está configurado');
+    expect(msg).toContain('credenciales de Google');
+    expect(msg).not.toContain('DASHBOARD_');
+  });
+
+  it('502 avisa que Google no respondió', () => {
+    const msg = connectionActionError(
+      new ApiError(502, 'Error al contactar los servicios de Google', 'Error al contactar los servicios de Google'),
+      'gmail-connect',
+    );
+    expect(msg).toContain('Google no respondió');
+  });
+
+  it('otro error sin detalle usa el mensaje propio de Gmail', () => {
+    const msg = connectionActionError(new ApiError(500, '500 Internal Server Error'), 'gmail-connect');
+    expect(msg).toBe('No pudimos iniciar la conexión con Gmail. Reintentá en unos segundos.');
+  });
+});
+
+describe('isGoogleConsentUrl', () => {
+  it('acepta la URL de consentimiento de Google', () => {
+    expect(
+      isGoogleConsentUrl('https://accounts.google.com/o/oauth2/v2/auth?client_id=abc&state=xyz'),
+    ).toBe(true);
+  });
+
+  it('rechaza otros hosts, http y valores no URL (no redirigir a cualquier lado)', () => {
+    expect(isGoogleConsentUrl('https://evil.example.com/o/oauth2/v2/auth')).toBe(false);
+    expect(isGoogleConsentUrl('https://accounts.google.com.evil.example.com/auth')).toBe(false);
+    expect(isGoogleConsentUrl('http://accounts.google.com/o/oauth2/v2/auth')).toBe(false);
+    expect(isGoogleConsentUrl('javascript:alert(1)')).toBe(false);
+    expect(isGoogleConsentUrl('')).toBe(false);
+    expect(isGoogleConsentUrl(undefined)).toBe(false);
+  });
+});
+
+describe('parseGmailReturn', () => {
+  it('reconoce el retorno exitoso del callback', () => {
+    expect(parseGmailReturn('?gmail=connected')).toBe('connected');
+    expect(parseGmailReturn('gmail=connected')).toBe('connected');
+  });
+
+  it('reconoce un retorno con error', () => {
+    expect(parseGmailReturn('?gmail=error')).toBe('error');
+  });
+
+  it('ignora query ausente, vacío o con valores desconocidos', () => {
+    expect(parseGmailReturn('')).toBeNull();
+    expect(parseGmailReturn('?otra=1')).toBeNull();
+    expect(parseGmailReturn('?gmail=hackeado')).toBeNull();
+  });
+
+  it('convive con otros parámetros', () => {
+    expect(parseGmailReturn('?x=1&gmail=connected')).toBe('connected');
+  });
+});
+
+describe('gmailReturnNotice', () => {
+  const connected = buildChannelCards([
+    conn({ channel: 'email', status: 'connected', external_reference: 'ventas@tienda.com' }),
+  ])[2];
+  const disconnected = buildChannelCards([])[2];
+
+  it('sin retorno de Google no hay aviso', () => {
+    expect(gmailReturnNotice(null, connected, true)).toBeNull();
+  });
+
+  it('muestra el email autorizado al volver conectado', () => {
+    expect(gmailReturnNotice('connected', connected, true)).toEqual({
+      tone: 'success',
+      text: 'Gmail conectado. Cuenta autorizada: ventas@tienda.com.',
+    });
+  });
+
+  it('espera a tener los datos antes de decidir', () => {
+    expect(gmailReturnNotice('connected', disconnected, false)).toBeNull();
+  });
+
+  it('si el server no confirma la conexión avisa en vez de mostrar éxito', () => {
+    const notice = gmailReturnNotice('connected', disconnected, true);
+    expect(notice?.tone).toBe('error');
+    expect(notice?.text).toContain('no figura como conectado');
+  });
+
+  it('un retorno con error muestra el fallo de la autorización', () => {
+    const notice = gmailReturnNotice('error', disconnected, true);
+    expect(notice?.tone).toBe('error');
+    expect(notice?.text).toContain('Google no completó la autorización');
+  });
+});
+
+describe('connectionsAliasPath', () => {
+  it('redirige /connections (backend) a /conexiones (front) preservando el query', () => {
+    expect(connectionsAliasPath('?gmail=connected')).toBe('/conexiones?gmail=connected');
+  });
+
+  it('sin query o con query vacío deja la ruta limpia', () => {
+    expect(connectionsAliasPath('')).toBe('/conexiones');
+    expect(connectionsAliasPath('?')).toBe('/conexiones');
   });
 });

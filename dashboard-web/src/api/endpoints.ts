@@ -3,6 +3,7 @@ import {
   Account,
   AuthTokens,
   Connection,
+  GmailOAuthUrlResponse,
   Order,
   OrderDetail,
   Paginated,
@@ -71,5 +72,8 @@ export const dashboardApi = {
 export const connectionsApi = {
   telegramStart(): Promise<TelegramStartResponse> {
     return apiRequest<TelegramStartResponse>('/connections/telegram/start', { method: 'POST' });
+  },
+  gmailOAuthUrl(): Promise<GmailOAuthUrlResponse> {
+    return apiRequest<GmailOAuthUrlResponse>('/connections/gmail/oauth-url');
   },
 };
