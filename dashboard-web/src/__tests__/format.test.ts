@@ -6,8 +6,12 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatDateTimeSeconds,
   formatDuration,
   formatMetricDuration,
+  formatRelative,
+  formatTime,
+  formatTmr,
 } from '@/lib/format';
 
 describe('formatDuration', () => {
@@ -160,5 +164,72 @@ describe('dataSourceLabel', () => {
     expect(dataSourceLabel(null)).toBe('—');
     expect(dataSourceLabel(undefined)).toBe('—');
     expect(dataSourceLabel('otro')).toBe('otro');
+  });
+});
+
+
+describe('formatRelative (hora relativa del feed en vivo)', () => {
+  const now = Date.parse('2026-09-21T14:00:00.000Z');
+  const ago = (ms: number) => new Date(now - ms).toISOString();
+
+  it('lo de hace un instante es "ahora"', () => {
+    expect(formatRelative(ago(0), now)).toBe('ahora');
+    expect(formatRelative(ago(4_000), now)).toBe('ahora');
+  });
+
+  it('segundos, minutos, horas y días', () => {
+    expect(formatRelative(ago(5_000), now)).toBe('hace 5 s');
+    expect(formatRelative(ago(59_000), now)).toBe('hace 59 s');
+    expect(formatRelative(ago(60_000), now)).toBe('hace 1 min');
+    expect(formatRelative(ago(25 * 60_000), now)).toBe('hace 25 min');
+    expect(formatRelative(ago(3 * 3_600_000), now)).toBe('hace 3 h');
+    expect(formatRelative(ago(2 * 86_400_000), now)).toBe('hace 2 d');
+  });
+
+  it('una marca en el futuro (reloj desfasado) no muestra números negativos', () => {
+    expect(formatRelative(ago(-30_000), now)).toBe('ahora');
+  });
+
+  it('sin dato o fecha inválida', () => {
+    expect(formatRelative(null, now)).toBe('—');
+    expect(formatRelative('no-es-fecha', now)).toBe('—');
+  });
+});
+
+describe('formatDateTimeSeconds / formatTime (hora de Mendoza)', () => {
+  it('agrega los segundos a la fecha del negocio (UTC-3)', () => {
+    expect(formatDateTimeSeconds('2026-09-21T14:03:22.418Z')).toBe('21/09/2026 11:03:22');
+  });
+
+  it('formatTime da solo hh:mm', () => {
+    expect(formatTime('2026-09-21T14:03:22.418Z')).toBe('11:03');
+    expect(formatTime('2026-09-21T02:59:59.000Z')).toBe('23:59');
+  });
+
+  it('sin dato', () => {
+    expect(formatDateTimeSeconds(null)).toBe('—');
+    expect(formatTime('basura')).toBe('—');
+  });
+});
+
+describe('formatTmr (tiempos cortos del bot y del pipeline)', () => {
+  it('menos de un segundo, en milisegundos', () => {
+    expect(formatTmr(0.435)).toBe('435 ms');
+    expect(formatTmr(0)).toBe('0 ms');
+  });
+
+  it('hasta un minuto, con un decimal y coma', () => {
+    expect(formatTmr(3.918)).toBe('3,9 s');
+    expect(formatTmr(12)).toBe('12,0 s');
+  });
+
+  it('desde un minuto reutiliza formatDuration', () => {
+    expect(formatTmr(90)).toBe('1m 30s');
+  });
+
+  it('sin dato', () => {
+    expect(formatTmr(null)).toBe('—');
+    expect(formatTmr(undefined)).toBe('—');
+    expect(formatTmr(Number.NaN)).toBe('—');
   });
 });

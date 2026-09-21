@@ -17,6 +17,8 @@ export const ORDER_STATUSES = [
 
 export const TICKET_STATUSES = ['open', 'in_progress', 'resolved', 'closed'] as const;
 
+export const INTENTS = ['FAQ', 'ESTADO_PEDIDO', 'RECLAMO', 'GENERAL'] as const;
+
 export const TICKET_PRIORITIES = ['low', 'normal', 'high', 'urgent'] as const;
 
 export interface StatusMeta {
@@ -49,6 +51,13 @@ const PRIORITY_META: Record<string, StatusMeta> = {
   urgent: { label: 'Urgente', tone: 'danger' },
 };
 
+const INTENT_META: Record<string, StatusMeta> = {
+  FAQ: { label: 'Pregunta frecuente', tone: 'neutral' },
+  ESTADO_PEDIDO: { label: 'Estado de pedido', tone: 'brand' },
+  RECLAMO: { label: 'Reclamo', tone: 'warning' },
+  GENERAL: { label: 'Consulta general', tone: 'neutral' },
+};
+
 /** Fallback neutral: la BD está restringida por CHECK, pero un valor raro no debe romper la UI. */
 function meta(map: Record<string, StatusMeta>, value: string | null | undefined): StatusMeta {
   if (value && map[value]) return map[value];
@@ -65,4 +74,9 @@ export function ticketStatusMeta(status: string | null | undefined): StatusMeta 
 
 export function priorityMeta(priority: string | null | undefined): StatusMeta {
   return meta(PRIORITY_META, priority);
+}
+
+/** Intent con que el bot clasificó el mensaje, en palabras del cliente (no el código interno). */
+export function intentMeta(intent: string | null | undefined): StatusMeta {
+  return meta(INTENT_META, intent);
 }

@@ -45,6 +45,14 @@ const DATE_TIME_FORMAT = new Intl.DateTimeFormat('es-AR', {
   hourCycle: 'h23',
 });
 
+const TIME_FORMAT = new Intl.DateTimeFormat('es-AR', {
+  timeZone: DISPLAY_TIME_ZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+});
+
 /** Arma las partes a mano: "dd/mm/aaaa hh:mm" idéntico en cualquier motor (sin "p. m."). */
 function dateParts(d: Date): Record<string, string> {
   const parts: Record<string, string> = {};
@@ -64,6 +72,61 @@ export function formatDateTime(iso: string | null | undefined): string {
   if (!d) return '—';
   const p = dateParts(d);
   return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
+}
+
+/** "dd/mm/aaaa hh:mm:ss": el feed en vivo necesita los segundos para ordenar lo que pasó. */
+export function formatDateTimeSeconds(iso: string | null | undefined): string {
+  const d = toDate(iso);
+  if (!d) return '—';
+  const p = dateParts(d);
+  const seconds = timeParts(d).second;
+  return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}:${seconds}`;
+}
+
+/** "hh:mm" en la hora del negocio (burbujas de los hilos de conversación). */
+export function formatTime(iso: string | null | undefined): string {
+  const d = toDate(iso);
+  if (!d) return '—';
+  const p = dateParts(d);
+  return `${p.hour}:${p.minute}`;
+}
+
+function timeParts(d: Date): Record<string, string> {
+  const parts: Record<string, string> = {};
+  for (const part of TIME_FORMAT.formatToParts(d)) parts[part.type] = part.value;
+  return parts;
+}
+
+/**
+ * Antigüedad legible para el feed en vivo: "ahora", "hace 12 s", "hace 3 min",
+ * "hace 2 h", "hace 4 d". Una marca en el futuro (reloj desfasado) es "ahora".
+ */
+export function formatRelative(iso: string | null | undefined, nowMs: number): string {
+  const d = toDate(iso);
+  if (!d) return '—';
+  const seconds = Math.floor((nowMs - d.getTime()) / 1000);
+  if (seconds < 5) return 'ahora';
+  if (seconds < 60) return `hace ${seconds} s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `hace ${hours} h`;
+  return `hace ${Math.floor(hours / 24)} d`;
+}
+
+/**
+ * Tiempos cortos del bot y del procesamiento de pedidos: en milisegundos por
+ * debajo del segundo, con un decimal hasta el minuto y como formatDuration
+ * desde ahí. Una duración sin dato es un guion, nunca "0".
+ */
+export function formatTmr(seconds: number | null | undefined): string {
+  if (seconds === null || seconds === undefined || Number.isNaN(seconds)) return '—';
+  const abs = Math.abs(seconds);
+  if (abs < 1) return `${Math.round(abs * 1000)} ms`;
+  if (abs < 60) {
+    return `${abs.toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} s`;
+  }
+  return formatDuration(abs);
 }
 
 /**

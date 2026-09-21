@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  INTENTS,
   ORDER_STATUSES,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
+  intentMeta,
   orderStatusMeta,
   priorityMeta,
   ticketStatusMeta,
@@ -61,5 +63,23 @@ describe('Metadatos de estado/prioridad', () => {
     const meta = orderStatusMeta('status_legacy_inexistente');
     expect(meta.tone).toBe('neutral');
     expect(meta.label).toBe('status_legacy_inexistente');
+  });
+});
+
+describe('Intents del bot (clasificación de GPT-4o-mini)', () => {
+  it('coinciden con el dominio cerrado de la API', () => {
+    expect(INTENTS).toEqual(['FAQ', 'ESTADO_PEDIDO', 'RECLAMO', 'GENERAL']);
+  });
+
+  it('cada intent se muestra en lenguaje del cliente, sin el código interno', () => {
+    expect(intentMeta('FAQ').label).toBe('Pregunta frecuente');
+    expect(intentMeta('ESTADO_PEDIDO').label).toBe('Estado de pedido');
+    expect(intentMeta('RECLAMO')).toEqual({ label: 'Reclamo', tone: 'warning' });
+    expect(intentMeta('GENERAL').label).toBe('Consulta general');
+  });
+
+  it('un intent nuevo o ausente no rompe la pantalla', () => {
+    expect(intentMeta('OTRO_INTENT')).toEqual({ label: 'OTRO_INTENT', tone: 'neutral' });
+    expect(intentMeta(null)).toEqual({ label: '—', tone: 'neutral' });
   });
 });

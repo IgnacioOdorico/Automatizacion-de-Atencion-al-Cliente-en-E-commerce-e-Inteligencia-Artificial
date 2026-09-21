@@ -17,6 +17,15 @@ import {
   Ticket,
   WhatsAppApprovalResponse,
 } from '@/types/api';
+import type {
+  ConversationsPage,
+  ConversationsParams,
+  EventsPage,
+  EventsParams,
+  MonitoringSummary,
+  ThreadPage,
+  ThreadParams,
+} from '@/types/monitoring';
 
 export const authApi = {
   login(body: { email: string; password: string }): Promise<AuthTokens> {
@@ -94,5 +103,60 @@ export const connectionsApi = {
       method: 'POST',
       body: { phone },
     });
+  },
+};
+
+
+/** Largo máximo de la búsqueda de conversaciones (lo valida también la API). */
+const SEARCH_MAX_LENGTH = 100;
+
+/** Arma `?a=1&b=2` con URLSearchParams (codifica `+`, espacios y `/`); sin parámetros devuelve ''. */
+function queryString(params: Record<string, string | number | undefined | null>): string {
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === '') continue;
+    qs.set(key, String(value));
+  }
+  const text = qs.toString();
+  return text ? `?${text}` : '';
+}
+
+/**
+ * Sección "Monitoreo" (solo lectura). Los cursores son opacos: se devuelven tal
+ * cual los entregó la API. `since` (polling) y `before` (historia) no se combinan.
+ */
+export const monitoringApi = {
+  summary(params?: { hours?: number }): Promise<MonitoringSummary> {
+    return apiRequest<MonitoringSummary>(`/monitoring/summary${queryString({ hours: params?.hours })}`);
+  },
+  events(params: EventsParams = {}): Promise<EventsPage> {
+    const query = queryString({
+      limit: params.limit,
+      since: params.since,
+      before: params.since ? undefined : params.before,
+      types: params.types && params.types.length > 0 ? params.types.join(',') : undefined,
+      channel: params.channel,
+    });
+    return apiRequest<EventsPage>(`/monitoring/events${query}`);
+  },
+  conversations(params: ConversationsParams = {}): Promise<ConversationsPage> {
+    const q = Array.from((params.q ?? '').trim()).slice(0, SEARCH_MAX_LENGTH).join('');
+    const query = queryString({
+      limit: params.limit,
+      before: params.before,
+      channel: params.channel,
+      q,
+    });
+    return apiRequest<ConversationsPage>(`/monitoring/conversations${query}`);
+  },
+  /** El user_id va por query (puede traer `+`, `/` o espacios): nunca en el path. */
+  thread(params: ThreadParams): Promise<ThreadPage> {
+    const query = queryString({
+      channel: params.channel,
+      user_id: params.userId,
+      limit: params.limit,
+      before: params.before,
+    });
+    return apiRequest<ThreadPage>(`/monitoring/conversations/thread${query}`);
   },
 };
