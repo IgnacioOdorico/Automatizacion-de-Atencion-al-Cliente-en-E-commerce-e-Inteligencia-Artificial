@@ -23,8 +23,8 @@ interface GmailCardProps {
 
 /**
  * Gmail (OAuth2): pide la URL de consentimiento al backend y redirige a Google.
- * Al terminar, el backend devuelve al usuario a /connections?gmail=connected
- * (el alias de App.tsx lo lleva a /conexiones).
+ * Al terminar, el backend devuelve al usuario a /conexiones?gmail=connected, o a
+ * /conexiones?gmail=error&reason=<código> si algo falló (ver useGmailReturn).
  */
 export function GmailCard({ model, notice, onNoticeDismiss, onDisconnect }: GmailCardProps) {
   const [redirecting, setRedirecting] = useState(false);

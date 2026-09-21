@@ -13,8 +13,9 @@ import { TicketsPage } from '@/pages/TicketsPage';
 import { connectionsAliasPath } from '@/lib/connections';
 
 /**
- * El callback de Gmail del backend redirige a /connections?gmail=connected,
- * pero la ruta del front es /conexiones: el alias conserva el query string.
+ * El callback de Gmail del backend redirige directo a /conexiones. Este alias de
+ * /connections queda como red de seguridad (configuración vieja del backend) y
+ * conserva el query string.
  */
 function ConnectionsAlias() {
   const { search } = useLocation();

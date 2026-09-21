@@ -199,22 +199,54 @@ describe('isGoogleConsentUrl', () => {
 
 describe('parseGmailReturn', () => {
   it('reconoce el retorno exitoso del callback', () => {
-    expect(parseGmailReturn('?gmail=connected')).toBe('connected');
-    expect(parseGmailReturn('gmail=connected')).toBe('connected');
+    expect(parseGmailReturn('?gmail=connected')).toEqual({ result: 'connected' });
+    expect(parseGmailReturn('gmail=connected')).toEqual({ result: 'connected' });
   });
 
-  it('reconoce un retorno con error', () => {
-    expect(parseGmailReturn('?gmail=error')).toBe('error');
+  it('reconoce un retorno con error y su código de motivo', () => {
+    expect(parseGmailReturn('?gmail=error&reason=denied')).toEqual({
+      result: 'error',
+      reason: 'denied',
+    });
+    for (const reason of [
+      'denied',
+      'google_error',
+      'invalid_state',
+      'missing_code',
+      'exchange_failed',
+      'upstream',
+      'no_email',
+      'no_refresh',
+      'internal',
+    ]) {
+      expect(parseGmailReturn(`?gmail=error&reason=${reason}`)).toEqual({
+        result: 'error',
+        reason,
+      });
+    }
+  });
+
+  it('un error sin motivo o con motivo desconocido queda sin código (nunca se refleja el valor crudo)', () => {
+    expect(parseGmailReturn('?gmail=error')).toEqual({ result: 'error', reason: null });
+    expect(parseGmailReturn('?gmail=error&reason=<script>alert(1)</script>')).toEqual({
+      result: 'error',
+      reason: null,
+    });
+    expect(parseGmailReturn('?gmail=error&reason=DENIED')).toEqual({
+      result: 'error',
+      reason: null,
+    });
   });
 
   it('ignora query ausente, vacío o con valores desconocidos', () => {
     expect(parseGmailReturn('')).toBeNull();
     expect(parseGmailReturn('?otra=1')).toBeNull();
     expect(parseGmailReturn('?gmail=hackeado')).toBeNull();
+    expect(parseGmailReturn('?reason=denied')).toBeNull();
   });
 
   it('convive con otros parámetros', () => {
-    expect(parseGmailReturn('?x=1&gmail=connected')).toBe('connected');
+    expect(parseGmailReturn('?x=1&gmail=connected')).toEqual({ result: 'connected' });
   });
 });
 
@@ -229,26 +261,71 @@ describe('gmailReturnNotice', () => {
   });
 
   it('muestra el email autorizado al volver conectado', () => {
-    expect(gmailReturnNotice('connected', connected, true)).toEqual({
+    expect(gmailReturnNotice({ result: 'connected' }, connected, true)).toEqual({
       tone: 'success',
       text: 'Gmail conectado. Cuenta autorizada: ventas@tienda.com.',
     });
   });
 
   it('espera a tener los datos antes de decidir', () => {
-    expect(gmailReturnNotice('connected', disconnected, false)).toBeNull();
+    expect(gmailReturnNotice({ result: 'connected' }, disconnected, false)).toBeNull();
   });
 
   it('si el server no confirma la conexión avisa en vez de mostrar éxito', () => {
-    const notice = gmailReturnNotice('connected', disconnected, true);
+    const notice = gmailReturnNotice({ result: 'connected' }, disconnected, true);
     expect(notice?.tone).toBe('error');
     expect(notice?.text).toContain('no figura como conectado');
   });
 
-  it('un retorno con error muestra el fallo de la autorización', () => {
-    const notice = gmailReturnNotice('error', disconnected, true);
+  it('un retorno con error sin motivo muestra el mensaje genérico', () => {
+    const notice = gmailReturnNotice({ result: 'error', reason: null }, disconnected, true);
     expect(notice?.tone).toBe('error');
     expect(notice?.text).toContain('Google no completó la autorización');
+  });
+
+  it('un error no espera a los datos: se avisa enseguida', () => {
+    const notice = gmailReturnNotice({ result: 'error', reason: 'denied' }, disconnected, false);
+    expect(notice?.tone).toBe('error');
+  });
+
+  it('cada motivo tiene su mensaje claro en voseo, distinto entre sí', () => {
+    const reasons = [
+      'denied',
+      'google_error',
+      'invalid_state',
+      'missing_code',
+      'exchange_failed',
+      'upstream',
+      'no_email',
+      'no_refresh',
+      'internal',
+    ] as const;
+    const texts = reasons.map((reason) => {
+      const notice = gmailReturnNotice({ result: 'error', reason }, disconnected, true);
+      expect(notice?.tone).toBe('error');
+      expect(notice?.text.length).toBeGreaterThan(20);
+      return notice?.text;
+    });
+    expect(new Set(texts).size).toBe(reasons.length);
+  });
+
+  it('cancelar en Google se explica como una cancelación del usuario', () => {
+    const notice = gmailReturnNotice({ result: 'error', reason: 'denied' }, disconnected, true);
+    expect(notice?.text).toContain('Cancelaste');
+    expect(notice?.text).toContain('Reintentá');
+  });
+
+  it('state vencido invita a iniciar la conexión de nuevo', () => {
+    const notice = gmailReturnNotice({ result: 'error', reason: 'invalid_state' }, disconnected, true);
+    expect(notice?.text).toContain('Iniciá la conexión');
+  });
+
+  it('un motivo que no está en el catálogo cae al genérico sin reflejarlo en pantalla', () => {
+    const forged = { result: 'error', reason: '<img src=x onerror=alert(1)>' } as never;
+    const notice = gmailReturnNotice(forged, disconnected, true);
+    expect(notice?.text).toContain('Google no completó la autorización');
+    expect(notice?.text).not.toContain('<img');
+    expect(notice?.text).not.toContain('onerror');
   });
 });
 

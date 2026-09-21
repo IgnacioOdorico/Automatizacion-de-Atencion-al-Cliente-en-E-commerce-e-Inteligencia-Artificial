@@ -15,7 +15,7 @@
 Credenciales de Google (`DASHBOARD_GOOGLE_CLIENT_ID/SECRET`) y bot de Telegram (`DASHBOARD_BOT_TOKEN_VINCULO`) están vacías en `.env` y son del usuario: no se pueden crear ni cargar. Se verifica todo lo demás; Telegram se prueba simulando el webhook de n8n con curl (criterio de la spec 4.3) y Gmail hasta el 503 controlado.
 
 ## Tareas
-- [ ] C1 Backend: callback Gmail redirige a `/conexiones` y ante errores a `?gmail=error&reason=...`; front mapea `reason` a mensaje (TDD pytest + vitest)
+- [x] C1 Backend: callback Gmail redirige a `/conexiones` y ante errores a `?gmail=error&reason=...`; front mapea `reason` a mensaje (TDD pytest + vitest)
 - [ ] C2 Backend+front: `DELETE /connections/telegram/code` + cancelar en la card (TDD)
 - [ ] C3 Housekeeping: `.gitignore` (`.atl/`, `.opencode/`) y commit de `openspec/`, `docs/DESVIOS_SPEC.md`, `SPEC_DASHBOARD_CLIENTE.md`
 - [ ] C4 Docker: levantar stack completo, aplicar migración/seed, smoke de API, aislamiento entre cuentas, Telegram confirm por curl, WhatsApp pending, `orden-nueva` → dashboard en vivo; corregir lo que rompa
@@ -27,7 +27,10 @@ Credenciales de Google (`DASHBOARD_GOOGLE_CLIENT_ID/SECRET`) y bot de Telegram (
 C1, C2, C5, C6: delegated direct (un writer por vez). C3, C7: inline (mecánico). C4: delegated direct.
 
 ## Progreso / Evidencia
-_(se completa por tarea)_
+- **C1** — Backend (`dashboard-api/app/routers/connections.py`): el callback valida primero el `state` firmado y responde SIEMPRE con redirect 307 (el que ya usaba el archivo) a `{DASHBOARD_FRONTEND_URL sin barra final}/conexiones?...`; éxito `?gmail=connected`, fallo `?gmail=error&reason=<código>` con catálogo cerrado `GmailErrorReason`: `denied` (access_denied), `google_error` (otro `error` de Google), `invalid_state` (ausente/firma mala/vencido/otro canal), `missing_code`, `exchange_failed` (Google rechaza el canje 4xx o no trae access_token), `upstream` (red/timeout/5xx/JSON inválido), `no_email`, `no_refresh`, `internal` (falla al guardar en BD; se loguea solo el nombre de la excepción). Nunca viajan detalles, tokens ni `error_description`; el destino sale de `settings`, no del request. Sin persistencia en ningún fallo. Front (`lib/connections.ts`): `parseGmailReturn` devuelve `{result, reason}` con `reason` validado contra el catálogo (`Object.hasOwn`); `gmailReturnNotice` mapea cada motivo a un mensaje en voseo y cualquier valor fuera del catálogo cae al genérico sin reflejarse. Alias `/connections` del front intacto (red de seguridad).
+  - Backend RED: `pytest tests/test_gmail_oauth.py` 20 fallos / 5 OK -> GREEN 25/25. `pytest` completo: 105 passed (baseline previo 91).
+  - Front RED: `vitest run src/__tests__/connections.test.ts` 10 fallos / 38 OK -> GREEN 48/48. `npm test`: 7 archivos, 100 tests OK. `npm run build`: OK.
+  - No verificado: consentimiento real de Google (credenciales vacías en `.env`); el redirect se prueba con `TestClient` y Google mockeado con `httpx.MockTransport`.
 
 ## Próximo paso
-Delegar C1+C2.
+C2 (cancelar código de Telegram), luego C3.

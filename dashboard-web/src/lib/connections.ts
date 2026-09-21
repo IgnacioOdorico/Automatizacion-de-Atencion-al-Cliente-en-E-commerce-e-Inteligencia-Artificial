@@ -138,16 +138,61 @@ export function isGoogleConsentUrl(url: string | null | undefined): boolean {
   }
 }
 
-export type GmailReturn = 'connected' | 'error';
+/**
+ * Códigos de `?gmail=error&reason=<código>` que emite el callback del backend
+ * (connections.py, `GmailErrorReason`). Son un catálogo cerrado: cualquier otro
+ * valor del query se trata como "sin motivo" y nunca se muestra tal cual.
+ */
+export type GmailErrorReason =
+  | 'denied'
+  | 'google_error'
+  | 'invalid_state'
+  | 'missing_code'
+  | 'exchange_failed'
+  | 'upstream'
+  | 'no_email'
+  | 'no_refresh'
+  | 'internal';
+
+export type GmailReturn =
+  | { result: 'connected' }
+  | { result: 'error'; reason: GmailErrorReason | null };
+
+const GMAIL_GENERIC_ERROR = 'Google no completó la autorización. Reintentá conectar Gmail.';
+
+const GMAIL_ERROR_MESSAGES: Record<GmailErrorReason, string> = {
+  denied:
+    'Cancelaste la autorización en Google, así que Gmail no quedó conectado. Reintentá cuando quieras.',
+  google_error: 'Google no pudo completar la autorización. Reintentá conectar Gmail en unos minutos.',
+  invalid_state:
+    'La solicitud de conexión venció o no es válida. Iniciá la conexión de Gmail de nuevo.',
+  missing_code: 'Google no nos envió el código de autorización. Reintentá conectar Gmail.',
+  exchange_failed: 'Google rechazó la autorización. Reintentá conectar Gmail desde el principio.',
+  upstream: 'Google no respondió correctamente. Reintentá en unos minutos.',
+  no_email:
+    'No pudimos obtener el email de tu cuenta de Google. Reintentá y aceptá el permiso de acceso al email.',
+  no_refresh:
+    'Google no nos dio permiso para mantener la conexión. Reintentá y aceptá todos los permisos que se piden.',
+  internal: 'Tuvimos un problema al guardar la conexión de Gmail. Reintentá en unos segundos.',
+};
+
+function isGmailErrorReason(value: unknown): value is GmailErrorReason {
+  return typeof value === 'string' && Object.hasOwn(GMAIL_ERROR_MESSAGES, value);
+}
 
 /**
- * Query con que el backend devuelve al usuario tras el callback de Google
- * (`?gmail=connected`). Solo `connected` lo emite hoy el backend; `error` queda
- * previsto para cuando el callback informe fallos al front.
+ * Query con que el backend devuelve al usuario tras el callback de Google:
+ * `?gmail=connected` o `?gmail=error&reason=<código>`. Lo desconocido se ignora.
  */
 export function parseGmailReturn(search: string): GmailReturn | null {
-  const value = new URLSearchParams(search).get('gmail');
-  return value === 'connected' || value === 'error' ? value : null;
+  const params = new URLSearchParams(search);
+  const value = params.get('gmail');
+  if (value === 'connected') return { result: 'connected' };
+  if (value === 'error') {
+    const reason = params.get('reason');
+    return { result: 'error', reason: isGmailErrorReason(reason) ? reason : null };
+  }
+  return null;
 }
 
 export interface ConnectionNotice {
@@ -166,10 +211,12 @@ export function gmailReturnNotice(
 ): ConnectionNotice | null {
   if (!returned) return null;
 
-  if (returned === 'error') {
+  if (returned.result === 'error') {
     return {
       tone: 'error',
-      text: 'Google no completó la autorización. Reintentá conectar Gmail.',
+      text: isGmailErrorReason(returned.reason)
+        ? GMAIL_ERROR_MESSAGES[returned.reason]
+        : GMAIL_GENERIC_ERROR,
     };
   }
 
@@ -189,8 +236,9 @@ export function gmailReturnNotice(
 }
 
 /**
- * El backend redirige el callback de Gmail a `{FRONTEND_URL}/connections?...`
- * pero la ruta del front es `/conexiones`: el alias conserva el query string.
+ * Red de seguridad: el backend ya redirige el callback de Gmail directo a
+ * `/conexiones`, pero una `DASHBOARD_FRONTEND_URL`/build vieja podría seguir
+ * apuntando a `/connections`. El alias conserva el query string.
  */
 export function connectionsAliasPath(search: string): string {
   const query = search.replace(/^\?/, '');
