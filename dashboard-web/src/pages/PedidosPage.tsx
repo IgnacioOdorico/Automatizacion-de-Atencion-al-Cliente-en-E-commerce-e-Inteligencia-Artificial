@@ -49,8 +49,8 @@ export function PedidosPage() {
         <div>
           <h1>Pedidos</h1>
           <p className="page__sub">
-            Órdenes que entran por el pipeline post-venta. La lista se actualiza sola cada 4
-            segundos; hacé clic en una fila para ver el detalle.
+            Los pedidos de tu tienda con su estado de procesamiento. La lista se actualiza sola
+            cada 4 segundos; hacé clic en uno para ver el detalle.
           </p>
         </div>
         <LiveBadge paused={query.isError} />
@@ -89,7 +89,7 @@ export function PedidosPage() {
         {(data) => (
           <>
             <div className="table-wrap">
-              <table className="table">
+              <table className="table table--stack">
                 <thead>
                   <tr>
                     <th>Pedido</th>
@@ -109,22 +109,30 @@ export function PedidosPage() {
                         className="table__row-click"
                         onClick={() => setDetailId(order.id)}
                       >
-                        <td>
+                        <td data-label="Pedido">
                           <div className="table__cell-main">{order.order_number}</div>
                         </td>
-                        <td>
-                          <div className="table__cell-main">{order.customer_name}</div>
-                          <div className="table__cell-sub">{order.customer_email}</div>
+                        <td data-label="Cliente">
+                          <div className="table__cell-main" title={order.customer_name}>
+                            {order.customer_name}
+                          </div>
+                          <div className="table__cell-sub" title={order.customer_email}>
+                            {order.customer_email}
+                          </div>
                         </td>
-                        <td>
-                          <div className="table__cell-main">{order.product_name ?? '—'}</div>
+                        <td data-label="Producto">
+                          <div className="table__cell-main" title={order.product_name ?? undefined}>
+                            {order.product_name ?? '—'}
+                          </div>
                           <div className="table__cell-sub">{order.product_sku ?? '—'}</div>
                         </td>
-                        <td>
+                        <td data-label="Estado">
                           <Badge tone={meta.tone}>{meta.label}</Badge>
                         </td>
-                        <td className="table__num">{formatCurrency(order.total_amount)}</td>
-                        <td className="table__dates">
+                        <td className="table__num" data-label="Total">
+                          {formatCurrency(order.total_amount)}
+                        </td>
+                        <td className="table__dates" data-label="Fechas">
                           <div>
                             <span className="table__dates-label">Recibido</span>
                             {formatDateTime(order.received_at)}

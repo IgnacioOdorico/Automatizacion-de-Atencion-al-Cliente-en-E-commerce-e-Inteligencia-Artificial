@@ -28,26 +28,42 @@ function toDate(iso: string | null | undefined): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+/**
+ * Las marcas de tiempo se muestran siempre en la hora del negocio (Mendoza,
+ * la misma zona en que corre n8n), no en la de la máquina que mira la pantalla:
+ * el dashboard se ve igual desde cualquier lado y en las grabaciones.
+ */
+export const DISPLAY_TIME_ZONE = 'America/Argentina/Mendoza';
+
+const DATE_TIME_FORMAT = new Intl.DateTimeFormat('es-AR', {
+  timeZone: DISPLAY_TIME_ZONE,
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+/** Arma las partes a mano: "dd/mm/aaaa hh:mm" idéntico en cualquier motor (sin "p. m."). */
+function dateParts(d: Date): Record<string, string> {
+  const parts: Record<string, string> = {};
+  for (const part of DATE_TIME_FORMAT.formatToParts(d)) parts[part.type] = part.value;
+  return parts;
+}
+
 export function formatDate(iso: string | null | undefined): string {
   const d = toDate(iso);
   if (!d) return '—';
-  return d.toLocaleDateString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  const p = dateParts(d);
+  return `${p.day}/${p.month}/${p.year}`;
 }
 
 export function formatDateTime(iso: string | null | undefined): string {
   const d = toDate(iso);
   if (!d) return '—';
-  return d.toLocaleDateString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const p = dateParts(d);
+  return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
 }
 
 /**
@@ -77,14 +93,49 @@ export function formatDuration(seconds: string | number | null | undefined): str
 
 /**
  * Monedas en "$ X,XX" con separador de miles es-AR. La API serializa DECIMAL
- * como string ("349.99"), así que acepta ambas formas.
+ * como string ("349.99"), así que acepta ambas formas. El signo va antes del $.
  */
 export function formatCurrency(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === '') return '—';
   const n = typeof value === 'string' ? Number(value) : value;
   if (Number.isNaN(n)) return '—';
-  return `$${n.toLocaleString('es-AR', {
+  const amount = Math.abs(n).toLocaleString('es-AR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  });
+  return `${n < 0 ? '-' : ''}$${amount}`;
+}
+
+/**
+ * Cómo se lee el `user_id` de un ticket según el canal: número de teléfono en
+ * WhatsApp, chat en Telegram y la dirección en Gmail. Un canal desconocido se
+ * muestra tal cual.
+ */
+export function formatContact(channel: string, userId: string | null | undefined): string {
+  if (!userId) return '—';
+  switch (channel) {
+    case 'whatsapp': {
+      const digits = userId.replace(/\D/g, '');
+      if (!digits) return userId;
+      if (digits.startsWith('549')) return `+54 9 ${digits.slice(3)}`;
+      if (digits.startsWith('54')) return `+54 ${digits.slice(2)}`;
+      return `+${digits}`;
+    }
+    case 'telegram':
+      return `Chat ${userId}`;
+    default:
+      return userId;
+  }
+}
+
+const DATA_SOURCE_LABELS: Record<string, string> = {
+  measured: 'Medido',
+  synthetic: 'Sintético',
+  e4_manual: 'Carga manual',
+};
+
+/** Origen del dato (CHECK de `data_source` en la BD) en palabras del cliente. */
+export function dataSourceLabel(value: string | null | undefined): string {
+  if (!value) return '—';
+  return DATA_SOURCE_LABELS[value] ?? value;
 }

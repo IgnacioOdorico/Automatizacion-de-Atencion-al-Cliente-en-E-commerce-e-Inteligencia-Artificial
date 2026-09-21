@@ -1287,3 +1287,170 @@ button {
   animation: none;
   box-shadow: none;
 }
+
+/* ============================================================
+   Fase 7 — Datos en pantalla: truncado, tablas y shell responsive
+   ============================================================ */
+
+/* Textos largos: una línea con "…" y el valor completo en el tooltip (title) */
+.table__cell-main,
+.table__cell-sub {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.table__cell-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-width: 340px;
+  white-space: normal;
+}
+
+/* Detalle del pedido: datos originales legibles + JSON crudo plegado */
+.modal__text--flat {
+  margin: 0;
+}
+.raw-json {
+  margin-top: 14px;
+}
+.raw-json summary {
+  width: fit-content;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.raw-json summary:hover {
+  color: var(--text-1);
+}
+.raw-json .json-block {
+  margin-top: 10px;
+}
+
+/* Shell compacto (tablet/móvil): la sidebar pasa a barra superior de íconos */
+@media (max-width: 860px) {
+  .shell {
+    flex-direction: column;
+  }
+  .sidebar {
+    position: sticky;
+    inset: 0 auto auto 0;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar__brand {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+  .brand__name {
+    display: none;
+  }
+  .sidebar__nav {
+    flex: 1;
+    flex-direction: row;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-link {
+    padding: 10px 12px;
+  }
+  .nav-link__label,
+  .btn-logout__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .sidebar__foot {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+  .user-card {
+    display: none;
+  }
+  .btn-logout {
+    width: auto;
+    margin: 0;
+    padding: 10px 12px;
+  }
+  .shell__main {
+    margin-left: 0;
+  }
+  .topbar {
+    display: none;
+  }
+  .shell__content {
+    padding: 20px 16px 40px;
+  }
+  .grid--profile {
+    grid-template-columns: 1fr;
+  }
+  .modal-backdrop {
+    padding: 12px;
+  }
+}
+
+/* Tablas de listado en móvil: cada fila pasa a ser una ficha "etiqueta: valor" */
+@media (max-width: 720px) {
+  .table--stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .table--stack,
+  .table--stack tbody,
+  .table--stack tr,
+  .table--stack td {
+    display: block;
+  }
+  .table--stack tbody tr {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .table--stack tbody tr:last-child {
+    border-bottom: none;
+  }
+  .table--stack tbody td {
+    position: relative;
+    min-height: 26px;
+    padding: 5px 0 5px 104px;
+    border-bottom: none;
+    text-align: left;
+  }
+  .table--stack tbody td::before {
+    content: attr(data-label);
+    position: absolute;
+    top: 7px;
+    left: 0;
+    width: 92px;
+    font-size: 11px;
+    font-weight: 650;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+  }
+  .table--stack .table__cell-main,
+  .table--stack .table__cell-sub {
+    max-width: 100%;
+  }
+  .table--stack .table__num,
+  .table--stack .table__dates {
+    text-align: left;
+    white-space: normal;
+  }
+}

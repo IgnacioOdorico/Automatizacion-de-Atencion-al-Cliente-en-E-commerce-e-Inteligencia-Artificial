@@ -105,7 +105,7 @@ export function CatalogoPage() {
         {(data) => (
           <>
             <div className="table-wrap">
-              <table className="table">
+              <table className="table table--stack">
                 <thead>
                   <tr>
                     <th>Producto</th>
@@ -120,17 +120,21 @@ export function CatalogoPage() {
                     const stock = stockBadge(product);
                     return (
                       <tr key={product.id}>
-                        <td>
-                          <div className="table__cell-main">{product.name}</div>
+                        <td data-label="Producto">
+                          <div className="table__cell-main" title={product.name}>
+                            {product.name}
+                          </div>
                           <div className="table__cell-sub">{product.sku}</div>
                         </td>
-                        <td>{product.category ?? '—'}</td>
-                        <td className="table__num">{formatCurrency(product.price)}</td>
-                        <td className="table__num">
+                        <td data-label="Categoría">{product.category ?? '—'}</td>
+                        <td className="table__num" data-label="Precio">
+                          {formatCurrency(product.price)}
+                        </td>
+                        <td className="table__num" data-label="Stock">
                           {product.stock}
                           <div className="table__cell-sub">mín. {product.stock_min}</div>
                         </td>
-                        <td>
+                        <td data-label="Estado">
                           <Badge tone={stock.tone}>{stock.label}</Badge>
                         </td>
                       </tr>

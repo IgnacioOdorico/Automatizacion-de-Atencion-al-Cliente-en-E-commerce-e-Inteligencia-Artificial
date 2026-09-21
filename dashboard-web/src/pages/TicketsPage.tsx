@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Select, type SelectOption } from '@/components/ui/Select';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import { TICKET_STATUSES, priorityMeta, ticketStatusMeta } from '@/lib/domain';
-import { CHANNEL_LABELS, formatDateTime } from '@/lib/format';
+import { CHANNEL_LABELS, formatContact, formatDateTime } from '@/lib/format';
 
 const STATUS_OPTIONS: SelectOption[] = [
   { value: '', label: 'Todos los estados' },
@@ -86,7 +86,7 @@ export function TicketsPage() {
         {(data) => (
           <>
             <div className="table-wrap">
-              <table className="table">
+              <table className="table table--stack">
                 <thead>
                   <tr>
                     <th>Asunto</th>
@@ -103,25 +103,36 @@ export function TicketsPage() {
                     const priority = priorityMeta(ticket.priority);
                     return (
                       <tr key={ticket.id}>
-                        <td>
-                          <div className="table__cell-main">{ticket.subject ?? '—'}</div>
+                        <td data-label="Asunto">
+                          <div
+                            className="table__cell-main table__cell-clamp"
+                            title={ticket.subject ?? undefined}
+                          >
+                            {ticket.subject ?? '—'}
+                          </div>
                           {ticket.user_id && (
-                            <div className="table__cell-sub">{ticket.user_id}</div>
+                            <div className="table__cell-sub">
+                              {formatContact(ticket.channel, ticket.user_id)}
+                            </div>
                           )}
                         </td>
-                        <td>{CHANNEL_LABELS[ticket.channel] ?? ticket.channel}</td>
-                        <td>
+                        <td data-label="Canal">
+                          {CHANNEL_LABELS[ticket.channel] ?? ticket.channel}
+                        </td>
+                        <td data-label="Prioridad">
                           <Badge tone={priority.tone}>{priority.label}</Badge>
                         </td>
-                        <td>
+                        <td data-label="Estado">
                           <Badge tone={status.tone}>{status.label}</Badge>
                         </td>
-                        <td className="table__dates">{formatDateTime(ticket.created_at)}</td>
-                        <td className="table__dates">
+                        <td className="table__dates" data-label="Creado">
+                          {formatDateTime(ticket.created_at)}
+                        </td>
+                        <td className="table__dates" data-label="Resuelto">
                           {ticket.resolved_at ? (
                             formatDateTime(ticket.resolved_at)
                           ) : ticket.status === 'resolved' ? (
-                            <span className="table__cell-sub">Cerrado sin fecha registrada</span>
+                            <span className="table__cell-sub">Sin fecha registrada</span>
                           ) : (
                             '—'
                           )}

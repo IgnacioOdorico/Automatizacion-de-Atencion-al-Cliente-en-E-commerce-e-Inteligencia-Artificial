@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/Badge';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Spinner } from '@/components/ui/Spinner';
 import { orderStatusMeta } from '@/lib/domain';
-import { formatCurrency, formatDateTime } from '@/lib/format';
+import { dataSourceLabel, formatCurrency, formatDateTime } from '@/lib/format';
+import { describePayload, orderItemProduct } from '@/lib/orderDetail';
 
 interface OrderDetailModalProps {
   orderId: number | null;
@@ -22,9 +23,37 @@ function DlItem({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+/** Datos con que entró el pedido: campos legibles y, aparte, el JSON crudo. */
+function PayloadView({ raw }: { raw: unknown }) {
+  const view = describePayload(raw);
+
+  switch (view.kind) {
+    case 'empty':
+      return <p className="modal__muted">No se guardaron los datos originales de este pedido.</p>;
+    case 'text':
+      return <p className="modal__text modal__text--flat">{view.text}</p>;
+    case 'json':
+      return <pre className="json-block">{view.json}</pre>;
+    default:
+      return (
+        <>
+          <dl className="dl dl--compact">
+            {view.fields.map((field) => (
+              <DlItem key={field.key} label={field.label} value={field.value} />
+            ))}
+          </dl>
+          <details className="raw-json">
+            <summary>Ver JSON completo</summary>
+            <pre className="json-block">{view.json}</pre>
+          </details>
+        </>
+      );
+  }
+}
+
 /**
- * Detalle de pedido (GET /orders/{id}): datos completos + order_items + el
- * raw_payload JSONB original del webhook, renderizado legible.
+ * Detalle de pedido (GET /orders/{id}): datos completos + order_items + los
+ * datos originales del pedido (raw_payload JSONB del webhook) en campos legibles.
  */
 export function OrderDetailModal({ orderId, onClose }: OrderDetailModalProps) {
   const { data, isPending, isError, error, refetch, isFetching } = useQuery({
@@ -86,12 +115,7 @@ export function OrderDetailModal({ orderId, onClose }: OrderDetailModalProps) {
                 <DlItem label="SKU" value={data.product_sku} />
                 <DlItem label="Cantidad" value={data.quantity} />
                 <DlItem label="Total" value={formatCurrency(data.total_amount)} />
-                <DlItem
-                  label="Fuente"
-                  value={
-                    data.data_source === 'measured' ? 'Medido (flujos)' : (data.data_source ?? '—')
-                  }
-                />
+                <DlItem label="Origen del dato" value={dataSourceLabel(data.data_source)} />
                 <DlItem label="Recibido" value={formatDateTime(data.received_at)} />
                 <DlItem label="Procesado" value={formatDateTime(data.processed_at)} />
                 <DlItem label="Notificado" value={formatDateTime(data.notified_at)} />
@@ -104,7 +128,6 @@ export function OrderDetailModal({ orderId, onClose }: OrderDetailModalProps) {
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>#</th>
                           <th>Producto</th>
                           <th className="table__num">Cantidad</th>
                           <th className="table__num">P. unitario</th>
@@ -114,8 +137,7 @@ export function OrderDetailModal({ orderId, onClose }: OrderDetailModalProps) {
                       <tbody>
                         {data.order_items.map((item) => (
                           <tr key={item.id}>
-                            <td>{item.id}</td>
-                            <td>{item.product_id}</td>
+                            <td>{orderItemProduct(item, data.order_items.length, data)}</td>
                             <td className="table__num">{item.quantity}</td>
                             <td className="table__num">{formatCurrency(item.unit_price)}</td>
                             <td className="table__num">{formatCurrency(item.subtotal)}</td>
@@ -128,14 +150,8 @@ export function OrderDetailModal({ orderId, onClose }: OrderDetailModalProps) {
               )}
 
               <div className="modal__section">
-                <h4>Payload original del webhook</h4>
-                {data.raw_payload == null ? (
-                  <p className="modal__muted">
-                    El payload original no fue registrado para esta orden.
-                  </p>
-                ) : (
-                  <pre className="json-block">{JSON.stringify(data.raw_payload, null, 2)}</pre>
-                )}
+                <h4>Datos originales del pedido</h4>
+                <PayloadView raw={data.raw_payload} />
               </div>
             </>
           )}

@@ -37,10 +37,11 @@ export function Shell() {
             <NavLink
               key={item.path}
               to={item.path}
+              title={item.label}
               className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
             >
               <item.icon aria-hidden="true" />
-              {item.label}
+              <span className="nav-link__label">{item.label}</span>
             </NavLink>
           ))}
         </nav>
@@ -64,9 +65,9 @@ export function Shell() {
               )}
             </div>
           </div>
-          <button type="button" className="btn-logout" onClick={logout}>
+          <button type="button" className="btn-logout" onClick={logout} title="Cerrar sesión">
             <LogoutIcon aria-hidden="true" />
-            Cerrar sesión
+            <span className="btn-logout__label">Cerrar sesión</span>
           </button>
         </div>
       </aside>
