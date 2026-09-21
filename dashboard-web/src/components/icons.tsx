@@ -92,6 +92,20 @@ export const MessengerIcon = (props: IconProps) => (
   </svg>
 );
 
+export const SendIcon = (props: IconProps) => (
+  <svg {...base(props)}>
+    <path d="M21 3 10.5 13.5" />
+    <path d="M21 3l-6.5 18-4-7.5L3 9.5z" />
+  </svg>
+);
+
+export const MailIcon = (props: IconProps) => (
+  <svg {...base(props)}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+  </svg>
+);
+
 export const RefreshIcon = (props: IconProps) => (
   <svg {...base(props)}>
     <path d="M3 12a9 9 0 0 1 15.4-6.4" />

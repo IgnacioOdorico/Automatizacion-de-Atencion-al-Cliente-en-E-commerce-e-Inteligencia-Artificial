@@ -1,0 +1,38 @@
+# ODD — Dashboard cliente, Fase 6: Conexiones (frontend)
+
+**Rama:** `feature/dashboard-cliente` · **Spec fuente:** `SPEC_DASHBOARD_CLIENTE.md` §4/§8 y `openspec/changes/dashboard-cliente/tasks.md` §7
+**TDD:** activo (Strict TDD Mode de la config del usuario) · **Runner:** `npm test` (vitest run) en `dashboard-web/`
+**Chequeos:** `npm test` + `npm run build` (tsc --noEmit + vite build) en `dashboard-web/`
+**Estrategia de entrega:** `ask-on-risk` · forecast ≈ 450–600 líneas de código creado (revisar al cerrar)
+
+## Objetivo
+Reemplazar el placeholder de `ConexionesPage` por la UI real de los tres canales (WhatsApp, Telegram, Gmail) contra los endpoints de la Fase 3, que ya existen en el backend.
+
+## Alcance autorizado
+Solo `dashboard-web/` (páginas, componentes, `api/endpoints.ts`, `types/api.ts`, `lib/*`, estilos, tests) y el tildado de `openspec/.../tasks.md`. **No se toca** backend, workflows de n8n ni el schema salvo bug confirmado (se reporta antes).
+
+## Tareas
+- [ ] T1 (7.1) Página Conexiones: cards por canal desde `GET /connections`, mapeo BD `email` → etiqueta "Gmail", estado y `external_reference`
+- [ ] T2 (7.2) Telegram: "Conectar" → `POST /connections/telegram/start` → código de 6 dígitos + instructivo + polling de estado hasta `connected`
+- [ ] T3 (7.3) Gmail: "Conectar" → `GET /connections/gmail/oauth-url` → redirect a Google → vuelta al front (`?gmail=connected`) con el email autorizado
+- [ ] T4 (7.4) WhatsApp: "Solicitar aprobación" con número E.164 → `POST /connections/whatsapp/request-approval` → estado `pending` con mensaje "Meta aprueba en 1-3 días hábiles"; la cuenta seed `connected` se ve como aprobada
+- [ ] T5 (7.5) Desconexión por card: confirmación + `DELETE /connections/{channel}`
+- [ ] T6 Corregir `openspec/.../tasks.md`: tildar sección 6 (Fase 5, ya implementada) y 7 según se cierre
+
+## Ruta por tarea
+Todas: **delegated direct**, un único writer (dispara el trigger de escritura: 2+ archivos no triviales y lectura de preparación).
+
+## Criterios de aceptación
+- Los tres canales se ven con su estado real; `email` se muestra como "Gmail".
+- Telegram llega a `connected` sin recargar la página.
+- Ningún flujo falla en silencio: errores del server (401/400/503/502) se muestran en pantalla.
+- `npm test` y `npm run build` en verde.
+
+## Progreso / Evidencia
+Línea base: `npm test` (dashboard-web): 5 archivos, 36 tests en verde antes de empezar.
+Hallazgo verificado: el backend redirige el callback de Gmail a `{DASHBOARD_FRONTEND_URL}/connections?gmail=connected` (connections.py:219-221) pero la ruta del front es `/conexiones` (App.tsx, nav.tsx); sin alias, el catch-all `*` manda a `/dashboard` y se pierde el query. Se resuelve en el front (T3), no se toca el backend.
+
+- **T1** — `npx vitest run src/__tests__/connections.test.ts` RED (falla la resolución de `@/lib/connections`, módulo inexistente) -> GREEN 12/12 tras implementar `buildChannelCards`/`channelActions`. `npm test`: 6 archivos, 48 tests OK. `npm run build`: OK. Commit: _(se completa en el commit siguiente)_.
+
+## Próximo paso
+Delegar el writer.

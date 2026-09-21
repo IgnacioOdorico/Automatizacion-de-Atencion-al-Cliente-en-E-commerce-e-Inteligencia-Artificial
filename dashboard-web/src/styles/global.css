@@ -1020,3 +1020,90 @@ button {
     align-items: flex-start;
   }
 }
+/* ============================================================
+   Fase 6 — Conexiones
+   ============================================================ */
+.conn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.conn-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  transition: border-color 0.2s ease;
+}
+.conn-card[data-status='connected'] {
+  border-color: rgba(74, 222, 128, 0.22);
+}
+.conn-card[data-status='pending'] {
+  border-color: rgba(251, 191, 36, 0.24);
+}
+.conn-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.conn-card__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 11px;
+  background: var(--brand-soft);
+  color: #a5b4fc;
+}
+.conn-card__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.conn-card__head .badge {
+  margin-left: auto;
+}
+.conn-card__desc {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.conn-card__ref {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-2);
+}
+.conn-card__ref dt {
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.conn-card__ref dd {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-1);
+  overflow-wrap: anywhere;
+}
+.conn-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 860px) {
+  .conn-grid {
+    grid-template-columns: 1fr;
+  }
+}
