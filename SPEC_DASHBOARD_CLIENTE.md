@@ -46,6 +46,7 @@ Páginas necesarias:
 | **Catálogo** | Productos que el bot conoce (para justificar de dónde sale la data que usa el chatbot) | Tabla `products` |
 | **Conexiones** | Estado de WhatsApp, Telegram y Gmail — conectar/desconectar cada canal | Tabla nueva `channel_connections` |
 | **Perfil** | Datos de la cuenta/empresa | `client_accounts` |
+| **Monitoreo** | Todo lo que hace el bot, al pie de la letra: feed en vivo de eventos (pedidos, mensajes, respuestas, tickets, alertas de stock), conversaciones por canal y usuario, y el workflow de n8n dibujado con la ejecución nodo por nodo (solo lectura) | `orders`, `interactions`, `tickets`, `stock_alerts` + tablas internas de n8n (`workflow_entity`, `execution_entity`, `execution_data`). Contrato en `docs/API_MONITOREO.md` |
 
 ---
 
@@ -128,7 +129,18 @@ GET    /connections/gmail/oauth-url
 GET    /connections/gmail/callback
 POST   /connections/whatsapp/request-approval
 DELETE /connections/{channel}          → desconectar
+
+GET    /monitoring/summary                       → contadores del bot, pedidos, tickets y ejecuciones (ventana en horas)
+GET    /monitoring/events                        → feed unificado de eventos (cursor keyset, `since` para polling)
+GET    /monitoring/conversations                 → hilos por canal + usuario
+GET    /monitoring/conversations/thread          → mensajes de un hilo (`channel` y `user_id` por query)
+GET    /monitoring/workflows                     → workflows de n8n con contadores de 24 h
+GET    /monitoring/workflows/{id}/graph          → grafo sanitizado (nodos, aristas, posiciones)
+GET    /monitoring/executions                    → ejecuciones de n8n (cursor por id)
+GET    /monitoring/executions/{id}               → traza nodo por nodo (redactada y acotada)
 ```
+
+Los endpoints `/monitoring/*` son de solo lectura y su contrato exacto (campos, tipos, ejemplos) está en `docs/API_MONITOREO.md`.
 
 Todos los endpoints (salvo `/auth/*` y `/connections/telegram/confirm`) requieren JWT válido y devuelven solo datos de la `client_account_id` del token — **nunca cruzar datos entre cuentas**.
 
@@ -219,6 +231,8 @@ Consecuencia de seguridad: con el registro abierto, cualquier persona que cree u
 - `GET /connections/gmail/callback` no responde JSON: siempre redirige (307) al front, a `{DASHBOARD_FRONTEND_URL}/conexiones?gmail=connected` o `?gmail=error&reason=<código>`, con un catálogo cerrado de motivos (nunca viajan detalles ni tokens).
 - `GET /connections` devuelve `{items: [...]}` con la etiqueta de cada canal; `/me` incluye las conexiones; `/dashboard/summary` acepta `?data_source=` (`measured` para las métricas de la tesis). Paginado fijo de 20.
 - **`POST /products` y `PATCH /products/{id}` NO están implementados**: el spec los marca como opcionales ("si da el tiempo") y la tarea 6.6 quedó sin hacer. El catálogo es de solo lectura.
+
+- **Monitoreo (`/monitoring/*`, solo lectura)**: no figuraba en el spec original. El feed y las conversaciones derivan de `orders`, `interactions`, `tickets` y `stock_alerts`. La sección de workflow **lee las tablas internas de n8n 2.12.2** (`workflow_entity`, `execution_entity`, `execution_data`) que viven en la misma PostgreSQL; es un acoplamiento a un esquema que n8n no publica como API estable (el `data` de `execution_data` está en formato `flatted`, que la API decodifica con un parser propio, con tope de 2 MB). Por eso **degrada**: si las tablas no existen o el usuario no puede leerlas, `/monitoring/workflows` y `/monitoring/executions` responden `available: false` con lista vacía (nunca 500) y `/monitoring/summary` informa `executions.available: false`. El grafo se arma con una lista blanca (nombre, tipo, posición y conexiones): **nunca** salen `parameters`, `credentials`, `webhookId` ni notas, y la vista previa de la salida de cada nodo se acota a ~2 KB y se redacta por clave (`authorization`, `token`, `secret`, `password`, `cookie`, ...) y por valor (Bearer/JWT, `sk-`, tokens de bot, hex y base64 largos). Como el resto de `orders`/`tickets`, el feed no está aislado por cuenta (§10.2). Para leerlo, la API usa el mismo usuario de la BD que n8n.
 
 ### 10.4 Conexión de canales
 
