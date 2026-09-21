@@ -7,6 +7,17 @@ from app.db import fetch_all, fetch_one
 
 router = APIRouter(prefix="/products", tags=["products"])
 
+
+LIKE_ESCAPE = "!"
+
+
+def _escape_like(term: str) -> str:
+    """Escapa el carácter de escape, `%` y `_` para que ILIKE busque texto literal."""
+    for char in (LIKE_ESCAPE, "%", "_"):
+        term = term.replace(char, LIKE_ESCAPE + char)
+    return term
+
+
 PRODUCT_COLUMNS = f"""
     id, sku, name, price, stock, stock_min, category,
     {iso('created_at')} AS created_at
@@ -22,8 +33,11 @@ def list_products(
     params = {"limit": PAGE_SIZE, "offset": (page - 1) * PAGE_SIZE}
     count_params: dict = {}
     if search:
-        where = "WHERE name ILIKE :pattern OR sku ILIKE :pattern"
-        pattern = f"%{search}%"
+        where = (
+            f"WHERE name ILIKE :pattern ESCAPE '{LIKE_ESCAPE}' "
+            f"OR sku ILIKE :pattern ESCAPE '{LIKE_ESCAPE}'"
+        )
+        pattern = f"%{_escape_like(search)}%"
         params["pattern"] = pattern
         count_params["pattern"] = pattern
     else:

@@ -44,3 +44,12 @@ def test_products_search_without_matches(client, auth_headers):
     assert body["total"] == 0
     assert body["items"] == []
     assert body["total_pages"] == 0
+
+
+def test_products_search_treats_like_wildcards_as_literal_text(client, auth_headers):
+    """`%` y `_` que tipea el usuario no deben actuar como comodines de ILIKE."""
+    for term in ("%25", "_", "%25%25", "PROD_00"):
+        body = client.get(f"/products?search={term}", headers=auth_headers).json()
+        assert body["total"] == 0, term
+        assert body["items"] == [], term
+
