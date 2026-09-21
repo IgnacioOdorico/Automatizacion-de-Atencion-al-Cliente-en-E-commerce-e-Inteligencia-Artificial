@@ -519,7 +519,7 @@ Cuenta demo del seed: `ventas@tecnoshopmza.com.ar` / `Demo2026!` (solo para la d
 | Variable | Para qué |
 |---|---|
 | `DASHBOARD_JWT_SECRET`, `DASHBOARD_N8N_SECRET`, `DASHBOARD_ENC_KEY` | **Obligatorias.** Firma de JWT, secreto compartido con n8n (header `X-N8N-SECRET`) y clave Fernet que cifra las credenciales de canales. |
-| `DASHBOARD_BOT_TOKEN_VINCULO` | Token del bot de Telegram dedicado al vínculo (lo lee n8n). |
+| `NGROK_AUTHTOKEN`, `NGROK_DOMAIN`, `WEBHOOK_URL`, `N8N_PROXY_HOPS` | Solo con el túnel público para Telegram (`--profile tunnel`): ver [docs/TUNEL_TELEGRAM.md](docs/TUNEL_TELEGRAM.md). |
 | `DASHBOARD_GOOGLE_CLIENT_ID`, `DASHBOARD_GOOGLE_CLIENT_SECRET`, `DASHBOARD_GOOGLE_REDIRECT_URI` | Conexión de Gmail (OAuth2). |
 | `DASHBOARD_FRONTEND_URL` | Adonde vuelve el navegador tras Google. Default `http://localhost:8080`; con Vite, `http://localhost:5173`. |
 | `CORS_ORIGINS`, `DASHBOARD_TRUSTED_PROXIES` | Orígenes permitidos (nunca `*`) y proxy en el que se confía para la IP del cliente. |
@@ -535,12 +535,12 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 ### Credenciales que te tocan a vos
 
 - **Gmail**: en Google Cloud Console creá un cliente OAuth (Web) en modo testing con tu cuenta como usuario de prueba, y cargá como URI de redirección **exactamente** el valor de `DASHBOARD_GOOGLE_REDIRECT_URI` (`http://localhost:8000/connections/gmail/callback`).
-- **Telegram**: creá un bot nuevo con @BotFather (no reutilices el del Flujo 2), poné su token en `DASHBOARD_BOT_TOKEN_VINCULO`, importá `workflows/Flujo 3 — Telegram Vínculo de Cuenta.json`, cargale la credencial y activalo.
+- **Telegram**: creá un bot nuevo con @BotFather (no reutilices el del Flujo 2), importá `workflows/Flujo 3 — Telegram Vínculo de Cuenta.json`, cargale en n8n las credenciales *Telegram API* (token del bot) y *Header Auth* (`X-N8N-SECRET` = `DASHBOARD_N8N_SECRET`) y activalo. Necesita URL pública: `docker compose --profile tunnel up -d` (ngrok + gateway con allowlist). Paso a paso en **[docs/TUNEL_TELEGRAM.md](docs/TUNEL_TELEGRAM.md)**, que incluye Google Cloud para Gmail.
 
 ### Límites honestos
 
 - Gmail y Telegram **reales** requieren esas credenciales; sin ellas la pantalla de Conexiones responde con un error controlado (Gmail) o el código nunca se confirma (Telegram).
-- El webhook de Telegram necesita una **URL pública HTTPS** (`WEBHOOK_URL`, por ejemplo con ngrok).
+- El webhook de Telegram necesita una **URL pública HTTPS** (`WEBHOOK_URL`): el perfil `tunnel` del compose la da con ngrok y solo expone `POST /webhook/<uuid>/webhook` (guía: [docs/TUNEL_TELEGRAM.md](docs/TUNEL_TELEGRAM.md)).
 - WhatsApp queda en `pending` por diseño ("Meta aprueba en 1-3 días hábiles"); no llama a Meta.
 - Pedidos, tickets y catálogo son **globales**: todas las cuentas ven los mismos datos (un comercio por instalación). Detalle y demás desvíos: `SPEC_DASHBOARD_CLIENTE.md` §10.
 - Para que el Flujo 1 real escriba órdenes, la instancia de n8n necesita sus credenciales de Postgres (`postgres:5432`) y SMTP (`mailpit:1025`).
@@ -571,12 +571,14 @@ Tests: `cd dashboard-api; .venv\Scripts\python -m pytest -q` (los de integració
 │
 ├── dashboard-api/                  ← Backend FastAPI del portal (pytest)
 ├── dashboard-web/                  ← Frontend React + Vite servido por nginx (vitest)
+├── webhook-gateway/                ← nginx con allowlist delante de n8n (perfil "tunnel", ngrok)
 ├── SPEC_DASHBOARD_CLIENTE.md       ← Spec del dashboard; §10 lista los desvíos reales
 │
 ├── docs/
 │   ├── TESIS_FINAL_UTN_v3.pdf      ← Documento final de tesis
 │   ├── SPEC_FLUJO1_PIPELINE_ORDENES.md
 │   ├── SPEC_FLUJO2_CHATBOT_OMNICANAL.md
+│   ├── TUNEL_TELEGRAM.md           ← Túnel ngrok, vínculo de Telegram y OAuth de Gmail (paso a paso)
 │   └── PROMPT_IA_CHATBOT.md        ← Prompt de GPT-4o-mini documentado
 │
 └── imagenes/                       ← Capturas de pantalla del sistema

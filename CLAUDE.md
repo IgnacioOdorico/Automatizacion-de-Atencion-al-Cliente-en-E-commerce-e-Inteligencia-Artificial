@@ -8,7 +8,7 @@ Trabajo Final de Grado (UTN FRM 2026) — sistema de automatización del ciclo p
 
 - **Workflows n8n** (`workflows/*.json`) — la lógica real, se importa desde la UI de n8n.
 - **Schema SQL** (`init_simple.sql`, `seed_expand.sql`) — tablas, vistas de métricas y datos seed.
-- **Infra** (`docker-compose.yml`) — levanta 6 servicios: n8n, PostgreSQL, Mailpit, Grafana, `dashboard-api` y `dashboard-web`.
+- **Infra** (`docker-compose.yml`) — levanta 6 servicios: n8n, PostgreSQL, Mailpit, Grafana, `dashboard-api` y `dashboard-web`. Con `--profile tunnel` suma `webhook-gateway` (nginx, allowlist solo `POST /webhook/<uuid>/webhook`, config en `webhook-gateway/`) y `ngrok` para la URL pública de Telegram: `docs/TUNEL_TELEGRAM.md`. El Flujo 3 usa credenciales de n8n, no `$env` (bloqueado en n8n 2.x).
 - **Dashboard del cliente** — `dashboard-api/` (FastAPI, pytest), `dashboard-web/` (React + Vite + TS, vitest), `migracion_dashboard_cliente.sql` y `seed_dashboard.sql` (tablas y cuenta demo), `demo_en_vivo.ps1` (dispara una orden en vivo), `SPEC_DASHBOARD_CLIENTE.md` (spec; su §10 lista los desvíos reales) y `openspec/` (propuesta, diseño y tareas).
 - **Scripts de operación** (`backup.ps1`, `restore.ps1`) — PowerShell.
 - **Docs** (`docs/`) — specs técnicas y la tesis.
