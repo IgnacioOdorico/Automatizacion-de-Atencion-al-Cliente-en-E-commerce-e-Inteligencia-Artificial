@@ -18,6 +18,7 @@ interface WhatsAppCardProps {
   model: ChannelCardModel;
   /** Refresca GET /connections y /me tras una solicitud. */
   onChanged: () => void;
+  onDisconnect: () => void;
 }
 
 /**
@@ -25,7 +26,7 @@ interface WhatsAppCardProps {
  * "Solicitar aprobación" deja el canal en `pending` — el estado honesto de
  * producción, no una conexión simulada. La cuenta seed llega ya `connected`.
  */
-export function WhatsAppCard({ model, onChanged }: WhatsAppCardProps) {
+export function WhatsAppCard({ model, onChanged, onDisconnect }: WhatsAppCardProps) {
   const [formOpen, setFormOpen] = useState(false);
   const [phone, setPhone] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -59,6 +60,7 @@ export function WhatsAppCard({ model, onChanged }: WhatsAppCardProps) {
   return (
     <ChannelCard
       model={model}
+      onDisconnect={onDisconnect}
       actions={
         canConnect && !formOpen ? (
           <Button onClick={() => setFormOpen(true)}>Solicitar aprobación</Button>

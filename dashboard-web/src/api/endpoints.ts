@@ -2,7 +2,9 @@ import { apiRequest } from '@/api/client';
 import {
   Account,
   AuthTokens,
+  Channel,
   Connection,
+  DisconnectResponse,
   GmailOAuthUrlResponse,
   Order,
   OrderDetail,
@@ -76,6 +78,9 @@ export const connectionsApi = {
   },
   gmailOAuthUrl(): Promise<GmailOAuthUrlResponse> {
     return apiRequest<GmailOAuthUrlResponse>('/connections/gmail/oauth-url');
+  },
+  disconnect(channel: Channel): Promise<DisconnectResponse> {
+    return apiRequest<DisconnectResponse>(`/connections/${channel}`, { method: 'DELETE' });
   },
   whatsappRequestApproval(phone: string): Promise<WhatsAppApprovalResponse> {
     return apiRequest<WhatsAppApprovalResponse>('/connections/whatsapp/request-approval', {

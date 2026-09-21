@@ -18,6 +18,7 @@ interface GmailCardProps {
   /** Aviso al volver de Google (email autorizado o fallo). */
   notice: ConnectionNotice | null;
   onNoticeDismiss: () => void;
+  onDisconnect: () => void;
 }
 
 /**
@@ -25,7 +26,7 @@ interface GmailCardProps {
  * Al terminar, el backend devuelve al usuario a /connections?gmail=connected
  * (el alias de App.tsx lo lleva a /conexiones).
  */
-export function GmailCard({ model, notice, onNoticeDismiss }: GmailCardProps) {
+export function GmailCard({ model, notice, onNoticeDismiss, onDisconnect }: GmailCardProps) {
   const [redirecting, setRedirecting] = useState(false);
   const [urlError, setUrlError] = useState<string | null>(null);
   const { canConnect } = channelActions(model.channel, model.status);
@@ -53,6 +54,10 @@ export function GmailCard({ model, notice, onNoticeDismiss }: GmailCardProps) {
   return (
     <ChannelCard
       model={model}
+      onDisconnect={() => {
+        onNoticeDismiss();
+        onDisconnect();
+      }}
       actions={
         canConnect ? (
           <Button onClick={connect} loading={oauth.isPending || redirecting}>

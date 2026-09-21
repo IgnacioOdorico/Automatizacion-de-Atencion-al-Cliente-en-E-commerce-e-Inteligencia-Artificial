@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { dashboardApi } from '@/api/endpoints';
+import { connectionsApi, dashboardApi } from '@/api/endpoints';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { GmailCard } from '@/components/connections/GmailCard';
 import { TelegramCard } from '@/components/connections/TelegramCard';
 import { WhatsAppCard } from '@/components/connections/WhatsAppCard';
@@ -11,7 +12,12 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useGmailReturn } from '@/hooks/useGmailReturn';
 import { useTelegramLink } from '@/hooks/useTelegramLink';
-import { buildChannelCards } from '@/lib/connections';
+import {
+  buildChannelCards,
+  connectionActionError,
+  disconnectCopy,
+  type ChannelCardModel,
+} from '@/lib/connections';
 import { friendlyApiError } from '@/lib/messages';
 import { TELEGRAM_POLL_MS } from '@/lib/telegramLink';
 
@@ -36,6 +42,26 @@ export function ConexionesPage() {
     void queryClient.invalidateQueries({ queryKey: ['connections'] });
     void queryClient.invalidateQueries({ queryKey: ['me'] });
   }, [queryClient]);
+
+  // Desconexión: confirmación por card + DELETE /connections/{channel}.
+  const [disconnecting, setDisconnecting] = useState<ChannelCardModel | null>(null);
+  const disconnect = useMutation({
+    mutationFn: connectionsApi.disconnect,
+    onSuccess: (_res, channel) => {
+      if (channel === 'telegram') telegram.dismiss();
+      setDisconnecting(null);
+      refreshConnections();
+    },
+  });
+  const { reset: resetDisconnect } = disconnect;
+  const askDisconnect = (card: ChannelCardModel) => {
+    resetDisconnect();
+    setDisconnecting(card);
+  };
+  const cancelDisconnect = useCallback(() => {
+    setDisconnecting(null);
+    resetDisconnect();
+  }, [resetDisconnect]);
 
   const cards = useMemo(() => buildChannelCards(data?.items), [data]);
   const telegramStatus = cards.find((card) => card.channel === 'telegram')?.status;
@@ -93,7 +119,14 @@ export function ConexionesPage() {
           {cards.map((card) => {
             switch (card.channel) {
               case 'telegram':
-                return <TelegramCard key={card.channel} model={card} link={telegram} />;
+                return (
+                  <TelegramCard
+                    key={card.channel}
+                    model={card}
+                    link={telegram}
+                    onDisconnect={() => askDisconnect(card)}
+                  />
+                );
               case 'email':
                 return (
                   <GmailCard
@@ -101,15 +134,31 @@ export function ConexionesPage() {
                     model={card}
                     notice={gmailReturn.notice}
                     onNoticeDismiss={gmailReturn.dismiss}
+                    onDisconnect={() => askDisconnect(card)}
                   />
                 );
               default:
                 return (
-                  <WhatsAppCard key={card.channel} model={card} onChanged={refreshConnections} />
+                  <WhatsAppCard
+                    key={card.channel}
+                    model={card}
+                    onChanged={refreshConnections}
+                    onDisconnect={() => askDisconnect(card)}
+                  />
                 );
             }
           })}
         </div>
+      )}
+
+      {disconnecting && (
+        <ConfirmDialog
+          {...disconnectCopy(disconnecting)}
+          loading={disconnect.isPending}
+          error={disconnect.isError ? connectionActionError(disconnect.error, 'disconnect') : null}
+          onConfirm={() => disconnect.mutate(disconnecting.channel)}
+          onCancel={cancelDisconnect}
+        />
       )}
     </div>
   );

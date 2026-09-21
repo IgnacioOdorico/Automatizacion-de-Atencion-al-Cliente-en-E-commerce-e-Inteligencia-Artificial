@@ -2,7 +2,8 @@ import type { FC, ReactNode, SVGProps } from 'react';
 
 import { MailIcon, MessengerIcon, SendIcon } from '@/components/icons';
 import { Badge } from '@/components/ui/Badge';
-import type { ChannelCardModel } from '@/lib/connections';
+import { Button } from '@/components/ui/Button';
+import { channelActions, disconnectCopy, type ChannelCardModel } from '@/lib/connections';
 import { formatDateTime } from '@/lib/format';
 import type { Channel } from '@/types/api';
 
@@ -29,13 +30,17 @@ interface ChannelCardProps {
   model: ChannelCardModel;
   /** Contenido propio del canal (código de Telegram, formulario, avisos). */
   children?: ReactNode;
-  /** Botones de la card (conectar / desconectar). */
+  /** Botones de conexión propios del canal. */
   actions?: ReactNode;
+  /** Pide confirmar la desconexión; sin esto la card no ofrece desconectar. */
+  onDisconnect?: () => void;
 }
 
 /** Marco común de las cards de canal: cabecera, estado, referencia y acciones. */
-export function ChannelCard({ model, children, actions }: ChannelCardProps) {
+export function ChannelCard({ model, children, actions, onDisconnect }: ChannelCardProps) {
   const Icon = CHANNEL_ICONS[model.channel];
+  const showDisconnect =
+    onDisconnect !== undefined && channelActions(model.channel, model.status).canDisconnect;
 
   return (
     <article className="card conn-card" data-channel={model.channel} data-status={model.status}>
@@ -66,7 +71,16 @@ export function ChannelCard({ model, children, actions }: ChannelCardProps) {
 
       {children}
 
-      {actions && <div className="conn-card__actions">{actions}</div>}
+      {(actions || showDisconnect) && (
+        <div className="conn-card__actions">
+          {actions}
+          {showDisconnect && (
+            <Button variant="danger" onClick={onDisconnect}>
+              {disconnectCopy(model).triggerLabel}
+            </Button>
+          )}
+        </div>
+      )}
     </article>
   );
 }

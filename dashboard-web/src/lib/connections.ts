@@ -71,13 +71,18 @@ export function channelActions(channel: Channel, status: ConnectionStatus): Chan
   };
 }
 
-export type ConnectionAction = 'telegram-start' | 'gmail-connect' | 'whatsapp-request';
+export type ConnectionAction =
+  | 'telegram-start'
+  | 'gmail-connect'
+  | 'whatsapp-request'
+  | 'disconnect';
 
 const ACTION_FALLBACKS: Record<ConnectionAction, string> = {
   'telegram-start': 'No pudimos generar el código de vinculación. Reintentá en unos segundos.',
   'gmail-connect': 'No pudimos iniciar la conexión con Gmail. Reintentá en unos segundos.',
   'whatsapp-request':
     'No pudimos enviar la solicitud de aprobación. Reintentá en unos segundos.',
+  disconnect: 'No pudimos desconectar el canal. Reintentá en unos segundos.',
 };
 
 /**
@@ -190,4 +195,35 @@ export function gmailReturnNotice(
 export function connectionsAliasPath(search: string): string {
   const query = search.replace(/^\?/, '');
   return query ? `/conexiones?${query}` : '/conexiones';
+}
+
+export interface DisconnectCopy {
+  /** Texto del botón de la card. */
+  triggerLabel: string;
+  title: string;
+  message: string;
+  confirmLabel: string;
+}
+
+/**
+ * Textos de la confirmación de desconexión. En WhatsApp `pending` no hay nada
+ * conectado todavía: lo que se hace es cancelar la solicitud a Meta.
+ */
+export function disconnectCopy(card: ChannelCardModel): DisconnectCopy {
+  const ref = card.externalReference ? ` (${card.externalReference})` : '';
+
+  if (card.channel === 'whatsapp' && card.status === 'pending') {
+    return {
+      triggerLabel: 'Cancelar solicitud',
+      title: 'Cancelar solicitud de WhatsApp',
+      message: `Se cancela la solicitud de aprobación del número${ref}. Podés enviar una nueva cuando quieras.`,
+      confirmLabel: 'Cancelar solicitud',
+    };
+  }
+  return {
+    triggerLabel: 'Desconectar',
+    title: `Desconectar ${card.label}`,
+    message: `Vas a desconectar ${card.label}${ref}. Se borran la referencia y las credenciales guardadas; podés volver a conectarlo cuando quieras.`,
+    confirmLabel: 'Desconectar',
+  };
 }

@@ -11,6 +11,7 @@ import { formatCountdown } from '@/lib/telegramLink';
 interface TelegramCardProps {
   model: ChannelCardModel;
   link: TelegramLink;
+  onDisconnect: () => void;
 }
 
 function CodePanel({ link }: { link: TelegramLink }) {
@@ -62,13 +63,14 @@ function CodePanel({ link }: { link: TelegramLink }) {
   );
 }
 
-export function TelegramCard({ model, link }: TelegramCardProps) {
+export function TelegramCard({ model, link, onDisconnect }: TelegramCardProps) {
   const { canConnect } = channelActions(model.channel, model.status);
   const showLinkedNotice = link.linked && model.status === 'connected';
 
   return (
     <ChannelCard
       model={model}
+      onDisconnect={onDisconnect}
       actions={
         link.hasCode ? (
           <>

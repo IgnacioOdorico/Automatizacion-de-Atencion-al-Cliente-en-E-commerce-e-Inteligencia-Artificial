@@ -6,6 +6,7 @@ import {
   channelActions,
   connectionActionError,
   connectionsAliasPath,
+  disconnectCopy,
   gmailReturnNotice,
   isGoogleConsentUrl,
   parseGmailReturn,
@@ -294,5 +295,44 @@ describe('whatsappStatusNote', () => {
 
   it('desconectado: sin nota', () => {
     expect(whatsappStatusNote('disconnected')).toBeNull();
+  });
+});
+
+describe('connectionActionError — desconexión', () => {
+  it('sin detalle usa el mensaje propio de la desconexión', () => {
+    const msg = connectionActionError(new ApiError(500, '500 Internal Server Error'), 'disconnect');
+    expect(msg).toBe('No pudimos desconectar el canal. Reintentá en unos segundos.');
+  });
+});
+
+describe('disconnectCopy', () => {
+  const cards = buildChannelCards([
+    conn({ channel: 'telegram', status: 'connected', external_reference: '998877' }),
+    conn({ channel: 'whatsapp', status: 'pending', external_reference: '+5492615551234' }),
+    conn({ channel: 'email', status: 'error' }),
+  ]);
+  const [whatsapp, telegram, gmail] = cards;
+
+  it('canal conectado: pide confirmar y nombra el canal y su referencia', () => {
+    const copy = disconnectCopy(telegram);
+    expect(copy.title).toBe('Desconectar Telegram');
+    expect(copy.message).toContain('998877');
+    expect(copy.confirmLabel).toBe('Desconectar');
+    expect(copy.triggerLabel).toBe('Desconectar');
+  });
+
+  it('WhatsApp pendiente: es cancelar la solicitud, no desconectar', () => {
+    const copy = disconnectCopy(whatsapp);
+    expect(copy.title).toBe('Cancelar solicitud de WhatsApp');
+    expect(copy.message).toContain('+5492615551234');
+    expect(copy.confirmLabel).toBe('Cancelar solicitud');
+    expect(copy.triggerLabel).toBe('Cancelar solicitud');
+  });
+
+  it('usa la etiqueta visual "Gmail" para el canal email y tolera la falta de referencia', () => {
+    const copy = disconnectCopy(gmail);
+    expect(copy.title).toBe('Desconectar Gmail');
+    expect(copy.message).not.toContain('null');
+    expect(copy.message).not.toContain('()');
   });
 });

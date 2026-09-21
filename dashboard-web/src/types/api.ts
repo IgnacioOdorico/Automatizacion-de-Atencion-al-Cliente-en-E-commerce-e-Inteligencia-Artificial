@@ -53,6 +53,12 @@ export interface WhatsAppApprovalResponse {
   message: string;
 }
 
+/** DELETE /connections/{channel}. */
+export interface DisconnectResponse {
+  channel: Channel;
+  status: 'disconnected';
+}
+
 export interface Paginated<T> {
   items: T[];
   page: number;

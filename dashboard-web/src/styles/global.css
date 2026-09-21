@@ -1175,3 +1175,21 @@ button {
   flex-direction: column;
   gap: 12px;
 }
+
+/* ---------- Diálogo de confirmación ---------- */
+.modal--sm {
+  max-width: 440px;
+}
+.modal__text {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.modal__body .alert {
+  margin-bottom: 16px;
+}
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
