@@ -1,10 +1,11 @@
+import os
 from datetime import datetime, timedelta, timezone
 
 import pytest
 
 pytestmark = pytest.mark.integration
 
-N8N_SECRET = "test-n8n-secret"
+N8N_SECRET = os.environ["DASHBOARD_N8N_SECRET"]  # lo fija conftest.py
 
 
 def test_start_returns_code_and_expiry(client, auth_headers):

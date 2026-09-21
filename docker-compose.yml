@@ -69,7 +69,8 @@ services:
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:?definir en .env}
       # Secreto compartido con el dashboard-api (header X-N8N-SECRET del
       # workflow de vínculo). Debe ser el MISMO valor que DASHBOARD_N8N_SECRET.
-      - DASHBOARD_N8N_SECRET=${DASHBOARD_N8N_SECRET:-demo-n8n-secret-cambiar}
+      # Sin default: se define en .env (el dashboard-api no arranca sin él).
+      - DASHBOARD_N8N_SECRET=${DASHBOARD_N8N_SECRET:-}
       # Token del bot de Telegram dedicado al vínculo de cuenta (llamado desde
       # el workflow "Flujo 3 — Telegram Vínculo de Cuenta"). Se crea con
       # @BotFather y se referencia en la credencial como {{ $env.DASHBOARD_BOT_TOKEN_VINCULO }}.
@@ -157,7 +158,10 @@ services:
   # Dashboard API — Backend FastAPI del portal del cliente
   # Lee las tablas y vistas de la BD (no las modifica).
   # Acceso: http://localhost:8000 (docs en /docs)
-  # Variables: ver .env.example (DASHBOARD_*); los defaults son de demo.
+  # Variables: ver .env.example (DASHBOARD_*).
+  # FAIL-CLOSED: DASHBOARD_JWT_SECRET, DASHBOARD_ENC_KEY y DASHBOARD_N8N_SECRET no
+  # tienen default. Si faltan en .env (o son débiles/de ejemplo) la API se niega a
+  # arrancar y el contenedor lo dice en sus logs (`docker compose logs dashboard-api`).
   # ----------------------------------------------------------
   dashboard-api:
     build: ./dashboard-api
@@ -167,10 +171,10 @@ services:
       - "8000:8000"
     environment:
       # Dentro de la red Docker el host de Postgres es "postgres", no localhost.
-      - DATABASE_URL=postgresql+psycopg://n8n_user:n8n_pass@postgres:5432/ecommerce_tesis
-      - DASHBOARD_JWT_SECRET=${DASHBOARD_JWT_SECRET:-demo-dashboard-jwt-secret-cambiar}
+      - DATABASE_URL=postgresql+psycopg://n8n_user:${POSTGRES_PASSWORD:-n8n_pass}@postgres:5432/ecommerce_tesis
+      - DASHBOARD_JWT_SECRET=${DASHBOARD_JWT_SECRET:-}
       - DASHBOARD_ENC_KEY=${DASHBOARD_ENC_KEY:-}
-      - DASHBOARD_N8N_SECRET=${DASHBOARD_N8N_SECRET:-demo-n8n-secret-cambiar}
+      - DASHBOARD_N8N_SECRET=${DASHBOARD_N8N_SECRET:-}
       # Google OAuth2 (modo testing) para conectar Gmail. Placeholders: se
       # completan en .env con las credenciales de Google Cloud Console.
       - DASHBOARD_GOOGLE_CLIENT_ID=${DASHBOARD_GOOGLE_CLIENT_ID:-}

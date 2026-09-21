@@ -6,14 +6,19 @@ import pytest
 from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 
+# La API es fail-closed: rechaza secretos vacíos, cortos o de ejemplo (core/config.py).
+# Estos son valores de prueba (>= 32 caracteres, distintos entre sí), no de ningún entorno real.
+TEST_JWT_SECRET = "pytest-jwt-signing-secret-7Qm2Zx9LkP4vB8nR1sT6"
+TEST_N8N_SECRET = "pytest-n8n-shared-secret-3Hc5Yw0DfJ9aE7uG2bK8"
+
 os.environ["DASHBOARD_ENC_KEY"] = os.environ.get(
     "DASHBOARD_ENC_KEY", Fernet.generate_key().decode()
 )
 os.environ["DASHBOARD_JWT_SECRET"] = os.environ.get(
-    "DASHBOARD_JWT_SECRET", "test-jwt-secret"
+    "DASHBOARD_JWT_SECRET", TEST_JWT_SECRET
 )
 os.environ["DASHBOARD_N8N_SECRET"] = os.environ.get(
-    "DASHBOARD_N8N_SECRET", "test-n8n-secret"
+    "DASHBOARD_N8N_SECRET", TEST_N8N_SECRET
 )
 os.environ["DATABASE_URL"] = os.environ.get(
     "DATABASE_URL",

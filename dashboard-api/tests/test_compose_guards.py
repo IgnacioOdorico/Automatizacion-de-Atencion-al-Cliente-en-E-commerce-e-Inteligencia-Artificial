@@ -26,3 +26,26 @@ def test_frontend_url_default_is_whitelisted_in_cors():
     assert "*" not in origins
     assert _default("DASHBOARD_FRONTEND_URL") in origins
     assert "http://localhost:5173" in origins
+
+
+SECRET_VARS = ("DASHBOARD_JWT_SECRET", "DASHBOARD_ENC_KEY", "DASHBOARD_N8N_SECRET")
+
+
+def test_compose_has_no_default_value_for_dashboard_secrets():
+    # Fail-closed: sin valor en .env el contenedor recibe vacío y la API no arranca
+    # (en vez de correr con un secreto de ejemplo publicado en el repo).
+    for var in SECRET_VARS:
+        for match in re.finditer(rf"{var}=\$\{{{var}:-([^}}]*)\}}", COMPOSE):
+            assert match.group(1) == "", f"{var} tiene un default en docker-compose.yml"
+
+
+def test_compose_never_hardcodes_a_secret_literal():
+    for var in SECRET_VARS + ("DASHBOARD_GOOGLE_CLIENT_SECRET", "DASHBOARD_BOT_TOKEN_VINCULO"):
+        for line in COMPOSE.splitlines():
+            if f"{var}=" in line and not line.lstrip().startswith("#"):
+                assert re.search(rf"{var}=\$\{{{var}(:-)?\}}\s*$", line), line.strip()
+
+
+def test_compose_has_no_known_weak_secret_strings():
+    assert "-cambiar" not in COMPOSE
+    assert "demo-dashboard" not in COMPOSE and "demo-n8n" not in COMPOSE
