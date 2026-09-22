@@ -10,6 +10,7 @@ import { MonitoreoConversacionesPage } from '@/pages/MonitoreoConversacionesPage
 import { MonitoreoEnVivoPage } from '@/pages/MonitoreoEnVivoPage';
 import { MonitoreoPage } from '@/pages/MonitoreoPage';
 import { MonitoreoWorkflowPage } from '@/pages/MonitoreoWorkflowPage';
+import { MetricasPage } from '@/pages/MetricasPage';
 import { PedidosPage } from '@/pages/PedidosPage';
 import { PerfilPage } from '@/pages/PerfilPage';
 import { RegistroPage } from '@/pages/RegistroPage';
@@ -48,6 +49,7 @@ export function App() {
             <Route path="conversaciones" element={<MonitoreoConversacionesPage />} />
             <Route path="workflow" element={<MonitoreoWorkflowPage />} />
           </Route>
+          <Route path="/metricas" element={<MetricasPage />} />
           <Route path="/conexiones" element={<ConexionesPage />} />
           <Route path="/perfil" element={<PerfilPage />} />
         </Route>

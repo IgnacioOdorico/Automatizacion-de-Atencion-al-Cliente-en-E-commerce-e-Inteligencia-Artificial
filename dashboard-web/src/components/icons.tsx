@@ -198,6 +198,17 @@ export const ChevronLeftIcon = (props: IconProps) => (
   </svg>
 );
 
+/** Barras + línea: los gráficos de la sección Métricas. */
+export const ChartIcon = (props: IconProps) => (
+  <svg {...base(props)}>
+    <path d="M4 20V10" />
+    <path d="M10 20V4" />
+    <path d="M16 20v-7" />
+    <path d="M4 20h18" />
+    <path d="m4 6 5 4 4-3 5 3" />
+  </svg>
+);
+
 /** Marca "TS" del portal */
 export const BrandMark = ({ size = 34 }: { size?: number }) => (
   <span className="brand__mark" style={{ width: size, height: size }}>

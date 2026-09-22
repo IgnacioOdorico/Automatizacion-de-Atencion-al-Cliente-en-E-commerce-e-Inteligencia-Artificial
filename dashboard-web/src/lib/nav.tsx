@@ -3,6 +3,7 @@ import type { FC, SVGProps } from 'react';
 import {
   ActivityIcon,
   BoxIcon,
+  ChartIcon,
   GridIcon,
   PackageIcon,
   PlugIcon,
@@ -41,6 +42,11 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/monitoreo',
     label: 'Monitoreo',
     icon: ActivityIcon,
+  },
+  {
+    path: '/metricas',
+    label: 'Métricas',
+    icon: ChartIcon,
   },
   {
     path: '/conexiones',
