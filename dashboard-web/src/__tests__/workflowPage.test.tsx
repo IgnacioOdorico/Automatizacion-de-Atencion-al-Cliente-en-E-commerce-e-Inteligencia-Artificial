@@ -160,15 +160,15 @@ describe('Pestaña Workflow: estados', () => {
   it('n8n no disponible: explica qué falta en vez de romper', async () => {
     workflows.mockResolvedValue({ available: false, items: [] });
     await mount();
-    expect(text()).toContain('No pudimos leer los workflows de n8n');
-    expect(text()).toContain('importado');
+    expect(text()).toContain('No pudimos leer los procesos');
+    expect(text()).toContain('motor de automatización');
     expect(container.querySelector('.wf-canvas')).toBeNull();
   });
 
   it('n8n disponible pero sin workflows: lo dice distinto', async () => {
     workflows.mockResolvedValue({ available: true, items: [] });
     await mount();
-    expect(text()).toContain('Todavía no hay workflows en n8n');
+    expect(text()).toContain('Todavía no hay procesos configurados');
     expect(container.querySelector('.wf-canvas')).toBeNull();
   });
 

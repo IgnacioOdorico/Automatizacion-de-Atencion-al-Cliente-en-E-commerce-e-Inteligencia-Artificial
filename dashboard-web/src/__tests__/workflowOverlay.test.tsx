@@ -192,7 +192,7 @@ describe('Overlay de la ejecución más reciente', () => {
     expect(header).toContain('Ejecución #15');
     expect(header).toContain('Correcta');
     expect(header).toContain('435 ms');
-    expect(header).toContain('Webhook');
+    expect(header).toContain('Entrada de datos');
   });
 
   it('pide el detalle solo de la ejecución que se ve', async () => {

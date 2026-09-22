@@ -196,7 +196,7 @@ def test_me_returns_account_and_connections(client, auth_headers):
     resp = client.get("/me", headers=auth_headers)
     assert resp.status_code == 200
     body = resp.json()
-    assert body["business_name"] == "TecnoShop Mendoza SRL"
+    assert body["business_name"] == "TechStore"
     assert body["email"] == DEMO_EMAIL
     assert body["created_at"]
     channels = {c["channel"]: c["status"] for c in body["connections"]}

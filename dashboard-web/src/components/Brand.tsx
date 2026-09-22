@@ -8,7 +8,7 @@ export function Brand({ variant = 'full' }: { variant?: 'full' | 'mark' }) {
       </span>
       {variant === 'full' && (
         <span className="brand__name">
-          TecnoShop
+          TechStore
           <small>Portal de Atención al Cliente</small>
         </span>
       )}

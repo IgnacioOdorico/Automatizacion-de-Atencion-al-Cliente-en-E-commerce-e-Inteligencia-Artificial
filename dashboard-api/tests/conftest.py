@@ -43,7 +43,7 @@ os.environ["DASHBOARD_FRONTEND_URL"] = os.environ.get(
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-DEMO_EMAIL = "ventas@tecnoshopmza.com.ar"
+DEMO_EMAIL = "ventas@techstore.com.ar"
 DEMO_PASSWORD = "Demo2026!"
 DEMO_HASH = "$2b$12$gFkzp0IobEcDZSP0zYjW/OfQtaF2tqxGTA6JgSXT3Ak476cnPt/M."
 
@@ -55,7 +55,7 @@ TRUNCATE_SQL = (
 FIXTURE_SQL = [
     """
     INSERT INTO client_accounts (business_name, email, password_hash)
-    VALUES ('TecnoShop Mendoza SRL', :email, :password_hash)
+    VALUES ('TechStore', :email, :password_hash)
     """,
     """
     INSERT INTO channel_connections

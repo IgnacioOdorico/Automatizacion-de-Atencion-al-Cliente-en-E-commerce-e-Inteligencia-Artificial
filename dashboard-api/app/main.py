@@ -6,6 +6,7 @@ from app.routers import (
     auth,
     connections,
     dashboard,
+    demo,
     metrics,
     monitoring_conversations,
     monitoring_feed,
@@ -47,6 +48,8 @@ def create_app() -> FastAPI:
     application.include_router(monitoring_feed.router)
     application.include_router(monitoring_conversations.router)
     application.include_router(monitoring_workflows.router)
+    # Público (sin JWT), para la landing: ver app/routers/demo.py
+    application.include_router(demo.router)
     return application
 
 

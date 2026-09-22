@@ -52,8 +52,8 @@ describe('traceStatusMeta (estado de un nodo en una ejecución)', () => {
 });
 
 describe('executionModeLabel', () => {
-  it('traduce los modos de n8n', () => {
-    expect(executionModeLabel('webhook')).toBe('Webhook');
+  it('traduce los modos de ejecución a palabras del cliente', () => {
+    expect(executionModeLabel('webhook')).toBe('Entrada de datos');
     expect(executionModeLabel('trigger')).toBe('Disparador');
     expect(executionModeLabel('manual')).toBe('Manual');
     expect(executionModeLabel('retry')).toBe('Reintento');

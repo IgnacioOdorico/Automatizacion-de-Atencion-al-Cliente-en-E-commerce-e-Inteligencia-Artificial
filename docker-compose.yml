@@ -238,6 +238,24 @@ services:
       - tesis_network
 
   # ----------------------------------------------------------
+  # Landing — página de presentación del producto (nginx, sitio estático)
+  # Es la cara pública: qué resuelve, los resultados medidos y un chat que habla
+  # con el asistente real. Reenvía /api/demo/* a dashboard-api (mismo origen, sin
+  # CORS) y no expone ningún otro endpoint de la API.
+  # Acceso: http://localhost:3001
+  # ----------------------------------------------------------
+  landing:
+    build: ./landing
+    container_name: tesis_landing
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - dashboard-api
+    networks:
+      - tesis_network
+
+  # ----------------------------------------------------------
   # Webhook Gateway — perfil "tunnel" (NO arranca con `docker compose up -d`)
   # nginx con ALLOWLIST estricta delante de n8n: lo único que llega a n8n desde
   # internet es POST /webhook/<uuid>/webhook (webhook del Telegram Trigger). El editor,

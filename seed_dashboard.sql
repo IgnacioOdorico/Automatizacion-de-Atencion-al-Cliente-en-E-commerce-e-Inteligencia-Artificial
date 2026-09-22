@@ -21,8 +21,8 @@
 
 INSERT INTO client_accounts (business_name, email, password_hash)
 VALUES (
-    'TecnoShop Mendoza SRL',
-    'ventas@tecnoshopmza.com.ar',
+    'TechStore',
+    'ventas@techstore.com.ar',
     '$2b$12$gFkzp0IobEcDZSP0zYjW/OfQtaF2tqxGTA6JgSXT3Ak476cnPt/M.'
 )
 ON CONFLICT (email) DO NOTHING;
@@ -41,7 +41,7 @@ SELECT
     '5492615550102',
     NOW() - INTERVAL '3 days'
 FROM client_accounts c
-WHERE c.email = 'ventas@tecnoshopmza.com.ar'
+WHERE c.email = 'ventas@techstore.com.ar'
 ON CONFLICT (client_account_id, channel) DO NOTHING;
 
 -- Telegram conectado con chat_id numérico como external_reference
@@ -52,7 +52,7 @@ SELECT
     '458721336',
     NOW() - INTERVAL '2 days'
 FROM client_accounts c
-WHERE c.email = 'ventas@tecnoshopmza.com.ar'
+WHERE c.email = 'ventas@techstore.com.ar'
 ON CONFLICT (client_account_id, channel) DO NOTHING;
 
 -- Email sin vincular (Gmail OAuth2 pendiente, se conecta en la demo)
@@ -61,5 +61,5 @@ INSERT INTO channel_connections
 SELECT
     c.id, 'email', 'disconnected'
 FROM client_accounts c
-WHERE c.email = 'ventas@tecnoshopmza.com.ar'
+WHERE c.email = 'ventas@techstore.com.ar'
 ON CONFLICT (client_account_id, channel) DO NOTHING;

@@ -70,7 +70,7 @@ export const NodeDetail = forwardRef<HTMLElement, NodeDetailProps>(function Node
       </header>
 
       <div className="wf-detail__body">
-        {disabled && <p className="wf-detail__note">Este nodo está deshabilitado en n8n: el workflow lo saltea.</p>}
+        {disabled && <p className="wf-detail__note">Este paso está deshabilitado: el proceso lo saltea.</p>}
 
         {execution === 'none' ? (
           <p className="wf-detail__note">

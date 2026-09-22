@@ -582,6 +582,26 @@ Tests: `cd dashboard-api; .venv\Scripts\python -m pytest -q` (los de integració
 
 ---
 
+## 🎬 Landing y video de presentación
+
+La cara pública del producto: para la presentación al tribunal y para mostrarlo fuera de la facultad.
+
+| Qué | Dónde |
+|---|---|
+| Landing | http://localhost:3001 (servicio `landing`) |
+| Guion del video | [`video/GUION.md`](video/GUION.md) — escena por escena, con tiempos y qué narrar |
+| Placas animadas | [`video/placas.html`](video/placas.html) — abrir en el navegador, `F` para pantalla completa, `→` para avanzar |
+| Limpieza post-ensayo | `video/limpiar_demo.ps1` |
+
+La landing tiene dos cosas que funcionan de verdad, no una maqueta:
+
+- **Un botón que mete un pedido real** por el mismo webhook que usaría la tienda, y muestra los tiempos de *ese* pedido. Hay un escenario con stock y otro sin stock, para ver que el sistema frena la venta en vez de vender de más.
+- **Un chat contra el asistente real**: el mensaje entra por el webhook del chatbot y la respuesta es la que el flujo escribió en `interactions`.
+
+Los detalles —los tres endpoints públicos, cómo no se pisan con los datos de la tesis, y una limitación conocida del chat— están en [`landing/README.md`](landing/README.md).
+
+> Lo que genera la landing lleva marcas propias (pedidos `ORD-WEB-`, usuarios `demo-*`) que ninguna corrida de la tesis usa. `video/limpiar_demo.ps1` lo borra y repone el stock descontado.
+
 ## 📁 Estructura del proyecto
 
 ```

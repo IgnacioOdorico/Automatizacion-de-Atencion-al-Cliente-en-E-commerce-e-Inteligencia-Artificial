@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     dashboard_google_client_secret: str = ""
     dashboard_google_redirect_uri: str = ""
     dashboard_frontend_url: str = "http://localhost:5173"
+    # Motor de flujos, por nombre de servicio Docker (no localhost: la API corre
+    # en su propio contenedor). Lo usa el chat de demostración de la landing.
+    dashboard_n8n_url: str = "http://n8n:5678"
     telegram_code_ttl_minutes: int = 15
     cors_origins: str = "http://localhost:5173,http://localhost:8080"
     # Proxies (IP, CIDR o nombre de host) en los que se confía para leer X-Real-IP.

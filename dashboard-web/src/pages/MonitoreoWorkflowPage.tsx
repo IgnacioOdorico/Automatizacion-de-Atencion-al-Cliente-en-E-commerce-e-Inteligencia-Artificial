@@ -67,14 +67,14 @@ function NoWorkflows({ available }: { available: boolean }) {
   return available ? (
     <EmptyState
       icon={<ActivityIcon width={24} height={24} />}
-      title="Todavía no hay workflows en n8n"
-      text="Importá el workflow del pipeline de órdenes (y el del chatbot) en n8n y activalo: cuando esté, lo vas a ver dibujado acá con el camino de cada ejecución."
+      title="Todavía no hay procesos configurados"
+      text="Cuando el proceso de pedidos (y el del asistente) estén activos, los vas a ver dibujados acá con el camino que siguió cada ejecución."
     />
   ) : (
     <EmptyState
       icon={<ActivityIcon width={24} height={24} />}
-      title="No pudimos leer los workflows de n8n"
-      text="Para ver el diagrama, n8n tiene que estar en línea y con el workflow importado. Revisá que n8n esté corriendo y volvé a esta pestaña."
+      title="No pudimos leer los procesos"
+      text="Para ver el diagrama, el motor de automatización tiene que estar en línea. Revisá que el servicio esté corriendo y volvé a esta pestaña."
     />
   );
 }
@@ -333,7 +333,7 @@ export function MonitoreoWorkflowPage() {
                 <EmptyState
                   icon={<ActivityIcon width={24} height={24} />}
                   title="Este workflow todavía no tiene nodos"
-                  text="Agregá nodos en n8n y vas a verlos dibujados acá."
+                  text="Cuando el proceso tenga pasos configurados, vas a verlos dibujados acá."
                 />
               }
             >

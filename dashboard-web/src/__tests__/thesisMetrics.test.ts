@@ -33,9 +33,9 @@ describe('thesisMetrics', () => {
 
   it('cada una dice a qué flujo pertenece y qué mide, en palabras del cliente', () => {
     const m = byId(SUMMARY);
-    expect(m.mttd.flow).toBe('Flujo 1');
-    expect(m.mttr.flow).toBe('Flujo 1');
-    expect(m.tmr.flow).toBe('Flujo 2');
+    expect(m.mttd.flow).toBe('Pedidos');
+    expect(m.mttr.flow).toBe('Pedidos');
+    expect(m.tmr.flow).toBe('Asistente');
     expect(m.mttd.measures).toMatch(/entra|recibe/i);
     expect(m.mttd.measures).toMatch(/procesa/i);
     expect(m.mttr.measures).toMatch(/email|aviso|notific/i);

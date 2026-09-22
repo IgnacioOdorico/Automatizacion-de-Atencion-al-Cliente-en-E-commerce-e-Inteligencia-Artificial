@@ -27,7 +27,7 @@ export interface NodeKind {
 }
 
 const KINDS: Record<string, NodeKind> = {
-  webhook: { label: 'Webhook (entrada de datos)', icon: 'webhook' },
+  webhook: { label: 'Entrada de datos', icon: 'webhook' },
   postgres: { label: 'Base de datos (PostgreSQL)', icon: 'database' },
   if: { label: 'Condición (Sí / No)', icon: 'branch' },
   switch: { label: 'Bifurcación (Switch)', icon: 'switch' },
@@ -38,7 +38,7 @@ const KINDS: Record<string, NodeKind> = {
   code: { label: 'Código', icon: 'code' },
   function: { label: 'Código (función)', icon: 'code' },
   functionItem: { label: 'Código (función por item)', icon: 'code' },
-  respondToWebhook: { label: 'Respuesta al webhook', icon: 'reply' },
+  respondToWebhook: { label: 'Respuesta al sistema de origen', icon: 'reply' },
   set: { label: 'Asignar datos', icon: 'edit' },
   merge: { label: 'Unir ramas', icon: 'merge' },
   wait: { label: 'Espera', icon: 'clock' },

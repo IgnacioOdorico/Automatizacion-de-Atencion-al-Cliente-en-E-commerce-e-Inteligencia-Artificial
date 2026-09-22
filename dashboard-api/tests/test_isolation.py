@@ -50,7 +50,7 @@ def _google_ok():
             return httpx.Response(
                 200, json={"access_token": "at-123", "refresh_token": REFRESH_TOKEN}
             )
-        return httpx.Response(200, json={"email": "duenio@tecnoshopmza.com.ar"})
+        return httpx.Response(200, json={"email": "duenio@techstore.com.ar"})
 
     return httpx.Client(transport=httpx.MockTransport(handler), timeout=10.0)
 

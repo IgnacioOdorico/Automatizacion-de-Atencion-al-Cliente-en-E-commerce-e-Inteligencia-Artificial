@@ -13,7 +13,7 @@ import {
 describe('validateEmail', () => {
   it('acepta emails válidos', () => {
     expect(validateEmail('a@b.com')).toBeNull();
-    expect(validateEmail('ventas@tecnoshopmza.com.ar')).toBeNull();
+    expect(validateEmail('ventas@techstore.com.ar')).toBeNull();
     expect(validateEmail('cliente@tienda.com.ar')).toBeNull();
   });
 
@@ -40,7 +40,7 @@ describe('validateBusinessName', () => {
   it('business_name es requerido', () => {
     expect(validateBusinessName('')).not.toBeNull();
     expect(validateBusinessName('  ')).not.toBeNull();
-    expect(validateBusinessName('TecnoShop')).toBeNull();
+    expect(validateBusinessName('TechStore')).toBeNull();
   });
 });
 
@@ -69,8 +69,8 @@ describe('validateRegister', () => {
   it('sin errores con datos válidos', () => {
     expect(
       validateRegister({
-        business_name: 'TecnoShop',
-        email: 'ventas@tecnoshopmza.com.ar',
+        business_name: 'TechStore',
+        email: 'ventas@techstore.com.ar',
         password: 'Demo2026!',
       }),
     ).toEqual({});

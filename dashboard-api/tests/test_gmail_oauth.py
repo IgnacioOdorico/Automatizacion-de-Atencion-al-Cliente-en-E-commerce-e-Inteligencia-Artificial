@@ -31,7 +31,7 @@ def _mock_google_client(mode="ok"):
                 return httpx.Response(500, json={"error": "server_error"})
             if mode == "no_email":
                 return httpx.Response(200, json={"id": "1234"})
-            return httpx.Response(200, json={"email": "demo@tecnoshopmza.com.ar"})
+            return httpx.Response(200, json={"email": "demo@techstore.com.ar"})
         return httpx.Response(404, json={"error": "not_found"})
 
     return httpx.Client(transport=httpx.MockTransport(handler), timeout=10.0)
@@ -130,7 +130,7 @@ def test_callback_success_connects_and_encrypts(monkeypatch):
 
     row = _email_row()
     assert row["status"] == "connected"
-    assert row["external_reference"] == "demo@tecnoshopmza.com.ar"
+    assert row["external_reference"] == "demo@techstore.com.ar"
 
     from app.core.security import decrypt_credentials
 

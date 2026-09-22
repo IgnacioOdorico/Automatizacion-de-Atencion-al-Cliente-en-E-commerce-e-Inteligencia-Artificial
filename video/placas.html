@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Atendo · Placas del video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   Placas para grabar en pantalla, 1920×1080.
+   Se avanza con →, Espacio o clic; se retrocede con ←.
+   Misma identidad que la landing y el portal.
+   Todas las cifras salen del trabajo: no hay ningún número de adorno.
+   ============================================================ */
+
+:root {
+  --bg: #0a0c12;
+  --surface: #121623;
+  --border: rgba(153, 168, 190, 0.14);
+  --text-1: #e9edf4;
+  --text-2: #a7b0bf;
+  --text-3: #7c8699;
+  --brand: #6366f1;
+  --brand-claro: #818cf8;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font);
+  overflow: hidden;
+}
+
+/* El lienzo mantiene 16:9 y escala al alto de la ventana: lo que se graba
+   siempre tiene la misma composición, sin importar el tamaño del navegador. */
+.escenario {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* El lienzo mide 1920x1080 fijos y se escala desde su centro. Se lo ancla al
+   centro con translate(-50%,-50%) en vez de con un grid: un hijo mas grande que
+   el contenedor no se centra, se desborda hacia un lado. */
+.lienzo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: center;
+  overflow: hidden;
+  background:
+    radial-gradient(closest-side at 50% -10%, rgba(99, 102, 241, 0.18), transparent 70%),
+    var(--bg);
+}
+
+.placa {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 170px;
+  opacity: 0;
+}
+.placa--activa { display: flex; animation: aparecer 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* cada hijo entra escalonado */
+.placa--activa > * { animation: subir 0.72s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.placa--activa > *:nth-child(1) { animation-delay: 0.10s; }
+.placa--activa > *:nth-child(2) { animation-delay: 0.26s; }
+.placa--activa > *:nth-child(3) { animation-delay: 0.42s; }
+.placa--activa > *:nth-child(4) { animation-delay: 0.58s; }
+.placa--activa > *:nth-child(5) { animation-delay: 0.74s; }
+
+@keyframes subir {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------------------------------------------------------------- tipografía */
+
+.rotulo {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brand-claro);
+  margin-bottom: 34px;
+}
+
+.titulo {
+  font-size: 104px;
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  margin-bottom: 36px;
+}
+.titulo--chico { font-size: 76px; }
+
+.bajada {
+  font-size: 34px;
+  line-height: 1.5;
+  color: var(--text-2);
+  max-width: 1200px;
+}
+.bajada strong { color: var(--text-1); font-weight: 600; }
+
+.degrade {
+  background: linear-gradient(100deg, var(--brand-claro), #a78bfa 52%, #38bdf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------------------------------------------------------------- apertura */
+
+.marca { display: flex; align-items: center; gap: 26px; margin-bottom: 56px; }
+.marca svg { width: 96px; height: 96px; }
+.marca span { font-size: 68px; font-weight: 800; letter-spacing: -0.03em; }
+
+.creditos {
+  margin-top: 74px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 92px;
+}
+.credito__rotulo {
+  font-size: 17px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+.credito__valor { font-size: 27px; font-weight: 500; }
+
+/* ---------------------------------------------------------------- comparación */
+
+.duelo {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 68px;
+  margin-top: 26px;
+}
+
+.lado { padding: 52px 56px; border-radius: 28px; border: 1px solid var(--border); background: var(--surface); }
+.lado--manual { opacity: 0.72; }
+.lado--sistema { border-color: rgba(99, 102, 241, 0.45); background: linear-gradient(145deg, rgba(99,102,241,0.14), var(--surface) 62%); }
+
+.lado__que { font-size: 25px; color: var(--text-3); margin-bottom: 20px; }
+.lado__cifra {
+  font-size: 118px;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.lado--manual .lado__cifra { color: var(--text-2); }
+.lado--sistema .lado__cifra { color: var(--brand-claro); }
+.lado__unidad { font-size: 0.36em; font-weight: 700; margin-left: 10px; color: var(--text-3); }
+.lado__pie { font-size: 21px; color: var(--text-3); margin-top: 20px; }
+
+.flecha { font-size: 74px; color: var(--text-3); }
+
+/* ---------------------------------------------------------------- cifra sola */
+
+.cifrota {
+  font-size: 250px;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(100deg, var(--brand-claro), #38bdf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 18px;
+}
+.intervalo {
+  font-size: 26px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 40px;
+}
+
+/* ---------------------------------------------------------------- tríada */
+
+.triada { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; margin-top: 30px; }
+.dato { padding: 46px 42px; border: 1px solid var(--border); border-radius: 26px; background: var(--surface); }
+.dato__cifra {
+  font-size: 88px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--brand-claro);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 20px;
+}
+.dato__cifra small { font-size: 0.38em; font-weight: 700; color: var(--text-3); margin-left: 6px; }
+.dato__que { font-size: 26px; font-weight: 600; margin-bottom: 12px; }
+.dato__ic { font-size: 19px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- límites */
+
+.limites { display: grid; gap: 26px; margin-top: 18px; }
+.limite {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  align-items: center;
+  gap: 44px;
+  padding: 34px 40px;
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--warning);
+  border-radius: 20px;
+  background: var(--surface);
+}
+.limite__cifra {
+  font-size: 62px;
+  font-weight: 900;
+  color: var(--warning);
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.limite__texto { font-size: 27px; color: var(--text-2); line-height: 1.45; }
+.limite__texto strong { color: var(--text-1); font-weight: 600; }
+
+/* ---------------------------------------------------------------- cierre */
+
+.cierre__lista { display: grid; gap: 22px; margin-top: 40px; }
+.cierre__lista li {
+  list-style: none;
+  padding-left: 40px;
+  position: relative;
+  font-size: 30px;
+  color: var(--text-2);
+}
+.cierre__lista li::before {
+  content: '';
+  position: absolute;
+  left: 4px; top: 16px;
+  width: 16px; height: 9px;
+  border-left: 3px solid var(--brand-claro);
+  border-bottom: 3px solid var(--brand-claro);
+  transform: rotate(-45deg);
+}
+
+.pie {
+  position: absolute;
+  left: 170px; right: 170px; bottom: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 19px;
+  color: var(--text-3);
+  border-top: 1px solid var(--border);
+  padding-top: 26px;
+}
+
+/* ---------------------------------------------------------------- controles */
+
+.ayuda {
+  position: fixed;
+  right: 22px; bottom: 18px;
+  font-size: 13px;
+  color: var(--text-3);
+  background: rgba(10, 12, 18, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 18px;
+  transition: opacity 0.4s ease;
+  z-index: 10;
+}
+.ayuda--oculta { opacity: 0; }
+
+.progreso {
+  position: absolute;
+  left: 170px; bottom: 44px;
+  display: flex;
+  gap: 9px;
+}
+.progreso span {
+  width: 34px; height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background-color 0.3s ease;
+}
+.progreso span.activo { background: var(--brand-claro); }
+</style>
+</head>
+<body>
+
+<div class="escenario">
+<div class="lienzo" id="lienzo">
+
+  <!-- ══════════════════════════════════════════ 1 · apertura ══ -->
+  <section class="placa">
+    <div class="marca">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#6366f1"/>
+        <path d="M16 7l7 18h-3.4l-1.5-4h-4.2l-1.5 4H9l7-18zm0 5.6L14.1 18h3.8L16 12.6z" fill="#fff"/>
+      </svg>
+      <span>Atendo</span>
+    </div>
+    <h1 class="titulo">El post-venta de tu tienda,<br /><span class="degrade">resuelto solo</span>.</h1>
+    <p class="bajada">
+      Automatización del ciclo post-venta en e-commerce: procesamiento de órdenes
+      y atención al cliente con inteligencia artificial.
+    </p>
+    <div class="creditos">
+      <div>
+        <p class="credito__rotulo">Autores</p>
+        <p class="credito__valor">Santiago Sordi · Ignacio Odorico · Juan Cruz Ana</p>
+      </div>
+      <div>
+        <p class="credito__rotulo">Dirección</p>
+        <p class="credito__valor">Alberto Cortez</p>
+      </div>
+      <div>
+        <p class="credito__rotulo">Institución</p>
+        <p class="credito__valor">UTN · Facultad Regional Mendoza · 2026</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ 2 · el contraste ══ -->
+  <section class="placa">
+    <p class="rotulo">Procesar un pedido</p>
+    <h2 class="titulo titulo--chico">Lo mismo, medido de las dos formas.</h2>
+    <div class="duelo">
+      <div class="lado lado--manual">
+        <p class="lado__que">A mano, cronometrado</p>
+        <p class="lado__cifra">49,13<span class="lado__unidad">s</span></p>
+        <p class="lado__pie">Por pedido · 12 repeticiones</p>
+      </div>
+      <div class="flecha" aria-hidden="true">→</div>
+      <div class="lado lado--sistema">
+        <p class="lado__que">Con Atendo, de punta a punta</p>
+        <p class="lado__cifra">0,063<span class="lado__unidad">s</span></p>
+        <p class="lado__pie">Por pedido · 50 pedidos medidos</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ 3 · el factor ══ -->
+  <section class="placa">
+    <p class="rotulo">La diferencia</p>
+    <p class="cifrota">780×</p>
+    <p class="intervalo">IC 95 % (teorema de Fieller): 686× a 875× · U de Mann-Whitney = 0 · p = 2,7 × 10⁻¹¹</p>
+    <p class="bajada">
+      Lo decimos como lo dice el trabajo: es un <strong>orden de magnitud de laboratorio</strong>,
+      no una cota ni una promesa de producción. En una instalación real, la red y las APIs
+      externas mandan.
+    </p>
+  </section>
+
+  <!-- ══════════════════════════════════════════ 4 · el asistente ══ -->
+  <section class="placa">
+    <p class="rotulo">El asistente</p>
+    <h2 class="titulo titulo--chico">Responde, y entiende qué le preguntan.</h2>
+    <div class="triada">
+      <div class="dato">
+        <p class="dato__cifra">1,47<small>s</small></p>
+        <p class="dato__que">Tiempo medio de respuesta</p>
+        <p class="dato__ic">Sobre el corpus de consultas medido</p>
+      </div>
+      <div class="dato">
+        <p class="dato__cifra">92,7<small>%</small></p>
+        <p class="dato__que">Exactitud al clasificar la consulta</p>
+        <p class="dato__ic">IC 95 % de Wilson: 87,3 % a 95,9 %</p>
+      </div>
+      <div class="dato">
+        <p class="dato__cifra">0</p>
+        <p class="dato__que">Ventas sin stock</p>
+        <p class="dato__ic">Con 20 pedidos casi simultáneos</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ 5 · los límites ══ -->
+  <section class="placa">
+    <p class="rotulo">Lo que la medición dejó abierto</p>
+    <h2 class="titulo titulo--chico">Un prototipo honesto dice las dos cosas.</h2>
+    <div class="limites">
+      <div class="limite">
+        <p class="limite__cifra">40,8 %</p>
+        <p class="limite__texto">
+          <strong>Se pierde bajo ráfaga.</strong>
+          Con 20 pedidos casi simultáneos no hubo sobreventa, pero ese porcentaje quedó
+          sin procesar ni aviso. Sirve para el volumen de una PyME, no para un pico de tráfico.
+        </p>
+      </div>
+      <div class="limite">
+        <p class="limite__cifra">2 / 18</p>
+        <p class="limite__texto">
+          <strong>La calidad del contenido no quedó establecida.</strong>
+          Dos evaluadores no alcanzaron acuerdo suficiente, y una verificación automática
+          halló esas respuestas con datos que la base de conocimiento no respalda.
+        </p>
+      </div>
+      <div class="limite">
+        <p class="limite__cifra">17,3</p>
+        <p class="limite__texto">
+          <strong>La exactitud depende del prompt, no de la base.</strong>
+          Puntos de diferencia según las reglas y ejemplos del prompt, contra 2,0 puntos
+          por la base de conocimiento de la tienda.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ 6 · cierre ══ -->
+  <section class="placa">
+    <p class="rotulo">Lo que sigue</p>
+    <h2 class="titulo">Funciona hoy.<br /><span class="degrade">Y sabemos qué falta</span>.</h2>
+    <ul class="cierre__lista">
+      <li>Resolver la pérdida de pedidos bajo ráfaga</li>
+      <li>Fijar un instrumento reproducible para evaluar el contenido de las respuestas</li>
+      <li>Llevarlo a varias tiendas sobre una misma instalación</li>
+      <li>Medir sobre el artefacto publicado, no sobre la instancia de desarrollo</li>
+    </ul>
+    <div class="pie">
+      <span>Trabajo Integrador · Tecnicatura Universitaria en Programación · UTN FRM 2026</span>
+      <span>Todas las cifras son recalculables desde el repositorio del trabajo</span>
+    </div>
+  </section>
+
+  <div class="progreso" id="progreso"></div>
+</div>
+</div>
+
+<p class="ayuda" id="ayuda">→ o Espacio para avanzar · ← para volver · F para pantalla completa</p>
+
+<script>
+(function () {
+  'use strict';
+
+  var lienzo = document.getElementById('lienzo');
+  var placas = Array.prototype.slice.call(document.querySelectorAll('.placa'));
+  var progreso = document.getElementById('progreso');
+  var ayuda = document.getElementById('ayuda');
+  var actual = 0;
+  var relojAyuda;
+
+  // Los puntos de progreso se arman solos: una placa más no obliga a tocar el HTML.
+  placas.forEach(function () { progreso.appendChild(document.createElement('span')); });
+
+  /** El lienzo mide 1920×1080 fijos; acá se escala para que entre en la ventana. */
+  function escalar() {
+    var escala = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    lienzo.style.transform = 'translate(-50%, -50%) scale(' + escala + ')';
+  }
+
+  function mostrar(i) {
+    actual = Math.max(0, Math.min(placas.length - 1, i));
+    placas.forEach(function (p, j) {
+      // Se quita y se vuelve a poner la clase para que la animación arranque de nuevo.
+      p.classList.remove('placa--activa');
+      if (j === actual) {
+        void p.offsetWidth;
+        p.classList.add('placa--activa');
+      }
+    });
+    Array.prototype.forEach.call(progreso.children, function (punto, j) {
+      punto.classList.toggle('activo', j === actual);
+    });
+  }
+
+  /** La ayuda no puede quedar en la grabación: se esconde sola. */
+  function asomarAyuda() {
+    ayuda.classList.remove('ayuda--oculta');
+    window.clearTimeout(relojAyuda);
+    relojAyuda = window.setTimeout(function () { ayuda.classList.add('ayuda--oculta'); }, 2600);
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault(); mostrar(actual + 1); asomarAyuda();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault(); mostrar(actual - 1); asomarAyuda();
+    } else if (e.key === 'Home') {
+      mostrar(0); asomarAyuda();
+    } else if (e.key === 'End') {
+      mostrar(placas.length - 1); asomarAyuda();
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  document.addEventListener('click', function () { mostrar(actual + 1); asomarAyuda(); });
+  window.addEventListener('resize', escalar);
+
+  escalar();
+  mostrar(0);
+  asomarAyuda();
+})();
+</script>
+</body>
+</html>

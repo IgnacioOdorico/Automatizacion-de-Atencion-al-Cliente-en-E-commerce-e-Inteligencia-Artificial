@@ -162,7 +162,7 @@ describe('Lista de ejecuciones', () => {
     expect(row.textContent).toContain('#15');
     expect(row.textContent).toContain('Correcta');
     expect(row.textContent).toContain('435 ms');
-    expect(row.textContent).toContain('Webhook');
+    expect(row.textContent).toContain('Entrada de datos');
     expect(row.querySelector('time')?.textContent).toMatch(/hace .* · \d{2}:\d{2}:\d{2}/);
     expect(row.querySelector('time')?.getAttribute('title')).toMatch(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/);
   });

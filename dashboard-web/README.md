@@ -19,7 +19,7 @@ npm test           # vitest run (lógica pura, render de componentes en jsdom y 
 
 Cuenta seed (la que ya siembra `seed_dashboard.sql`):
 
-- Email: `ventas@tecnoshopmza.com.ar`
+- Email: `ventas@techstore.com.ar`
 - Password: `Demo2026!`
 
 ## Demo en vivo (grabación)

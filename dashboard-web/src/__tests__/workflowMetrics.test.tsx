@@ -94,7 +94,7 @@ describe('Tarjeta "Métricas de la tesis"', () => {
     await mount();
     expect(card()?.querySelector('h2')?.textContent).toBe('Métricas de la tesis');
     expect(metrics().map((m) => m.querySelector('.wf-metric__short')?.textContent)).toEqual(['MTTD', 'MTTR', 'TMR']);
-    expect(metrics().map((m) => m.querySelector('.wf-metric__flow')?.textContent)).toEqual(['Flujo 1', 'Flujo 1', 'Flujo 2']);
+    expect(metrics().map((m) => m.querySelector('.wf-metric__flow')?.textContent)).toEqual(['Pedidos', 'Pedidos', 'Asistente']);
     expect(metrics()[0].textContent).toContain('Tiempo hasta procesar el pedido');
     expect(metrics()[2].textContent).toContain('Tiempo de respuesta del chatbot');
   });
@@ -152,7 +152,7 @@ describe('Tarjeta "Métricas de la tesis"', () => {
   it('con n8n sin workflows también se puede leer la explicación de las métricas', async () => {
     workflows.mockResolvedValue({ available: false, items: [] });
     await mount();
-    expect(container.textContent).toContain('No pudimos leer los workflows de n8n');
+    expect(container.textContent).toContain('No pudimos leer los procesos');
     expect(metrics()).toHaveLength(3);
   });
 });

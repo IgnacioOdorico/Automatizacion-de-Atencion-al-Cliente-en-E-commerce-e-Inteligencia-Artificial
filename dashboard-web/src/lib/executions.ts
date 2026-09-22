@@ -50,7 +50,7 @@ export function traceStatusMeta(status: string): StatusView {
 }
 
 const MODE_LABELS: Record<string, string> = {
-  webhook: 'Webhook',
+  webhook: 'Entrada de datos',
   trigger: 'Disparador',
   manual: 'Manual',
   cli: 'Consola',

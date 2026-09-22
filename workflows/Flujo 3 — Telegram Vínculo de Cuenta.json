@@ -114,7 +114,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Normalizar y Validar Código').item.json.chat_id }}",
-        "text": "=✅ ¡Listo! Tu cuenta quedó vinculada al panel de TecnoShop. Ya podés cerrar esta conversación y volver al panel para ver tu estado conectado.",
+        "text": "=✅ ¡Listo! Tu cuenta quedó vinculada al panel de TechStore. Ya podés cerrar esta conversación y volver al panel para ver tu estado conectado.",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",

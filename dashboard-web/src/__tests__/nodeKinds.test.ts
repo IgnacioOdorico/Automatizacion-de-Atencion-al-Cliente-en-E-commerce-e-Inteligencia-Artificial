@@ -6,7 +6,7 @@ import { flujo1Graph, flujo2Graph } from './helpers/workflowFixtures';
 
 describe('nodeKind (ícono y tipo legible de cada nodo)', () => {
   it.each([
-    ['webhook', 'webhook', 'Webhook'],
+    ['webhook', 'webhook', 'Entrada de datos'],
     ['postgres', 'database', 'Base de datos'],
     ['if', 'branch', 'Condición'],
     ['switch', 'switch', 'Bifurcación'],

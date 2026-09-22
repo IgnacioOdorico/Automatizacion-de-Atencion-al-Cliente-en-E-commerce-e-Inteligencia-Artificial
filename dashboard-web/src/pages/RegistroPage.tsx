@@ -69,7 +69,7 @@ export function RegistroPage() {
             <Field
               label="Nombre del negocio"
               autoComplete="organization"
-              placeholder="ej. TecnoShop Mendoza"
+              placeholder="ej. TechStore"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
               error={fieldErrors.business_name}
