@@ -32,7 +32,7 @@
 - [x] K1 Backend: `GET /metrics/orders` (MTTD/MTTR/end-to-end/total, distribución de estados, serie diaria)
 - [x] K2 Backend: `GET /metrics/chatbot` (TMR promedio, interacciones totales, TMR por intent, distribución de intents, serie diaria por canal) — sobre `interactions`, NUNCA `v_chatbot_corpus`
 - [x] K3 Frontend: página Métricas con los 4 tipos de gráfico en SVG propio, polling, estados, nav
-- [ ] K4 Reconstruir stack, smoke autenticado con datos reales, docs (README, SPEC, `docs/API_MONITOREO.md` o uno nuevo `docs/API_METRICAS.md`)
+- [x] K4 Reconstruir stack, smoke autenticado con datos reales, docs (README, SPEC, `docs/API_METRICAS.md`)
 
 ## Ruta por tarea
 K1/K2: delegated direct (un writer backend). K3: delegated direct (un writer front, después del contrato). K4: delegated direct.
@@ -83,5 +83,17 @@ Cuando esto quede cerrado, avisarle que falta cargar en la UI de n8n las credenc
 - **Revisión visual**: servido el build (`vite build` → `dist/`) con un servidor Node mínimo fuera del repo (`%TEMP%\...\scratchpad\mock-server.js`, sin dependencias) que sirve `dist/` y mockea `GET /api/me`, `GET /api/metrics/orders` y `GET /api/metrics/chatbot` con datos realistas que varían según `hours` (24 → sin datos, 168 → un solo día, sin `hours` → 21 días con intents sin respuestas y los 8 estados de orden). Revisado en 1280 px y 375 px: estado con datos (dona de 8 estados, área apilada de 21 días, barras con un intent en "Sin respuestas"), los dos vacíos ("Todavía no hay pedidos/interacciones para este período"), la serie de una sola muestra (tramo plano a todo el ancho, confirmado visualmente) y el aviso de "Carga manual" ignorado en Chatbot. Sin cuenta demo real (token de mentira inyectado por el mock). Servidor cerrado al terminar (`TaskStop`).
 - **Commits** (rama `feature/dashboard-cliente`, sin push): `3524088` (lib+tipos+cliente API), `539d2a2` (dona), `c503f20` (barras), `3d82869` (área apilada), `007afb8` (bloque Pedidos), `5f10719` (bloque Chatbot + página), `beca05a` (nav/ruta).
 
+## Evidencia de K4 (verificada por el orquestador)
+- `docker compose up -d --build dashboard-api dashboard-web`: ambos `Up`/`healthy`. `/`, `/metricas` y `/monitoreo` responden 200 (fallback SPA).
+- Smoke real por `http://localhost:8080/api` con cuenta e2e descartable (borrada al terminar; conteo de `client_accounts` idéntico antes/después: 1):
+  - `GET /metrics/orders`: `avg_mttd_seconds=90.0`, `avg_mttr_seconds=120.0`, `avg_end_to_end_seconds=210.0`, `total_orders=22`, `by_status` con las 8 claves reales, `daily` con 91 días sin huecos.
+  - `GET /metrics/chatbot`: todo en `null`/0 (coherente: `interactions` sigue vacía porque el Flujo 2 no está corriendo — ver `odd/tasks/dashboard-cliente-monitoreo.md`).
+  - `hours` fuera de rango → 422; `data_source=e4_manual` en `/metrics/chatbot` → 422; sin JWT → 401.
+- Suites completas: `pytest` 527 passed; `npm test` 892 passed en 56 archivos; `npm run build` OK.
+- Docs: `docs/API_METRICAS.md` ya cerrado por K1/K2; `SPEC_DASHBOARD_CLIENTE.md` §1/§5/§10 ya actualizado por K1/K2. README y CLAUDE.md: sección "Métricas" agregada.
+
+### No verificado
+Cómo se ve `/metricas` con sesión real en el navegador (no me logueo con la cuenta demo), y los gráficos de Chatbot con datos reales (dependen del Flujo 2, ver el recordatorio de abajo).
+
 ## Próximo paso
-K4: reconstruir el stack con `docker compose up -d --build dashboard-api dashboard-web`, smoke autenticado con datos reales contra la cuenta demo, y actualizar README/SPEC con la sección Métricas.
+Que el usuario revise `/metricas` a ojo con la cuenta demo, y cargue las credenciales de n8n (ver "Recordatorio pendiente" arriba) para que el bloque Chatbot deje de estar vacío. Push de la rama según decisión del usuario.

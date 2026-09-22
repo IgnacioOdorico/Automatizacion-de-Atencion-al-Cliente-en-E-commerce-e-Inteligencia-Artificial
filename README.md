@@ -526,6 +526,18 @@ Pensado para explicar el workflow en cámara: muestra lo que hace el bot **al pi
 
 - Los contratos de la API están en [docs/API_MONITOREO.md](docs/API_MONITOREO.md).
 - **Seguridad:** el grafo nunca incluye `parameters` ni credenciales de los nodos, y la vista previa de salida de cada nodo sale recortada y con claves/tokens redactados.
+
+### Métricas (`/metricas`)
+
+Reemplaza en vivo los paneles que hoy están en Grafana (`grafana/dashboards/*.json`), pero calculados sobre los datos reales en el momento en que se pide, no sobre corridas fijas de Grafana. Dos bloques, con filtro de ventana (`hours`) y de `data_source`:
+
+| Bloque | Qué muestra | De dónde sale |
+|---|---|---|
+| **Pedidos** | MTTD, MTTR y extremo a extremo promedio, total de órdenes, distribución de estados, órdenes por día | `orders` |
+| **Chatbot** | TMR promedio (general y por intent), interacciones totales, distribución de intents, interacciones por día y canal | `interactions` (nunca `v_chatbot_corpus`: esa vista es una ventana congelada del 12/08 para el corpus del experimento, no algo "en vivo") |
+
+- Contratos en [docs/API_METRICAS.md](docs/API_METRICAS.md).
+- **El panel "Precisión (accuracy) 92.7%" de Grafana no se replica.** Es un literal fijo en la consulta SQL (`SELECT 92.7 AS "Accuracy"`), no algo calculado sobre datos reales; mostrarlo en el dashboard como si fuera una métrica en vivo sería engañoso. Si hace falta en el video, se explica aparte como resultado del experimento (factorial E8 de la tesis), no como parte del monitoreo.
 - **Datos:** sin el Flujo 2 importado y con sus credenciales cargadas en n8n (OpenAI, Telegram/SMTP), `interactions` queda vacía y la pestaña Conversaciones muestra su estado vacío. Los pedidos, tickets y ejecuciones (incluidos los errores) se ven igual.
 - **Acoplamiento:** la pestaña Workflow depende del esquema interno de n8n 2.12.2; si esas tablas no existen o cambian, degrada a un estado vacío y no rompe el resto del portal.
 

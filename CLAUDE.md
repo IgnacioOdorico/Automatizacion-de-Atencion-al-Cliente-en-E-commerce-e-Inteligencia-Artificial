@@ -104,6 +104,7 @@ cd dashboard-web; npm run dev                           # Vite en :5173 (proxy /
 - Los tests `pytest` truncan tablas: solo corren contra `ecommerce_tesis_test`, **nunca** contra `ecommerce_tesis` (ahí `orders`/`tickets` son evidencia medida de la tesis).
 - `nginx.conf` + `security-headers.conf` mandan la CSP y demás headers: si el front pasa a cargar algo externo, ampliar la CSP a propósito (`nginxConf.test.ts` la guarda).
 - **Monitoreo** (`/monitoreo`, API `/monitoring/*`, contratos en `docs/API_MONITOREO.md`): todo es de solo lectura. Lee `orders`/`interactions`/`tickets`/`stock_alerts` y, para la pestaña Workflow, las tablas **internas de n8n** (`workflow_entity`, `execution_entity`, `execution_data`, esquema de n8n 2.12.2; degrada con `available:false` si faltan). El grafo nunca devuelve `parameters`/`credentials` y la vista previa de salida se redacta. Los tests crean esas tablas de n8n solo en `ecommerce_tesis_test`; jamás escribas en la BD viva.
+- **Métricas** (`/metricas`, API `/metrics/orders` y `/metrics/chatbot`, contratos en `docs/API_METRICAS.md`): reemplazo en vivo de los paneles de `grafana/dashboards/*.json`, calculado sobre `orders`/`interactions` en el momento en que se pide. **Nunca usa `v_chatbot_corpus`** (ventana congelada del 12/08 para el corpus del experimento, no algo "en vivo") ni replica el panel "Precisión (accuracy) 92.7%" de Grafana, que es un literal fijo en la consulta SQL, no una métrica calculada — se omite a propósito, decisión explícita del usuario.
 
 ## Testing del pipeline — es manual, disparando webhooks
 
