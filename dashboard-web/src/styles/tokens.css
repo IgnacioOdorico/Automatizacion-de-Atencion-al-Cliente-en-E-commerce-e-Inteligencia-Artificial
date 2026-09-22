@@ -42,6 +42,19 @@
   --success-soft: rgba(74, 222, 128, 0.12);
   --warning: #fbbf24;
 
+  /* Paleta categórica de los gráficos de Métricas (dona/barras/área apilada):
+     8 tonos distinguibles entre sí sobre fondo oscuro, en sync con
+     lib/chartColors.ts (test: __tests__/chartColors.test.ts). No son texto:
+     alcanza con >= 3:1 (WCAG 1.4.11, objetos gráficos), no 4.5:1. */
+  --chart-1: #818cf8; /* indigo (marca) */
+  --chart-2: #4ade80; /* esmeralda */
+  --chart-3: #fbbf24; /* ámbar */
+  --chart-4: #f0878b; /* rosa */
+  --chart-5: #38bdf8; /* celeste */
+  --chart-6: #a78bfa; /* violeta */
+  --chart-7: #2dd4bf; /* verde azulado */
+  --chart-8: #94a3b8; /* gris azulado (neutro) */
+
   /* Radios */
   --radius-sm: 8px;
   --radius-md: 12px;
