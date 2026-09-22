@@ -47,6 +47,7 @@ Páginas necesarias:
 | **Conexiones** | Estado de WhatsApp, Telegram y Gmail — conectar/desconectar cada canal | Tabla nueva `channel_connections` |
 | **Perfil** | Datos de la cuenta/empresa | `client_accounts` |
 | **Monitoreo** | Todo lo que hace el bot, al pie de la letra: feed en vivo de eventos (pedidos, mensajes, respuestas, tickets, alertas de stock), conversaciones por canal y usuario, y el workflow de n8n dibujado con la ejecución nodo por nodo (solo lectura) | `orders`, `interactions`, `tickets`, `stock_alerts` + tablas internas de n8n (`workflow_entity`, `execution_entity`, `execution_data`). Contrato en `docs/API_MONITOREO.md` |
+| **Métricas** | Reemplazo en vivo, dentro del portal, de los paneles de los dos dashboards de Grafana: MTTD/MTTR/end-to-end, distribución de estados y serie diaria de órdenes; TMR promedio, distribución de intents y serie diaria por canal del chatbot. Se omite el panel "Precisión (accuracy) 92.7%" (literal SQL fijo, no calculado) y nunca se lee `v_chatbot_corpus` (ventana congelada del 12/08) | `orders`, `interactions` (nunca las vistas congeladas). Contrato en `docs/API_METRICAS.md` |
 
 ---
 
@@ -138,9 +139,12 @@ GET    /monitoring/workflows                     → workflows de n8n con contad
 GET    /monitoring/workflows/{id}/graph          → grafo sanitizado (nodos, aristas, posiciones)
 GET    /monitoring/executions                    → ejecuciones de n8n (cursor por id)
 GET    /monitoring/executions/{id}               → traza nodo por nodo (redactada y acotada)
+
+GET    /metrics/orders                           → MTTD/MTTR/end-to-end, distribución de estados y serie diaria (ventana en horas u histórico completo)
+GET    /metrics/chatbot                          → TMR promedio, distribución de intents y serie diaria por canal (idem, solo sobre `interactions`)
 ```
 
-Los endpoints `/monitoring/*` son de solo lectura y su contrato exacto (campos, tipos, ejemplos) está en `docs/API_MONITOREO.md`.
+Los endpoints `/monitoring/*` y `/metrics/*` son de solo lectura y su contrato exacto (campos, tipos, ejemplos) está en `docs/API_MONITOREO.md` y `docs/API_METRICAS.md` respectivamente.
 
 Todos los endpoints (salvo `/auth/*` y `/connections/telegram/confirm`) requieren JWT válido y devuelven solo datos de la `client_account_id` del token — **nunca cruzar datos entre cuentas**.
 
@@ -233,6 +237,11 @@ Consecuencia de seguridad: con el registro abierto, cualquier persona que cree u
 - **`POST /products` y `PATCH /products/{id}` NO están implementados**: el spec los marca como opcionales ("si da el tiempo") y la tarea 6.6 quedó sin hacer. El catálogo es de solo lectura.
 
 - **Monitoreo (`/monitoring/*`, solo lectura)**: no figuraba en el spec original. El feed y las conversaciones derivan de `orders`, `interactions`, `tickets` y `stock_alerts`. La sección de workflow **lee las tablas internas de n8n 2.12.2** (`workflow_entity`, `execution_entity`, `execution_data`) que viven en la misma PostgreSQL; es un acoplamiento a un esquema que n8n no publica como API estable (el `data` de `execution_data` está en formato `flatted`, que la API decodifica con un parser propio, con tope de 2 MB). Por eso **degrada**: si las tablas no existen o el usuario no puede leerlas, `/monitoring/workflows` y `/monitoring/executions` responden `available: false` con lista vacía (nunca 500) y `/monitoring/summary` informa `executions.available: false`. El grafo se arma con una lista blanca (nombre, tipo, posición y conexiones): **nunca** salen `parameters`, `credentials`, `webhookId` ni notas, y la vista previa de la salida de cada nodo se acota a ~2 KB y se redacta por clave (`authorization`, `token`, `secret`, `password`, `cookie`, ...) y por valor (Bearer/JWT, `sk-`, tokens de bot, hex y base64 largos). Como el resto de `orders`/`tickets`, el feed no está aislado por cuenta (§10.2). Para leerlo, la API usa el mismo usuario de la BD que n8n.
+
+- **Métricas (`/metrics/*`, solo lectura)**: tampoco figuraba en el spec original; nace de una decisión explícita del usuario de reemplazar los dos dashboards de Grafana (`grafana/dashboards/tesis-flujo1.json`, `tesis-flujo2.json`) por una vista en vivo dentro del propio portal. Tres decisiones de esa auditoría:
+  - El panel "Precisión (accuracy) 92.7%" de `tesis-flujo2.json` **se omite por completo**: es `SELECT 92.7 AS "Accuracy"`, un literal SQL fijo, no una métrica calculada sobre ningún dato real.
+  - `GET /metrics/chatbot` nunca lee `v_chatbot_corpus`: esa vista está filtrada a `data_source='measured'` y a la ventana fija `2026-08-12 23:00–24:00` (`docs/DESVIOS_SPEC.md` §2.12/§3.2), no es "en vivo". Tampoco se usa `v_daily_chatbot_summary` (que sí es independiente de esa ventana, pero no admite `hours`/`data_source` como parámetro ni rellena huecos de días): ambos endpoints recalculan directo sobre `orders`/`interactions` para no heredar ningún supuesto oculto de una vista.
+  - `hours` es opcional; sin valor, los agregados escalares cubren el histórico completo, y solo la serie diaria se acota a 90 días (documentado en `docs/API_METRICAS.md`) para no devolver una fila por día desde el origen de los datos.
 
 ### 10.4 Conexión de canales
 
