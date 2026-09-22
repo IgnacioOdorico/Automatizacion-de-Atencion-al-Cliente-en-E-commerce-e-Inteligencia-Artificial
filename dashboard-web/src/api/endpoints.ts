@@ -17,6 +17,7 @@ import {
   Ticket,
   WhatsAppApprovalResponse,
 } from '@/types/api';
+import type { ChatbotMetrics, MetricsParams, OrdersMetrics } from '@/types/metrics';
 import type {
   ConversationsPage,
   ConversationsParams,
@@ -185,5 +186,19 @@ export const monitoringApi = {
   /** Traza por nodo de una ejecución (con salidas ya redactadas por el backend). */
   execution(id: number): Promise<ExecutionDetail> {
     return apiRequest<ExecutionDetail>(`/monitoring/executions/${id}`);
+  },
+};
+
+/**
+ * Sección "Métricas" (solo lectura, ver docs/API_METRICAS.md). El dominio de
+ * `data_source` difiere entre los dos endpoints (lo resuelve lib/metricsFilters
+ * antes de llegar acá); esta capa solo arma la URL con lo que recibe.
+ */
+export const metricsApi = {
+  orders(params: MetricsParams = {}): Promise<OrdersMetrics> {
+    return apiRequest<OrdersMetrics>(`/metrics/orders${queryString({ hours: params.hours, data_source: params.data_source })}`);
+  },
+  chatbot(params: MetricsParams = {}): Promise<ChatbotMetrics> {
+    return apiRequest<ChatbotMetrics>(`/metrics/chatbot${queryString({ hours: params.hours, data_source: params.data_source })}`);
   },
 };
