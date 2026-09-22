@@ -171,23 +171,27 @@ docker ps
 
 ### Paso 3 — Crear la base de datos
 
+**No hace falta si el volumen es nuevo**: `init_simple.sql` se ejecuta solo la primera vez que arranca el contenedor de Postgres (`docker-entrypoint-initdb.d`). Corré esto a mano únicamente si necesitás recrear el schema sobre un volumen que ya tenía tablas (y vas a ver errores de "ya existe" si el schema ya estaba, es esperable):
+
 ```powershell
 Get-Content init_simple.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
 ```
 
 ---
 
-### Paso 4 — Cargar datos de prueba
+### Paso 4 — Cargar el catálogo (productos y FAQs)
 
 ```powershell
-Get-Content seed_expand.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
+Get-Content seed_catalogo.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
 ```
 
 Verificar:
 ```powershell
 docker exec tesis_postgres psql -U n8n_user -d ecommerce_tesis -c "SELECT COUNT(*) FROM products; SELECT COUNT(*) FROM faq_responses;"
 ```
-Debe mostrar **20 productos** y **22 FAQs**.
+Debe mostrar **20 productos** y **23 FAQs**.
+
+> ⚠️ **Nunca ejecutes `seed_expand.sql`**: tiene `TRUNCATE ... CASCADE` y borra cualquier orden/ticket/interacción ya cargada (es el que generó la evidencia medida de la tesis). Queda congelado en el repo solo como referencia histórica.
 
 ---
 
@@ -195,14 +199,16 @@ Debe mostrar **20 productos** y **22 FAQs**.
 
 1. Abrí **http://localhost:5678**
 2. Ir a **Workflows → botón "..." → Import from file**
-3. Importar en este orden:
+3. Importar en este orden (los nombres reales del repo, con guion largo "—"; después de importar cada nodo Postgres/SMTP queda sin credencial asignada — se asigna en el **Paso 6**):
 
 | Archivo | Estado |
 |---------|--------|
-| `workflows/Flujo 1 - Pipeline de Procesamiento de Órdenes SIMPLE.json` | ✅ Activar |
-| `workflows/Flujo 2 - Chatbot Omnicanal IA.json` | ✅ Activar |
-| `workflows/Flujo 1 - ... PRODUCCION.json` | ⏸ Dejar inactivo |
-| `workflows/Flujo 2 - ... PRODUCCION.json` | ⏸ Dejar inactivo |
+| `workflows/Flujo 1 — Pipeline de Procesamiento de Órdenes.json` | ✅ Activar |
+| `workflows/Flujo 2 — Chatbot WhatsApp + Telegram.json` | ⏸ Importalo; activalo solo cuando además de Postgres/SMTP tengas cargada una credencial **OpenAI** y un bot de **Telegram propio para el chatbot** (distinto del bot de vínculo de cuenta del dashboard, que usa `workflows/Flujo 3 — Telegram Vínculo de Cuenta.json` — ver [docs/TUNEL_TELEGRAM.md](docs/TUNEL_TELEGRAM.md)) |
+| `workflows/Flujo 1 — Pipeline de Procesamiento de Órdenes PRODUCCION.json` | ⏸ Dejar inactivo (usa APIs externas reales) |
+| `workflows/Flujo 2 — Chatbot Omnicanal IA PRODUCCION.json` | ⏸ Dejar inactivo (usa APIs externas reales) |
+
+> Para el **Dashboard del cliente** (la web en `:8080`) hace falta además su propia migración y seed — ver la sección **[🖥️ Dashboard del cliente](#-dashboard-del-cliente)** más abajo, no son los mismos scripts que este paso.
 
 ---
 
