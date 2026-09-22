@@ -30,6 +30,21 @@ export interface BarLayout {
   height: number;
 }
 
+/**
+ * Corta una etiqueta de dos palabras en 2 líneas (para que no se pise con la
+ * barra de al lado en un gráfico angosto). Una palabra sola, o que ya entra
+ * en `maxChars`, queda en una sola línea; con más de dos palabras corta en el
+ * último espacio antes de la mitad.
+ */
+export function wrapBarLabel(label: string, maxChars = 12): [string] | [string, string] {
+  if (label.length <= maxChars) return [label];
+  const mid = Math.floor(label.length / 2);
+  let splitAt = label.lastIndexOf(' ', mid);
+  if (splitAt <= 0) splitAt = label.indexOf(' ', mid);
+  if (splitAt <= 0) return [label];
+  return [label.slice(0, splitAt), label.slice(splitAt + 1)];
+}
+
 export function barLayout(data: readonly BarDatum[], geometry: BarGeometry): BarLayout[] {
   if (data.length === 0) return [];
 

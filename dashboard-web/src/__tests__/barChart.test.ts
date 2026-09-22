@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { barLayout } from '@/lib/barChart';
+import { barLayout, wrapBarLabel } from '@/lib/barChart';
 
 const GEOMETRY = { width: 200, height: 100, gap: 4 };
 
@@ -58,5 +58,20 @@ describe('barLayout: escala de valores a coordenadas SVG', () => {
   it('acepta un maxValue explícito (para compartir escala entre gráficos)', () => {
     const bars = barLayout([{ key: 'a', value: 5 }], { ...GEOMETRY, maxValue: 10 });
     expect(bars[0].height).toBeCloseTo(50);
+  });
+});
+
+describe('wrapBarLabel: corta una etiqueta larga en 2 líneas para no pisar la barra de al lado', () => {
+  it('una etiqueta corta queda en una sola línea', () => {
+    expect(wrapBarLabel('Reclamo')).toEqual(['Reclamo']);
+  });
+
+  it('dos palabras que no entran se parten en el espacio', () => {
+    expect(wrapBarLabel('Pregunta frecuente')).toEqual(['Pregunta', 'frecuente']);
+    expect(wrapBarLabel('Estado de pedido')).toEqual(['Estado', 'de pedido']);
+  });
+
+  it('sin espacio para partir (una sola palabra larga) queda en una línea', () => {
+    expect(wrapBarLabel('Superlargisimo')).toEqual(['Superlargisimo']);
   });
 });

@@ -1,6 +1,6 @@
 import { useId } from 'react';
 
-import { barLayout } from '@/lib/barChart';
+import { barLayout, wrapBarLabel } from '@/lib/barChart';
 import { formatTmr } from '@/lib/format';
 
 export interface BarEntry {
@@ -22,7 +22,7 @@ const WIDTH = 320;
 const HEIGHT = 170;
 const PAD_X = 8;
 const PAD_TOP = 26;
-const PAD_BOTTOM = 46;
+const PAD_BOTTOM = 58;
 const CHART_H = HEIGHT - PAD_TOP - PAD_BOTTOM;
 const CHART_W = WIDTH - PAD_X * 2;
 const GAP = 14;
@@ -96,10 +96,14 @@ export function BarChart({ title, entries, reducedMotion }: BarChartProps) {
               <text x={cx} y={PAD_TOP - 8} textAnchor="middle" className="chart-bar__value">
                 {entry.value === null ? 'Sin respuestas' : formatTmr(entry.value)}
               </text>
-              <text x={cx} y={baseY + 18} textAnchor="middle" className="chart-bar__label">
-                {entry.label}
+              <text x={cx} y={baseY + 17} textAnchor="middle" className="chart-bar__label">
+                {wrapBarLabel(entry.label).map((line, i) => (
+                  <tspan key={i} x={cx} dy={i === 0 ? 0 : 12}>
+                    {line}
+                  </tspan>
+                ))}
               </text>
-              <text x={cx} y={baseY + 33} textAnchor="middle" className="chart-bar__count">
+              <text x={cx} y={baseY + 45} textAnchor="middle" className="chart-bar__count">
                 ({entry.count.toLocaleString('es-AR')})
               </text>
             </g>
