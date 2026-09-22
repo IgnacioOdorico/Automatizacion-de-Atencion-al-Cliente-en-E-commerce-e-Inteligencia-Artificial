@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 #  limpiar_demo.ps1 — dejar la base como estaba antes de ensayar
 #
 #  Borra SOLO lo que genera la landing:
