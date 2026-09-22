@@ -6,6 +6,7 @@ from app.routers import (
     auth,
     connections,
     dashboard,
+    metrics,
     monitoring_conversations,
     monitoring_feed,
     monitoring_workflows,
@@ -39,6 +40,7 @@ def create_app() -> FastAPI:
     application.include_router(auth.router)
     application.include_router(connections.router)
     application.include_router(dashboard.router)
+    application.include_router(metrics.router)
     application.include_router(orders.router)
     application.include_router(tickets.router)
     application.include_router(products.router)
