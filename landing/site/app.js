@@ -374,6 +374,19 @@
       });
   }
 
+  // ---------------------------------------------------------------- enlaces al portal
+
+  /**
+   * El portal vive en el puerto 8080 de la MISMA máquina que sirve la landing.
+   * Escrito a mano en el HTML quedaría 'localhost', que solo funciona para quien
+   * abre la página en esa computadora: desde otra de la red la landing se ve pero
+   * el botón no lleva a ningún lado. Se reescribe con el host real de la página.
+   */
+  function enlazarPortal() {
+    var destino = window.location.protocol + '//' + window.location.hostname + ':8080';
+    $$('a[href^="http://localhost:8080"]').forEach(function (a) { a.href = destino; });
+  }
+
   // ---------------------------------------------------------------- presentación
 
   function navPegada() {
@@ -428,6 +441,7 @@
   traerStats();
   window.setInterval(traerStats, INTERVALO_STATS_MS);
 
+  enlazarPortal();
   navPegada();
   apareceAlScrollear();
 })();

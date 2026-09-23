@@ -1,218 +1,95 @@
-# Guion del video de presentación — Atendo
+# Guion del video — índice y montaje
 
-**Duración objetivo:** 6 a 7 minutos
-**Formato:** captura de pantalla 1920×1080 a 60 fps + voz en off
+**Duración objetivo:** 6 a 7 minutos · **Formato:** captura de pantalla 1920×1080 + voz en off
 **Audiencia:** el tribunal de la defensa, y cualquiera a quien después le pasen el link
-**Tono:** presentación de producto. Nada de jerga técnica, nada de código, nada de n8n.
+**Tono:** presentación de producto. Nada de jerga técnica, nada de código, nada del motor por dentro.
+
+El guion está partido en tres por una razón práctica: **quien graba una pantalla que pide
+credenciales tiene que tener esas credenciales**. Todo lo que no las pide se reparte.
+
+| Quién | Qué graba | ¿Necesita credenciales? | Su guion |
+|---|---|---|---|
+| **Juan Cruz** | Apertura, el problema, qué hace el producto, cierre | No | [GUION_JUANCRUZ.md](GUION_JUANCRUZ.md) |
+| **Ignacio** | La landing en vivo (pedido + chat) y las placas de resultados y límites | No | [GUION_IGNACIO.md](GUION_IGNACIO.md) |
+| **Santiago** | El portal del cliente por dentro | **Sí** (cuenta demo) | [GUION_SANTIAGO.md](GUION_SANTIAGO.md) |
 
 ---
 
-## Antes de grabar — lista de control
+## Cómo se arma el video
 
-Esto no es opcional: si algo de acá falla, se nota en cámara.
+| # | Minuto | Quién | Escena |
+|---|---|---|---|
+| 1 | 0:00 – 0:25 | Juan Cruz | Apertura (placa) |
+| 2 | 0:25 – 1:00 | Juan Cruz | El problema (landing) |
+| 3 | 1:00 – 1:40 | Juan Cruz | Qué hace el producto (landing) |
+| 4 | 1:40 – 2:50 | **Ignacio** | Un pedido real, en vivo (landing) |
+| 5 | 2:50 – 3:50 | **Ignacio** | El asistente responde (landing) |
+| 6 | 3:50 – 5:20 | **Santiago** | El portal del cliente |
+| 7 | 5:20 – 6:20 | **Ignacio** | Resultados y límites (placas) |
+| 8 | 6:20 – 6:50 | Juan Cruz | Cierre (placa) |
 
-- [ ] Docker corriendo y los seis servicios arriba (`docker compose ps`)
-- [ ] `http://localhost:3001` (landing) abre y el contador de actividad dice **En vivo**
-- [ ] `http://localhost:8080` (panel) abre y entrás con `ventas@techstore.com.ar` / `Demo2026!`
-- [ ] `http://localhost:8025` (bandeja de correo) abre
-- [ ] Sesión del navegador ya iniciada en el panel, en otra pestaña, lista para pasar
-- [ ] Navegador sin barras de extensiones, sin marcadores a la vista, pestaña única por ventana
-- [ ] Notificaciones del sistema en silencio
-- [ ] Zoom del navegador al 100 % (o 110 % si grabás en 1080p: el texto entra mejor)
-- [ ] Probar una vez el botón «Comprar una unidad» y una consulta al asistente, **y después
-      limpiar** (ver `video/limpiar_demo.ps1`)
-
-> **El asistente tarda entre 1,5 y 4 segundos en responder.** No es un problema:
-> es el tiempo real. Aprovechá esos segundos para narrar, no los cortes en la edición.
-> Que se vea la espera es lo que prueba que no está grabado.
+Las escenas 2 y 3 son la misma pasada de scroll por la landing: Juan Cruz puede grabarlas
+de corrido y cortar en edición.
 
 ---
 
-## Escena 1 — Apertura (0:00 – 0:25)
+## Lo único que hace falta coordinar
 
-**En pantalla:** placa de apertura (`video/placas.html`, sección 1). Logo, título, autores.
+**La landing en vivo necesita el sistema corriendo.** Las secciones de texto son HTML y se
+ven siempre, pero los contadores del encabezado, el botón de pedido y el chat le hablan a
+la API, al motor de automatización y a la base. Eso hoy corre **solo en la máquina de
+Santiago**.
 
-**Voz en off:**
+Tres formas de resolverlo, de más simple a menos:
 
-> Una PyME que vende por internet recibe un pedido. Alguien lo abre, revisa si hay stock,
-> lo descuenta de una planilla, confirma la venta y le escribe al cliente.
-> Después llega un mensaje preguntando cuándo llega el envío. Y otro. Y otro.
->
-> Nosotros medimos cuánto lleva todo eso. Cuarenta y nueve segundos por pedido.
-> Y las consultas no esperan a que sea horario de oficina.
->
-> Esto es Atendo.
+1. **Graban los tres en la máquina de Santiago**, en momentos distintos. Cero configuración.
+2. **Desde la red local**: con el sistema levantado en la máquina de Santiago, Juan Cruz e
+   Ignacio abren `http://192.168.1.2:3001` desde su propia computadora y graban ahí. Misma
+   red, mismo Wi-Fi. Los botones del portal se reescriben solos a esa dirección.
+3. **Levantar el sistema en otra máquina**: posible, pero hay que cargar credenciales del
+   motor y restaurar la base. Es el camino largo.
 
----
-
-## Escena 2 — Qué es y qué resuelve (0:25 – 1:15)
-
-**En pantalla:** la landing, `http://localhost:3001`. Scroll lento desde el hero hasta
-la sección «Qué hace Atendo». Detenerse en las tres tarjetas.
-
-**Voz en off:**
-
-> Atendo se ocupa del post-venta de una tienda online. Hace tres cosas.
->
-> **Procesa cada pedido**: lo registra, verifica el stock, lo descuenta, confirma la venta
-> y le manda el correo al cliente. Si no hay stock, avisa en vez de vender de más.
->
-> **Atiende a los clientes**: un asistente entiende qué está preguntando la persona
-> —una duda, el estado de un pedido, un reclamo— y responde con la información real de
-> la tienda. Un reclamo no lo improvisa: le abre un caso al comercio.
->
-> **Y muestra todo**: un panel donde el dueño ve lo que está pasando, sin planillas.
->
-> Estos números de acá arriba no son de adorno. Son los datos del sistema corriendo
-> ahora mismo: doscientos dieciocho pedidos, más de dos mil quinientas consultas atendidas.
+> La opción 2 es la más cómoda: cada uno graba en su computadora, con su micrófono, y
+> nadie toca configuración.
 
 ---
 
-## Escena 3 — Un pedido de verdad, en vivo (1:15 – 2:30)
+## Reglas que valen para los tres
 
-**En pantalla:** bajar a «Probalo», bloque 1. Apretar **Comprar una unidad**.
-Dejar que el recorrido se marque paso por paso. Que se lea el recibo.
+**Grabá a 1920×1080.** Si el texto queda chico, subí el zoom del navegador (110 % anda
+bien), no bajes la resolución.
 
-**Voz en off:**
+**Navegador limpio.** Sin barra de marcadores, sin extensiones a la vista, una sola pestaña
+por ventana, notificaciones del sistema en silencio.
 
-> No se los voy a contar. Lo hacemos.
->
-> *(apretar el botón)*
->
-> Ese botón acaba de meter un pedido real en el sistema. No es una animación preparada:
-> entró por el mismo camino que usaría la tienda.
->
-> Lo registró. Verificó el stock y lo descontó. Confirmó la venta. Y le mandó el correo
-> al cliente.
->
-> *(señalar el tiempo)*
->
-> Ochenta milisegundos, de punta a punta. El mismo trabajo, cronometrado a mano,
-> nos llevó cuarenta y nueve segundos.
+**No cortes las esperas reales.** El asistente tarda entre 1,5 y 3,5 segundos. Esa espera es
+la prueba de que no está grabado. Narrá encima en vez de cortar.
 
-**En pantalla:** apretar **Pedir más de lo que hay**.
+**El cursor se mueve despacio y decidido.** Nada de buscar con el mouse.
 
-**Voz en off:**
+### Qué NO muestra nadie
 
-> Ahora lo interesante. Pido más unidades de las que hay en stock.
->
-> *(los dos pasos del medio quedan en ámbar)*
->
-> El sistema no vendió. Frenó la venta y le avisó al cliente. Esto, que parece un detalle,
-> es la diferencia entre una operación sana y un reembolso con un cliente enojado.
-> En la prueba de concurrencia, con veinte pedidos casi simultáneos sobre el mismo
-> producto, no hubo una sola sobreventa.
+- **Monitoreo → Workflow** en el portal: dibuja el motor de automatización por dentro.
+- El selector de **Origen del dato** en Métricas, en cualquier valor que no sea el que viene.
+- Una consulta de **«estado de pedido»** en el chat de la landing (motivo en
+  [`../landing/README.md`](../landing/README.md)).
+- La consola del navegador, la terminal, Docker, el editor de código.
+- `localhost:5678` ni ninguna pantalla del motor de automatización.
 
-**Opcional (suma 20 s):** pasar a la pestaña de la bandeja de correo (`localhost:8025`)
-y mostrar los dos correos recién llegados: el de confirmación y el de sin stock.
+El detalle de cada pantalla —qué dice y si es cierto— está en [PANTALLAS.md](PANTALLAS.md).
 
 ---
 
-## Escena 4 — El asistente (2:30 – 3:45)
+## Después de grabar
 
-**En pantalla:** bajar al bloque 2. Escribir a mano (no pegar) una consulta.
-Dejar que se vea el indicador de «escribiendo».
+Corré esto una vez, cuando terminaron todos:
 
-**Voz en off:**
+```powershell
+video/limpiar_demo.ps1
+```
 
-> Lo mismo con el asistente. Le escribo como le escribiría un cliente por WhatsApp.
->
-> *(escribir: «¿Hacen envíos a Mendoza?»)*
->
-> *(mientras piensa)* Esa consulta ya salió del navegador, entró al sistema, el asistente
-> la clasificó y está armando la respuesta con el catálogo y las políticas de la tienda.
->
-> *(llega la respuesta)*
->
-> Ahí está. Y abajo dice qué tipo de consulta era y cuánto tardó.
->
-> *(clic en «Mi pedido llegó fallado, quiero un cambio»)*
->
-> Este caso es distinto. No es una duda: es un reclamo. El asistente lo reconoce,
-> responde con criterio, y además le abre un caso al comercio. Lo vamos a ver en el panel
-> en un segundo.
-
----
-
-## Escena 5 — El panel (3:45 – 5:15)
-
-**En pantalla:** pasar a la pestaña del panel ya logueado, `http://localhost:8080`.
-Recorrer: Dashboard → Pedidos → Tickets → Métricas → Conexiones.
-
-**Voz en off:**
-
-> Este es el panel del dueño de la tienda.
->
-> **Inicio.** Los pedidos de hoy, los casos abiertos y los tiempos. Se actualiza solo.
->
-> **Pedidos.** *(señalar la fila resaltada)* Ahí está el pedido que metimos hace un minuto,
-> con su estado y su detalle.
->
-> **Casos.** Y acá está el reclamo que abrió el asistente, con el canal por el que entró
-> y su nivel de urgencia. Nadie lo cargó a mano.
->
-> **Métricas.** Los tiempos de procesamiento, la distribución de estados, qué tipo de
-> consultas llegan y cuánto tarda el asistente en cada una.
->
-> **Conexiones.** Y desde acá el comercio conecta sus canales. WhatsApp, Telegram, correo.
-> Sin tocar nada técnico.
-
-> **Nota para quien graba:** no entres a *Monitoreo → Workflow*. Esa pestaña muestra el
-> motor de automatización por dentro. Es correcta y es útil, pero no es lo que se muestra
-> en una presentación comercial. Las otras dos pestañas de Monitoreo —En vivo y
-> Conversaciones— sí se pueden mostrar y quedan muy bien.
-
----
-
-## Escena 6 — Los resultados (5:15 – 6:15)
-
-**En pantalla:** placas animadas (`video/placas.html`, secciones 2 a 4). Una cifra por placa.
-
-**Voz en off:**
-
-> Todo esto está medido, no estimado.
->
-> **Cero coma cero seis tres segundos** de punta a punta, sobre cincuenta pedidos.
-> Contra cuarenta y nueve segundos del proceso manual. Un factor cercano a
-> setecientos ochenta, con un intervalo de confianza del noventa y cinco por ciento
-> entre seiscientos ochenta y seis y ochocientos setenta y cinco.
->
-> Y lo decimos como lo dice el trabajo: es un orden de magnitud de laboratorio,
-> no una promesa de producción.
->
-> **Un segundo y medio** tarda el asistente en responder.
->
-> **Noventa y dos coma siete por ciento** de exactitud clasificando la consulta,
-> con intervalo entre ochenta y siete y noventa y seis.
->
-> Pero también medimos lo que no funciona. Bajo veinte pedidos casi simultáneos,
-> el cuarenta por ciento quedó sin procesar. La corrección del contenido de las respuestas
-> no quedó establecida: dos evaluadores no llegaron a un acuerdo suficiente.
-> Y la exactitud depende mucho más de cómo está escrito el prompt que de la base de
-> conocimiento de la tienda.
->
-> Decimos las dos cosas porque un prototipo que solo cuenta lo que le sale bien
-> no sirve para decidir nada.
-
----
-
-## Escena 7 — Cierre (6:15 – 6:45)
-
-**En pantalla:** placa de cierre (`video/placas.html`, sección 5).
-
-**Voz en off:**
-
-> Atendo es el prototipo de un Trabajo Integrador de la Tecnicatura Universitaria en
-> Programación de la UTN, Facultad Regional Mendoza.
->
-> Todo lo que vieron corre hoy, y todas las cifras son recalculables: los guiones de
-> medición y los datos crudos están en el repositorio del trabajo.
->
-> Lo que sigue es lo que la medición dejó marcado: resolver la pérdida bajo ráfaga,
-> fijar un instrumento reproducible para evaluar el contenido de las respuestas,
-> y llevarlo a varias tiendas sobre la misma instalación.
->
-> Gracias.
+Borra los pedidos y las conversaciones que generaron los ensayos y repone el stock
+descontado. No toca nada de las corridas de la tesis.
 
 ---
 
@@ -220,18 +97,8 @@ Recorrer: Dashboard → Pedidos → Tickets → Métricas → Conexiones.
 
 | Qué | Cómo |
 |---|---|
-| Música | Instrumental suave, por debajo de −22 dB. Bajarla a −30 dB cuando hay voz. |
-| Cortes | Ninguno durante las esperas reales del asistente ni del pedido. Son la prueba. |
+| Música | Instrumental suave, por debajo de −22 dB. A −30 dB cuando hay voz. |
+| Cortes | Ninguno durante las esperas reales del asistente ni del pedido. |
 | Zoom | Acercar (escala 1,15) cuando se marca un tiempo en pantalla o llega una respuesta. |
-| Cursor | Movimientos lentos y decididos. Nada de buscar con el mouse. |
-| Subtítulos | Sí. Muchos los van a ver sin audio. |
-| Resolución | Grabar a 1920×1080. Si el texto queda chico, subir el zoom del navegador, no la resolución. |
-
-## Qué NO mostrar
-
-- La pestaña **Monitoreo → Workflow** (muestra el motor por dentro).
-- La consola del navegador, la terminal, Docker Desktop, el editor de código.
-- La URL `localhost:5678` ni ninguna pantalla del motor de automatización.
-- Una consulta de tipo «estado de pedido» en el chat de la landing: el asistente la
-  atiende, pero el registro guarda solo su primera línea y en pantalla queda coja
-  (ver `landing/README.md`).
+| Subtítulos | Sí. Muchos lo van a ver sin audio. |
+| Transiciones | Corte seco entre escenas de distinta persona. Nada de barridos. |
