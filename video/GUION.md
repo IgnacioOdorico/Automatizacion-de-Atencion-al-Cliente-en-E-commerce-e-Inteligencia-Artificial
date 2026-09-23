@@ -13,6 +13,22 @@ credenciales tiene que tener esas credenciales**. Todo lo que no las pide se rep
 | **Ignacio** | La landing en vivo (pedido + chat) y las placas de resultados y límites | No | [GUION_IGNACIO.md](GUION_IGNACIO.md) |
 | **Santiago** | El portal del cliente por dentro | **Sí** (cuenta demo) | [GUION_SANTIAGO.md](GUION_SANTIAGO.md) |
 
+### Para que cada uno arme su máquina
+
+Juan Cruz e Ignacio no tienen el sistema corriendo. Cada uno tiene una guía pensada para
+pasarle a su asistente de IA, que lo deja listo sin que tengan que entender la instalación:
+
+- [PARA_TU_CLAUDE_JUANCRUZ.md](PARA_TU_CLAUDE_JUANCRUZ.md)
+- [PARA_TU_CLAUDE_IGNACIO.md](PARA_TU_CLAUDE_IGNACIO.md)
+
+Y para comprobar si una máquina puede grabar, desde cualquiera de las tres:
+
+```powershell
+video/verificar_entorno.ps1                      # contra esta máquina
+video/verificar_entorno.ps1 -Host 192.168.1.2    # contra la de Santiago
+video/verificar_entorno.ps1 -Completo            # además dispara un pedido y una consulta
+```
+
 ---
 
 ## Cómo se arma el video
