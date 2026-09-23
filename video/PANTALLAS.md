@@ -77,7 +77,7 @@ Acompaña a [`GUION.md`](GUION.md), que dice en qué orden mostrarlas.
 | Canal | Estado en pantalla | ¿Verdad? |
 |---|---|---|
 | WhatsApp | **Pendiente de aprobación** | **Sí.** Un número de WhatsApp Business lo aprueba Meta en 1-3 días hábiles. Es el estado correcto. |
-| Telegram | **Conectado** | **Solo si el túnel está levantado.** Ver abajo. |
+| Telegram | **Conectado** | **Sí**, con el túnel levantado. Es el canal real del video. |
 | Gmail | **Desconectado** | **Sí.** Faltan las credenciales de Google. |
 
 > Ese **pendiente** de WhatsApp era un `conectado` sembrado. Se cambió: la pantalla
@@ -111,21 +111,32 @@ Tres pestañas. **Dos se pueden mostrar, una no.**
 
 ---
 
-## Pendiente de decidir: el canal de Telegram
+## El canal de Telegram: levantado
 
-Telegram figura **conectado** en el portal, y lo estuvo: hay **74 interacciones reales**
-entre el 17 de junio y el 25 de agosto. Pero **hoy no funciona**: el trigger necesita una
-URL pública y el túnel está apagado (`envy-abruptly-grievance.ngrok-free.dev` responde 404,
-y los contenedores del perfil `tunnel` no existen).
+Telegram es el **único canal real** del video, y funciona. El bot es
+`@tesis_postventa_bot`. Alguien le escribe desde su teléfono y el asistente contesta;
+la conversación aparece en Monitoreo → Conversaciones.
 
-Dos caminos:
+Para que ande, el motor de automatización necesita una URL pública: la da el perfil
+`tunnel` del compose (ngrok + un portero nginx con lista blanca).
 
-**Levantar el túnel.** Todo lo necesario está en la máquina: ngrok instalado, token en
-`ngrok.yml`, credencial de Telegram en el motor, nodos en el flujo activo. Son unos
-15 minutos. Quedaría una demostración con el teléfono real, que es imbatible.
+```powershell
+docker compose --profile tunnel up -d
+```
 
-**No levantarlo.** Entonces **Telegram también tiene que pasar a «desconectado»** en el
-portal, por el mismo criterio que WhatsApp: la pantalla no puede afirmar una conexión
-que no existe.
+Verificado el 23/09/2026: el túnel publica, Telegram tiene registrada la URL del túnel,
+cero mensajes pendientes y ningún error. Desde internet **solo** pasa el webhook del
+chatbot: la raíz, `/rest/login`, `/webhook/orden-nueva` y todo lo demás dan 404.
 
-Mientras no se decida, esa fila del portal es la única que dice algo que hoy no es cierto.
+> **El túnel es una pieza más que se puede caer.** Si ngrok se corta en mitad de la
+> grabación, se cae el canal de Telegram. El chat de la landing es la red de seguridad:
+> corre local y no depende de internet.
+
+**Antes de grabar**, comprobá que el túnel esté arriba:
+
+```bash
+curl -s -I https://envy-abruptly-grievance.ngrok-free.dev/
+```
+
+La primera línea tiene que decir **404**. Eso significa que el túnel publica y el portero bloquea lo que
+no corresponde. Si da 502 o no responde, el túnel está caído.
