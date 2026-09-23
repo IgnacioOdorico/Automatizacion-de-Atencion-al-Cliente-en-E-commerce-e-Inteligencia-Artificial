@@ -20,7 +20,7 @@ describe('nodeKind (ícono y tipo legible de cada nodo)', () => {
     ['merge', 'merge', 'Unir'],
     ['wait', 'clock', 'Espera'],
     ['chainLlm', 'ai', 'IA'],
-    ['lmChatOpenAi', 'ai', 'OpenAI'],
+    ['lmChatOpenAi', 'ai', 'Modelo de lenguaje'],
   ])('%s usa el ícono %s y su etiqueta menciona "%s"', (shortType, icon, label) => {
     const kind = nodeKind(shortType);
     expect(kind.icon).toBe(icon);

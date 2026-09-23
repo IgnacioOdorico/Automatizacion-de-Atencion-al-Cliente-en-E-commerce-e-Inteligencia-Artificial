@@ -173,6 +173,12 @@ export function PedidosPage() {
               </table>
             </div>
 
+            <p className="tabla-leyenda">
+              <strong>Pendiente</strong> es un pedido que entró y todavía no se procesó.
+              <strong> Sin stock</strong> es uno que el sistema frenó porque no había unidades
+              suficientes, en vez de venderlo.
+            </p>
+
             <Pagination
               page={data.page}
               totalPages={data.total_pages}

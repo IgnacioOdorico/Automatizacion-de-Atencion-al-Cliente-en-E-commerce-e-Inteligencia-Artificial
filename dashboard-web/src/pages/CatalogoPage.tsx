@@ -132,7 +132,7 @@ export function CatalogoPage() {
                         </td>
                         <td className="table__num" data-label="Stock">
                           {product.stock}
-                          <div className="table__cell-sub">mín. {product.stock_min}</div>
+                          <div className="table__cell-sub">mínimo {product.stock_min}</div>
                         </td>
                         <td data-label="Estado">
                           <Badge tone={stock.tone}>{stock.label}</Badge>
@@ -143,6 +143,11 @@ export function CatalogoPage() {
                 </tbody>
               </table>
             </div>
+
+            <p className="tabla-leyenda">
+              El <strong>mínimo</strong> es el punto de reposición: cuando el stock llega a ese
+              número, el producto se marca «Stock bajo» y el sistema avisa.
+            </p>
 
             <Pagination
               page={data.page}

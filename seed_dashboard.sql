@@ -4,7 +4,7 @@
 --
 --  Cuenta demo realista (PyME) + conexiones de canal en
 --  estados variados para la demo en video:
---    whatsapp  → connected    (seed para el video, decisión 10)
+--    whatsapp  → pending      (solicitud enviada, esperando a Meta)
 --    telegram  → connected    (external_reference = chat_id numérico)
 --    email     → disconnected (canal sin vincular aún)
 --
@@ -33,13 +33,17 @@ ON CONFLICT (email) DO NOTHING;
 --   nunca TRUNCATE ni DELETE)
 -- ############################################################
 
--- WhatsApp conectado (aprobación de Meta ya dada, semilla para el video)
+-- WhatsApp en `pending`: es el estado REAL de un alta de WhatsApp Business.
+-- La aprobación de un número de negocio la da Meta y tarda de 1 a 3 días hábiles;
+-- no depende de esta instalación. Sembrarlo como `connected` hacía que la pantalla
+-- afirmara una conexión que no existe: en una demostración eso no se sostiene si
+-- alguien pregunta. `pending` es verdad y además es el comportamiento correcto.
 INSERT INTO channel_connections
     (client_account_id, channel, status, external_reference, connected_at)
 SELECT
-    c.id, 'whatsapp', 'connected',
+    c.id, 'whatsapp', 'pending',
     '5492615550102',
-    NOW() - INTERVAL '3 days'
+    NULL
 FROM client_accounts c
 WHERE c.email = 'ventas@techstore.com.ar'
 ON CONFLICT (client_account_id, channel) DO NOTHING;

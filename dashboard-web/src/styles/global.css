@@ -3589,3 +3589,18 @@ button {
     flex-direction: column;
   }
 }
+
+/* Leyenda debajo de una tabla: explica en una línea el vocabulario de la
+   pantalla (qué es un mínimo de stock, qué significa un pedido pendiente).
+   No es un aviso: es parte del contenido, por eso va en texto secundario. */
+.tabla-leyenda {
+  margin: 14px 2px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-3);
+  max-width: 78ch;
+}
+.tabla-leyenda strong {
+  color: var(--text-2);
+  font-weight: 600;
+}

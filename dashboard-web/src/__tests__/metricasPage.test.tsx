@@ -96,6 +96,35 @@ const text = () => container.textContent ?? '';
 const selects = () => Array.from(container.querySelectorAll('select'));
 const retryButtons = () => Array.from(container.querySelectorAll('button')).filter((b) => b.textContent === 'Reintentar');
 
+describe('MetricasPage: origen del dato por defecto', () => {
+  // Sin filtro, el promedio mezcla los pedidos que procesó el sistema (décimas de
+  // segundo) con el baseline manual cronometrado (minutos), y da una cifra que no
+  // describe a ninguno de los dos. Lo que le importa a quien mira el panel es lo
+  // que el sistema hizo.
+  it('abre filtrado por lo que procesó el sistema, no por todos los orígenes', async () => {
+    await mount();
+    const [, origen] = selects();
+    expect(origen.value).toBe('measured');
+  });
+
+  it('la primera consulta a la API ya lleva ese filtro', async () => {
+    await mount();
+    expect(ordersMock).toHaveBeenCalledWith(expect.objectContaining({ data_source: 'measured' }));
+    expect(chatbotMock).toHaveBeenCalledWith(expect.objectContaining({ data_source: 'measured' }));
+  });
+
+  it('se puede volver a ver todo eligiendo "Todos los orígenes"', async () => {
+    await mount();
+    const [, origen] = selects();
+    await act(async () => {
+      origen.value = '';
+      origen.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await flush();
+    expect(ordersMock).toHaveBeenLastCalledWith(expect.objectContaining({ data_source: undefined }));
+  });
+});
+
 describe('MetricasPage: bloque Pedidos', () => {
   it('con datos: stat cards, dona de estados y área diaria', async () => {
     await mount();
@@ -151,8 +180,8 @@ describe('MetricasPage: filtros compartidos', () => {
       hoursSelect.dispatchEvent(new Event('change', { bubbles: true }));
     });
     await flush();
-    expect(ordersMock).toHaveBeenLastCalledWith({ hours: 24, data_source: undefined });
-    expect(chatbotMock).toHaveBeenLastCalledWith({ hours: 24, data_source: undefined });
+    expect(ordersMock).toHaveBeenLastCalledWith({ hours: 24, data_source: 'measured' });
+    expect(chatbotMock).toHaveBeenLastCalledWith({ hours: 24, data_source: 'measured' });
   });
 
   it('"Carga manual" sigue en Pedidos y se ignora (con aviso) en Chatbot', async () => {

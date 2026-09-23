@@ -28,7 +28,7 @@ export interface NodeKind {
 
 const KINDS: Record<string, NodeKind> = {
   webhook: { label: 'Entrada de datos', icon: 'webhook' },
-  postgres: { label: 'Base de datos (PostgreSQL)', icon: 'database' },
+  postgres: { label: 'Base de datos', icon: 'database' },
   if: { label: 'Condición (Sí / No)', icon: 'branch' },
   switch: { label: 'Bifurcación (Switch)', icon: 'switch' },
   emailSend: { label: 'Envío de email', icon: 'mail' },
@@ -45,7 +45,7 @@ const KINDS: Record<string, NodeKind> = {
   noOp: { label: 'Sin operación', icon: 'node' },
   chainLlm: { label: 'Cadena de IA (modelo de lenguaje)', icon: 'ai' },
   agent: { label: 'Agente de IA', icon: 'ai' },
-  lmChatOpenAi: { label: 'Modelo de lenguaje (OpenAI)', icon: 'ai' },
+  lmChatOpenAi: { label: 'Modelo de lenguaje', icon: 'ai' },
 };
 
 const TRIGGERS: Record<string, string> = {

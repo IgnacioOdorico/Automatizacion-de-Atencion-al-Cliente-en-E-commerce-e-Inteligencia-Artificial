@@ -42,10 +42,18 @@ export interface DataSourceOption {
 
 export const DATA_SOURCE_OPTIONS: readonly DataSourceOption[] = [
   { value: '', label: 'Todos los orígenes' },
-  { value: 'measured', label: 'Medido' },
-  { value: 'synthetic', label: 'Sintético' },
-  { value: 'e4_manual', label: 'Carga manual (solo pedidos)', ordersOnly: true },
+  { value: 'measured', label: 'Procesado por el sistema' },
+  { value: 'synthetic', label: 'Datos de prueba' },
+  { value: 'e4_manual', label: 'Proceso manual (solo pedidos)', ordersOnly: true },
 ];
+
+/**
+ * Con qué origen abre la página. No es 'todos' a propósito: ese promedio mezcla
+ * lo que procesó el sistema (décimas de segundo) con el proceso manual que se
+ * cronometró como referencia (minutos), y el número que sale no describe a
+ * ninguno de los dos.
+ */
+export const DEFAULT_DATA_SOURCE = 'measured';
 
 const CHATBOT_DATA_SOURCE_DOMAIN = new Set(['measured', 'synthetic']);
 

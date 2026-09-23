@@ -4,7 +4,7 @@ import { ChatbotMetricsSection } from '@/components/metrics/ChatbotMetricsSectio
 import { MetricsFilters } from '@/components/metrics/MetricsFilters';
 import { OrdersMetricsSection } from '@/components/metrics/OrdersMetricsSection';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
-import { ALL_HOURS_VALUE, hoursForOption } from '@/lib/metricsFilters';
+import { ALL_HOURS_VALUE, DEFAULT_DATA_SOURCE, hoursForOption } from '@/lib/metricsFilters';
 
 /**
  * Métricas: reemplazo en vivo, dentro del portal, de los paneles de los dos
@@ -16,7 +16,10 @@ import { ALL_HOURS_VALUE, hoursForOption } from '@/lib/metricsFilters';
  */
 export function MetricasPage() {
   const [hoursValue, setHoursValue] = useState<string>(ALL_HOURS_VALUE);
-  const [dataSource, setDataSource] = useState<string>('');
+  // Arranca en lo que procesó el sistema, no en todos los orígenes: sin este
+  // filtro el promedio mezcla los pedidos automaticos con el baseline manual
+  // cronometrado y da una cifra que no describe a ninguno de los dos.
+  const [dataSource, setDataSource] = useState<string>(DEFAULT_DATA_SOURCE);
   const reducedMotion = usePrefersReducedMotion();
   const hours = hoursForOption(hoursValue);
 
@@ -25,8 +28,8 @@ export function MetricasPage() {
       <header className="page__head">
         <h1>Métricas</h1>
         <p className="page__sub">
-          Los mismos indicadores que hoy se ven en Grafana, en vivo y dentro del portal: tiempos de atención,
-          distribución de estados e interacciones del chatbot.
+          Los tiempos de atención, la distribución de estados de tus pedidos y las consultas que
+          atendió el asistente. Se recalculan en vivo, cada vez que abrís esta pantalla.
         </p>
       </header>
 
