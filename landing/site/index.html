@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Atendo · El post-venta de tu tienda, resuelto solo</title>
+<meta name="description" content="Atendo procesa los pedidos de tu e-commerce y responde a tus clientes las 24 horas. Trabajo Integrador, Tecnicatura Universitaria en Programación, UTN Facultad Regional Mendoza." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366F1'/%3E%3Cpath d='M16 7l7 18h-3.4l-1.5-4h-4.2l-1.5 4H9l7-18zm0 5.6L14.1 18h3.8L16 12.6z' fill='%23fff'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<!-- ══════════════════════════════════════════════════ navegación ══ -->
+<header class="nav" id="nav">
+  <div class="contenedor nav__fila">
+    <a class="marca" href="#inicio" aria-label="Atendo, inicio">
+      <svg class="marca__logo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="var(--brand)"/>
+        <path d="M16 7l7 18h-3.4l-1.5-4h-4.2l-1.5 4H9l7-18zm0 5.6L14.1 18h3.8L16 12.6z" fill="#fff"/>
+      </svg>
+      <span class="marca__texto">Atendo</span>
+    </a>
+
+    <nav class="nav__links" aria-label="Secciones">
+      <a href="#producto">Producto</a>
+      <a href="#probalo">Probalo</a>
+      <a href="#resultados">Resultados</a>
+      <a href="#panel">El panel</a>
+    </nav>
+
+    <a class="boton boton--primario boton--sm" href="http://localhost:8080" target="_blank" rel="noopener">
+      Entrar al panel
+    </a>
+  </div>
+</header>
+
+<main id="contenido">
+
+<!-- ══════════════════════════════════════════════════════ hero ══ -->
+<section class="hero" id="inicio">
+  <div class="hero__aura" aria-hidden="true"></div>
+  <div class="contenedor hero__grid">
+
+    <div class="hero__texto">
+      <p class="pastilla">
+        <span class="pastilla__punto" aria-hidden="true"></span>
+        Funcionando ahora, sobre datos reales
+      </p>
+
+      <h1 class="hero__titulo">
+        El post-venta de tu tienda,<br />
+        <span class="degrade">resuelto solo</span>.
+      </h1>
+
+      <p class="hero__bajada">
+        Atendo toma cada pedido que entra, lo procesa, descuenta el stock y avisa al cliente.
+        Y cuando el cliente pregunta algo, le responde. A cualquier hora, sin que nadie
+        tenga que estar mirando la pantalla.
+      </p>
+
+      <div class="hero__acciones">
+        <a class="boton boton--primario" href="#probalo">
+          Probá el asistente
+          <svg viewBox="0 0 16 16" class="boton__icono" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="boton boton--fantasma" href="#panel">Ver cómo se ve por dentro</a>
+      </div>
+
+      <p class="hero__pie">
+        Trabajo Integrador · Tecnicatura Universitaria en Programación · UTN Facultad Regional Mendoza
+      </p>
+    </div>
+
+    <!-- tarjeta de actividad en vivo -->
+    <aside class="vivo" aria-labelledby="vivo-titulo">
+      <div class="vivo__cabecera">
+        <h2 class="vivo__titulo" id="vivo-titulo">Actividad del sistema</h2>
+        <span class="vivo__estado" data-estado="cargando">
+          <span class="vivo__latido" aria-hidden="true"></span>
+          <span data-texto-estado>Conectando…</span>
+        </span>
+      </div>
+
+      <dl class="vivo__lista">
+        <div class="vivo__item">
+          <dt>Pedidos procesados</dt>
+          <dd><span class="numero" data-stat="orders">—</span></dd>
+        </div>
+        <div class="vivo__item">
+          <dt>Consultas atendidas</dt>
+          <dd><span class="numero" data-stat="interactions">—</span></dd>
+        </div>
+        <div class="vivo__item">
+          <dt>Casos abiertos por el asistente</dt>
+          <dd><span class="numero" data-stat="tickets">—</span></dd>
+        </div>
+        <div class="vivo__item">
+          <dt>Productos en catálogo</dt>
+          <dd><span class="numero" data-stat="products">—</span></dd>
+        </div>
+      </dl>
+
+      <p class="vivo__nota">
+        Son los datos de esta instalación, leídos en vivo. Si escribís en el chat de abajo,
+        este contador sube.
+      </p>
+    </aside>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ problema ══ -->
+<section class="seccion" id="problema">
+  <div class="contenedor">
+    <p class="rotulo">El problema</p>
+    <h2 class="seccion__titulo">Nadie escala copiando pedidos a mano.</h2>
+    <p class="seccion__bajada">
+      En una PyME de e-commerce, cada venta dispara la misma cadena de tareas manuales.
+      Funciona con diez pedidos por día. Con cien, ya no.
+    </p>
+
+    <div class="tarjetas tarjetas--3">
+      <article class="tarjeta">
+        <div class="tarjeta__icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5l3.2 2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </div>
+        <h3>49 segundos por pedido</h3>
+        <p>
+          Es lo que se cronometró en el proceso manual: abrir el pedido, verificar el stock,
+          descontarlo, confirmar y escribirle al cliente. Multiplicado por cada venta del día.
+        </p>
+      </article>
+
+      <article class="tarjeta">
+        <div class="tarjeta__icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4V5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Las consultas no esperan</h3>
+        <p>
+          «¿Dónde está mi pedido?» llega a las once de la noche, un domingo. Si la respuesta
+          tarda un día, el cliente ya escribió a la competencia.
+        </p>
+      </article>
+
+      <article class="tarjeta">
+        <div class="tarjeta__icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 4l8 14H4l8-14z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="16.4" r="1" fill="currentColor"/></svg>
+        </div>
+        <h3>El error sale caro</h3>
+        <p>
+          Vender algo que ya no hay en stock cuesta el reembolso, el envío y la reputación.
+          Y pasa siempre por lo mismo: dos pedidos al mismo tiempo, una planilla desactualizada.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ producto ══ -->
+<section class="seccion seccion--alt" id="producto">
+  <div class="contenedor">
+    <p class="rotulo">Qué hace Atendo</p>
+    <h2 class="seccion__titulo">Tres cosas, bien.</h2>
+
+    <div class="tarjetas tarjetas--3">
+      <article class="tarjeta tarjeta--producto">
+        <span class="tarjeta__numero" aria-hidden="true">01</span>
+        <h3>Procesa cada pedido</h3>
+        <p>
+          El pedido entra y el sistema lo registra, verifica el stock, lo descuenta, confirma
+          la venta y le manda el mail al cliente. Si no hay stock, avisa en vez de vender de más.
+        </p>
+        <ul class="lista-check">
+          <li>Sin sobreventa bajo pedidos simultáneos</li>
+          <li>Aviso automático cuando un producto queda en rojo</li>
+          <li>Cada paso queda registrado con su hora exacta</li>
+        </ul>
+      </article>
+
+      <article class="tarjeta tarjeta--producto">
+        <span class="tarjeta__numero" aria-hidden="true">02</span>
+        <h3>Atiende a tus clientes</h3>
+        <p>
+          Un asistente entiende lo que el cliente pregunta —una duda, el estado de un pedido,
+          un reclamo— y responde con la información real de tu tienda. Los reclamos los deriva
+          como caso abierto, no los inventa.
+        </p>
+        <ul class="lista-check">
+          <li>WhatsApp, Telegram y correo</li>
+          <li>Responde con tu catálogo y tus políticas</li>
+          <li>Un reclamo abre un caso con su historial</li>
+        </ul>
+      </article>
+
+      <article class="tarjeta tarjeta--producto">
+        <span class="tarjeta__numero" aria-hidden="true">03</span>
+        <h3>Te muestra todo</h3>
+        <p>
+          Un panel donde ves los pedidos entrando en vivo, los casos abiertos, el catálogo y
+          los tiempos de respuesta. Sin planillas, sin consultas raras, sin pedirle nada a nadie.
+        </p>
+        <ul class="lista-check">
+          <li>Pedidos y casos al día</li>
+          <li>Gráficos de tiempos y tipos de consulta</li>
+          <li>Conectar o desconectar cada canal</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ chat ══ -->
+<section class="seccion" id="probalo">
+  <div class="contenedor">
+    <p class="rotulo">Probalo</p>
+    <h2 class="seccion__titulo">No te lo contamos. Probálo.</h2>
+    <p class="seccion__bajada">
+      Nada de esto es una grabación. Los dos botones de abajo meten un pedido de verdad en
+      el sistema, y el chat le habla al mismo asistente que atiende a los clientes.
+    </p>
+
+    <!-- ---- un pedido real, en vivo ---- -->
+    <div class="pedido" data-pedido>
+      <div class="pedido__intro">
+        <h3 class="pedido__titulo">1. Meté un pedido</h3>
+        <p>
+          Apretá y mirá el recorrido completo: el sistema registra la venta, revisa el stock,
+          lo descuenta, confirma y le manda el correo al cliente. Los tiempos que ves abajo
+          son los de <em>ese</em> pedido, no un promedio.
+        </p>
+        <div class="pedido__acciones">
+          <button type="button" class="boton boton--primario" data-escenario="con_stock">
+            Comprar una unidad
+          </button>
+          <button type="button" class="boton boton--fantasma" data-escenario="sin_stock">
+            Pedir más de lo que hay
+          </button>
+        </div>
+        <p class="pedido__aviso" data-pedido-aviso hidden></p>
+      </div>
+
+      <div class="pedido__panel">
+        <ol class="pasos" data-pasos>
+          <li class="paso" data-paso="recibido">
+            <span class="paso__punto" aria-hidden="true"></span>
+            <span class="paso__nombre">Pedido recibido</span>
+            <span class="paso__tiempo" data-tiempo="recibido"></span>
+          </li>
+          <li class="paso" data-paso="stock">
+            <span class="paso__punto" aria-hidden="true"></span>
+            <span class="paso__nombre">Stock verificado y descontado</span>
+            <span class="paso__tiempo" data-tiempo="stock"></span>
+          </li>
+          <li class="paso" data-paso="confirmado">
+            <span class="paso__punto" aria-hidden="true"></span>
+            <span class="paso__nombre">Venta confirmada</span>
+            <span class="paso__tiempo" data-tiempo="confirmado"></span>
+          </li>
+          <li class="paso" data-paso="aviso">
+            <span class="paso__punto" aria-hidden="true"></span>
+            <span class="paso__nombre">Cliente notificado por correo</span>
+            <span class="paso__tiempo" data-tiempo="aviso"></span>
+          </li>
+        </ol>
+
+        <div class="recibo" data-recibo hidden>
+          <dl class="recibo__lista">
+            <div><dt>Pedido</dt><dd data-recibo="order_number">—</dd></div>
+            <div><dt>Producto</dt><dd data-recibo="product_name">—</dd></div>
+            <div><dt>Cantidad</dt><dd data-recibo="quantity">—</dd></div>
+            <div><dt>Estado</dt><dd data-recibo="status">—</dd></div>
+            <div><dt>De extremo a extremo</dt><dd data-recibo="end_to_end_seconds">—</dd></div>
+          </dl>
+        </div>
+
+        <p class="pedido__reposo" data-pedido-reposo>
+          Todavía no metiste ningún pedido. Cuando lo hagas, el recorrido aparece acá.
+        </p>
+      </div>
+    </div>
+
+    <h3 class="pedido__titulo pedido__titulo--chat">2. Escribile al asistente</h3>
+    <p class="seccion__bajada seccion__bajada--chat">
+      Tu mensaje entra por el mismo camino que el de un cliente por WhatsApp, y lo que leés
+      es lo que el asistente responde en el momento, con el catálogo y las políticas reales.
+    </p>
+
+    <div class="chat" data-chat>
+      <div class="chat__barra">
+        <span class="chat__avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 1 8 8v3a4 4 0 0 1-4 4h-1.2l-2.3 2.6a.6.6 0 0 1-1-.4V18H8a4 4 0 0 1-4-4v-3a8 8 0 0 1 8-8z" fill="currentColor"/></svg>
+        </span>
+        <div class="chat__quien">
+          <strong>Asistente de TechStore</strong>
+          <span class="chat__sub" data-chat-estado>En línea</span>
+        </div>
+      </div>
+
+      <div class="chat__mensajes" data-chat-mensajes role="log" aria-live="polite" aria-label="Conversación con el asistente">
+        <div class="burbuja burbuja--bot">
+          <p>¡Hola! Soy el asistente de TechStore. Puedo ayudarte con dudas sobre envíos, pagos, cambios y el estado de tu pedido. ¿Qué necesitás?</p>
+        </div>
+      </div>
+
+      <div class="chat__sugerencias" data-chat-sugerencias>
+        <!-- Consultas que el asistente responde con la base de la tienda, y un reclamo,
+             que además le abre un caso al comercio. No se sugiere una consulta de
+             «estado de pedido»: el asistente la atiende, pero el registro guarda solo su
+             primera línea y no el detalle que recibe el cliente (ver landing/README.md). -->
+        <button type="button" class="sugerencia">¿Hacen envíos a Mendoza?</button>
+        <button type="button" class="sugerencia">¿Puedo pagar en cuotas?</button>
+        <button type="button" class="sugerencia">Mi pedido llegó fallado, quiero un cambio</button>
+      </div>
+
+      <form class="chat__form" data-chat-form>
+        <label class="visualmente-oculto" for="chat-entrada">Escribí tu consulta</label>
+        <input
+          class="chat__entrada"
+          id="chat-entrada"
+          name="mensaje"
+          type="text"
+          maxlength="500"
+          autocomplete="off"
+          placeholder="Escribí tu consulta…"
+          data-chat-entrada
+        />
+        <button class="chat__enviar" type="submit" data-chat-enviar>
+          <span class="visualmente-oculto">Enviar</span>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10l14-6-6 14-2-6-6-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <p class="chat__leyenda">
+      Cada mensaje queda registrado en el panel, igual que el de un cliente real.
+      Si pedís un reclamo, vas a ver el caso abierto del otro lado.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ resultados ══ -->
+<section class="seccion seccion--alt" id="resultados">
+  <div class="contenedor">
+    <p class="rotulo">Resultados medidos</p>
+    <h2 class="seccion__titulo">Lo que dice la medición, no el folleto.</h2>
+    <p class="seccion__bajada">
+      Todo lo que sigue se midió sobre el sistema corriendo, con el registro automático de
+      cada tiempo. Cada cifra viene con su intervalo de confianza, porque una cifra sin
+      intervalo no dice nada.
+    </p>
+
+    <div class="metricas">
+      <article class="metrica metrica--destacada">
+        <p class="metrica__valor">0,063<span class="metrica__unidad">s</span></p>
+        <h3 class="metrica__nombre">De extremo a extremo</h3>
+        <p class="metrica__detalle">
+          Desde que entra el pedido hasta que sale el aviso al cliente, sobre 50 pedidos.
+          El mismo trabajo, cronometrado a mano, llevó <strong>49,13 s</strong> por pedido.
+        </p>
+      </article>
+
+      <article class="metrica">
+        <p class="metrica__valor">1,47<span class="metrica__unidad">s</span></p>
+        <h3 class="metrica__nombre">Tarda el asistente en responder</h3>
+        <p class="metrica__detalle">Tiempo medio de respuesta sobre el corpus de consultas medido.</p>
+      </article>
+
+      <article class="metrica">
+        <p class="metrica__valor">92,7<span class="metrica__unidad">%</span></p>
+        <h3 class="metrica__nombre">Clasifica bien la consulta</h3>
+        <p class="metrica__detalle">
+          Distingue duda, estado de pedido y reclamo.
+          <span class="metrica__ic">IC 95 %: 87,3 % – 95,9 %</span>
+        </p>
+      </article>
+
+      <article class="metrica">
+        <p class="metrica__valor">0</p>
+        <h3 class="metrica__nombre">Ventas sin stock</h3>
+        <p class="metrica__detalle">
+          Con 20 pedidos casi simultáneos sobre el mismo producto, ninguno se vendió de más.
+        </p>
+      </article>
+    </div>
+
+    <div class="factor">
+      <div class="factor__numero">
+        <span class="factor__x">≈780×</span>
+        <span class="factor__ic">IC 95 %: 686× – 875×</span>
+      </div>
+      <div class="factor__texto">
+        <h3>Más rápido que el proceso manual</h3>
+        <p>
+          Es la razón entre los 49,13 s cronometrados a mano y los 0,063 s del sistema
+          (U de Mann-Whitney = 0, p = 2,7 × 10⁻¹¹). Lo decimos como lo dice el trabajo:
+          <strong>es un orden de magnitud de laboratorio, no una promesa de producción</strong>.
+          En una instalación real, la red y las APIs externas mandan.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ límites ══ -->
+<section class="seccion" id="limites">
+  <div class="contenedor contenedor--angosto">
+    <p class="rotulo">Alcance y límites</p>
+    <h2 class="seccion__titulo">Lo que todavía no resuelve.</h2>
+    <p class="seccion__bajada">
+      Un prototipo que solo cuenta lo que le sale bien no sirve para decidir nada.
+      Esto es lo que la medición dejó abierto.
+    </p>
+
+    <ul class="limites">
+      <li>
+        <strong>Bajo ráfaga, se pierden pedidos.</strong>
+        Con 20 pedidos casi simultáneos no hubo sobreventa, pero el 40,8 % quedó sin procesar
+        ni avisar. Sirve para el volumen de una PyME, no para un evento de tráfico alto.
+      </li>
+      <li>
+        <strong>La calidad del contenido no quedó establecida.</strong>
+        Dos evaluadores no llegaron a un acuerdo suficiente sobre si las respuestas eran
+        correctas, y una verificación automática encontró 2 de 18 respuestas con datos que
+        la base de conocimiento no respalda.
+      </li>
+      <li>
+        <strong>La exactitud depende del prompt, no de la base.</strong>
+        Un experimento factorial mostró 17,3 puntos de diferencia según las reglas y ejemplos
+        del prompt, contra 2,0 puntos por la base de conocimiento. Cambiar el prompt cambia
+        el resultado.
+      </li>
+      <li>
+        <strong>Una tienda por instalación.</strong>
+        El panel maneja un comercio. Atender a varios clientes desde la misma instalación
+        exige un trabajo de aislamiento que todavía no está hecho.
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ panel ══ -->
+<section class="seccion seccion--alt" id="panel">
+  <div class="contenedor">
+    <p class="rotulo">El panel</p>
+    <h2 class="seccion__titulo">Todo lo que pasa, en un solo lugar.</h2>
+
+    <div class="panel__grid">
+      <div class="panel__texto">
+        <ul class="lista-panel">
+          <li><strong>Inicio.</strong> Pedidos del día, casos abiertos y tiempos, actualizados solos.</li>
+          <li><strong>Pedidos.</strong> Cada venta con su estado y su detalle. Los nuevos se resaltan al entrar.</li>
+          <li><strong>Casos.</strong> Los reclamos que abrió el asistente, con su canal y su urgencia.</li>
+          <li><strong>Catálogo.</strong> Lo que el asistente sabe de tus productos.</li>
+          <li><strong>Métricas.</strong> Gráficos de tiempos, estados y tipos de consulta.</li>
+          <li><strong>Conexiones.</strong> Conectar WhatsApp, Telegram o Gmail sin tocar nada técnico.</li>
+        </ul>
+        <a class="boton boton--primario" href="http://localhost:8080" target="_blank" rel="noopener">
+          Entrar al panel
+          <svg viewBox="0 0 16 16" class="boton__icono" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <!-- maqueta del panel, dibujada: no es una captura que se desactualiza -->
+      <div class="maqueta" aria-hidden="true">
+        <div class="maqueta__barra">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="maqueta__cuerpo">
+          <div class="maqueta__lateral">
+            <div class="maqueta__marca"></div>
+            <div class="maqueta__item maqueta__item--activo"></div>
+            <div class="maqueta__item"></div>
+            <div class="maqueta__item"></div>
+            <div class="maqueta__item"></div>
+            <div class="maqueta__item"></div>
+          </div>
+          <div class="maqueta__principal">
+            <div class="maqueta__kpis">
+              <div class="maqueta__kpi"><span></span><b></b></div>
+              <div class="maqueta__kpi"><span></span><b></b></div>
+              <div class="maqueta__kpi"><span></span><b></b></div>
+            </div>
+            <div class="maqueta__grafico">
+              <svg viewBox="0 0 320 90" preserveAspectRatio="none">
+                <polyline points="0,72 40,60 80,64 120,42 160,48 200,28 240,34 280,16 320,22"
+                          fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+                <polygon points="0,72 40,60 80,64 120,42 160,48 200,28 240,34 280,16 320,22 320,90 0,90"
+                         fill="url(#relleno)" opacity="0.28"/>
+                <defs>
+                  <linearGradient id="relleno" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--brand)"/>
+                    <stop offset="100%" stop-color="var(--brand)" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div class="maqueta__filas">
+              <div class="maqueta__fila maqueta__fila--nueva"></div>
+              <div class="maqueta__fila"></div>
+              <div class="maqueta__fila"></div>
+              <div class="maqueta__fila"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════ respaldo ══ -->
+<section class="seccion" id="respaldo">
+  <div class="contenedor contenedor--angosto centro">
+    <p class="rotulo">Respaldo</p>
+    <h2 class="seccion__titulo">No es una idea. Está medido y evaluado.</h2>
+    <p class="seccion__bajada">
+      Atendo es el prototipo de un Trabajo Integrador de la Tecnicatura Universitaria en
+      Programación de la Universidad Tecnológica Nacional, Facultad Regional Mendoza.
+      El documento fue aprobado. Todas las cifras de esta página salen de ese trabajo y
+      son recalculables: los guiones y los datos crudos se versionan en el repositorio.
+    </p>
+
+    <div class="firma">
+      <div class="firma__bloque">
+        <p class="firma__rotulo">Autores</p>
+        <p class="firma__valor">Santiago Sordi · Ignacio Odorico · Juan Cruz Ana</p>
+      </div>
+      <div class="firma__bloque">
+        <p class="firma__rotulo">Dirección</p>
+        <p class="firma__valor">Alberto Cortez</p>
+      </div>
+      <div class="firma__bloque">
+        <p class="firma__rotulo">Institución</p>
+        <p class="firma__valor">UTN · Facultad Regional Mendoza · Mendoza, 2026</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ cierre ══ -->
+<section class="cierre">
+  <div class="contenedor contenedor--angosto centro">
+    <h2 class="cierre__titulo">Tu tienda vende. Atendo se ocupa del resto.</h2>
+    <div class="hero__acciones hero__acciones--centro">
+      <a class="boton boton--primario" href="#probalo">Probá el asistente</a>
+      <a class="boton boton--fantasma" href="http://localhost:8080" target="_blank" rel="noopener">Entrar al panel</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="pie">
+  <div class="contenedor pie__fila">
+    <span class="marca marca--pie">
+      <svg class="marca__logo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="var(--brand)"/>
+        <path d="M16 7l7 18h-3.4l-1.5-4h-4.2l-1.5 4H9l7-18zm0 5.6L14.1 18h3.8L16 12.6z" fill="#fff"/>
+      </svg>
+      <span class="marca__texto">Atendo</span>
+    </span>
+    <p class="pie__texto">
+      Prototipo académico · UTN FRM 2026 · Los datos que ves son de una tienda de demostración
+    </p>
+  </div>
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

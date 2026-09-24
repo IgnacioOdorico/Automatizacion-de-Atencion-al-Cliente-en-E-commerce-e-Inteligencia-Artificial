@@ -29,10 +29,21 @@ backups/
 # --- Python (scripts de analisis de experimentos) ------------
 __pycache__/
 *.pyc
+.venv/
+.venv*/
+.pytest_cache/
+
+# --- Frontend (dashboard-web) --------------------------------
+node_modules/
+dist/
 
 # --- Claude Code --------------------------------------------
 # Worktrees, settings locales y todo lo de .claude: nunca se versiona.
 .claude/
+
+# --- Tooling de agentes (OpenCode / skill registry) ---------
+.opencode/
+.atl/
 
 # --- OS ------------------------------------------------------
 .DS_Store
@@ -46,3 +57,8 @@ desktop.ini
 env.example.env
 .env.example.pre-merge
 restore_credentials.sql
+
+# --- Windows: carpeta que deja un redirect a /dev/null ------
+# En PowerShell y CMD, redirigir a /dev/null crea literalmente una
+# carpeta dev con un archivo null adentro. No es codigo del proyecto.
+dev/

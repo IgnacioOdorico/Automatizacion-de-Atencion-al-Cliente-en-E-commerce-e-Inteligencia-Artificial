@@ -171,23 +171,27 @@ docker ps
 
 ### Paso 3 — Crear la base de datos
 
+**No hace falta si el volumen es nuevo**: `init_simple.sql` se ejecuta solo la primera vez que arranca el contenedor de Postgres (`docker-entrypoint-initdb.d`). Corré esto a mano únicamente si necesitás recrear el schema sobre un volumen que ya tenía tablas (y vas a ver errores de "ya existe" si el schema ya estaba, es esperable):
+
 ```powershell
 Get-Content init_simple.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
 ```
 
 ---
 
-### Paso 4 — Cargar datos de prueba
+### Paso 4 — Cargar el catálogo (productos y FAQs)
 
 ```powershell
-Get-Content seed_expand.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
+Get-Content seed_catalogo.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
 ```
 
 Verificar:
 ```powershell
 docker exec tesis_postgres psql -U n8n_user -d ecommerce_tesis -c "SELECT COUNT(*) FROM products; SELECT COUNT(*) FROM faq_responses;"
 ```
-Debe mostrar **20 productos** y **22 FAQs**.
+Debe mostrar **20 productos** y **23 FAQs**.
+
+> ⚠️ **Nunca ejecutes `seed_expand.sql`**: tiene `TRUNCATE ... CASCADE` y borra cualquier orden/ticket/interacción ya cargada (es el que generó la evidencia medida de la tesis). Queda congelado en el repo solo como referencia histórica.
 
 ---
 
@@ -195,14 +199,16 @@ Debe mostrar **20 productos** y **22 FAQs**.
 
 1. Abrí **http://localhost:5678**
 2. Ir a **Workflows → botón "..." → Import from file**
-3. Importar en este orden:
+3. Importar en este orden (los nombres reales del repo, con guion largo "—"; después de importar cada nodo Postgres/SMTP queda sin credencial asignada — se asigna en el **Paso 6**):
 
 | Archivo | Estado |
 |---------|--------|
-| `workflows/Flujo 1 - Pipeline de Procesamiento de Órdenes SIMPLE.json` | ✅ Activar |
-| `workflows/Flujo 2 - Chatbot Omnicanal IA.json` | ✅ Activar |
-| `workflows/Flujo 1 - ... PRODUCCION.json` | ⏸ Dejar inactivo |
-| `workflows/Flujo 2 - ... PRODUCCION.json` | ⏸ Dejar inactivo |
+| `workflows/Flujo 1 — Pipeline de Procesamiento de Órdenes.json` | ✅ Activar |
+| `workflows/Flujo 2 — Chatbot WhatsApp + Telegram.json` | ⏸ Importalo; activalo solo cuando además de Postgres/SMTP tengas cargada una credencial **OpenAI** y un bot de **Telegram propio para el chatbot** (distinto del bot de vínculo de cuenta del dashboard, que usa `workflows/Flujo 3 — Telegram Vínculo de Cuenta.json` — ver [docs/TUNEL_TELEGRAM.md](docs/TUNEL_TELEGRAM.md)) |
+| `workflows/Flujo 1 — Pipeline de Procesamiento de Órdenes PRODUCCION.json` | ⏸ Dejar inactivo (usa APIs externas reales) |
+| `workflows/Flujo 2 — Chatbot Omnicanal IA PRODUCCION.json` | ⏸ Dejar inactivo (usa APIs externas reales) |
+
+> Para el **Dashboard del cliente** (la web en `:8080`) hace falta además su propia migración y seed — ver la sección **[🖥️ Dashboard del cliente](#-dashboard-del-cliente)** más abajo, no son los mismos scripts que este paso.
 
 ---
 
@@ -492,12 +498,119 @@ Esta opción es ideal para **debugging** y ver qué hace cada nodo en detalle:
 
 ---
 
+## 🖥️ Dashboard del cliente
+
+Portal web para el dueño del e-commerce: métricas en vivo (pedidos de hoy, tickets abiertos, MTTD/MTTR/TMR), pedidos, tickets, catálogo, **monitoreo del bot en vivo**, conexión de canales (WhatsApp, Telegram, Gmail) y perfil. **Lee la misma BD que los Flujos 1 y 2 sin modificarlos**; solo agrega las tablas `client_accounts` y `channel_connections`.
+
+| Servicio | URL |
+|---|---|
+| Portal (React + nginx) | http://localhost:8080 |
+| API (FastAPI) | http://localhost:8000 (`/health`; `/docs` viene apagado) |
+
+### Levantarlo
+
+1. Completá en `.env` las variables `DASHBOARD_*` (ver abajo). Sin las tres obligatorias la API **no arranca** a propósito (fail-closed).
+2. `docker compose up -d --build`
+3. La primera vez sobre una BD existente, aplicá la migración y el seed (son idempotentes):
+
+```powershell
+Get-Content migracion_dashboard_cliente.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
+Get-Content seed_dashboard.sql | docker exec -i tesis_postgres psql -U n8n_user -d ecommerce_tesis
+```
+
+Cuenta demo del seed: `ventas@tecnoshopmza.com.ar` / `Demo2026!` (solo para la demo: no cargues `seed_dashboard.sql` en una instalación real).
+
+### Monitoreo del bot (`/monitoreo`)
+
+Pensado para explicar el workflow en cámara: muestra lo que hace el bot **al pie de la letra**, en solo lectura. Tiene tres pestañas:
+
+| Pestaña | Qué muestra | De dónde sale |
+|---|---|---|
+| **En vivo** | Línea de tiempo con cada pedido recibido, procesado y notificado, cada mensaje del cliente con la respuesta exacta del bot (intent, urgencia, TMR), tickets y alertas de stock. Se actualiza cada 3 s y se puede pausar. | `orders`, `interactions`, `tickets`, `stock_alerts` |
+| **Conversaciones** | Hilos por canal y usuario, en formato chat. | `interactions` |
+| **Workflow** | El propio workflow de n8n dibujado, con el camino de cada ejecución iluminado nodo por nodo (ramas "con stock" y "sin stock", errores), reproducción animada, modo "Seguir en vivo" y las métricas de la tesis. | Tablas internas de n8n en la misma Postgres: `workflow_entity`, `execution_entity`, `execution_data` |
+
+- Los contratos de la API están en [docs/API_MONITOREO.md](docs/API_MONITOREO.md).
+- **Seguridad:** el grafo nunca incluye `parameters` ni credenciales de los nodos, y la vista previa de salida de cada nodo sale recortada y con claves/tokens redactados.
+
+### Métricas (`/metricas`)
+
+Reemplaza en vivo los paneles que hoy están en Grafana (`grafana/dashboards/*.json`), pero calculados sobre los datos reales en el momento en que se pide, no sobre corridas fijas de Grafana. Dos bloques, con filtro de ventana (`hours`) y de `data_source`:
+
+| Bloque | Qué muestra | De dónde sale |
+|---|---|---|
+| **Pedidos** | MTTD, MTTR y extremo a extremo promedio, total de órdenes, distribución de estados, órdenes por día | `orders` |
+| **Chatbot** | TMR promedio (general y por intent), interacciones totales, distribución de intents, interacciones por día y canal | `interactions` (nunca `v_chatbot_corpus`: esa vista es una ventana congelada del 12/08 para el corpus del experimento, no algo "en vivo") |
+
+- Contratos en [docs/API_METRICAS.md](docs/API_METRICAS.md).
+- **El panel "Precisión (accuracy) 92.7%" de Grafana no se replica.** Es un literal fijo en la consulta SQL (`SELECT 92.7 AS "Accuracy"`), no algo calculado sobre datos reales; mostrarlo en el dashboard como si fuera una métrica en vivo sería engañoso. Si hace falta en el video, se explica aparte como resultado del experimento (factorial E8 de la tesis), no como parte del monitoreo.
+- **Datos:** sin el Flujo 2 importado y con sus credenciales cargadas en n8n (OpenAI, Telegram/SMTP), `interactions` queda vacía y la pestaña Conversaciones muestra su estado vacío. Los pedidos, tickets y ejecuciones (incluidos los errores) se ven igual.
+- **Acoplamiento:** la pestaña Workflow depende del esquema interno de n8n 2.12.2; si esas tablas no existen o cambian, degrada a un estado vacío y no rompe el resto del portal.
+
+### Variables de `.env`
+
+| Variable | Para qué |
+|---|---|
+| `DASHBOARD_JWT_SECRET`, `DASHBOARD_N8N_SECRET`, `DASHBOARD_ENC_KEY` | **Obligatorias.** Firma de JWT, secreto compartido con n8n (header `X-N8N-SECRET`) y clave Fernet que cifra las credenciales de canales. |
+| `NGROK_AUTHTOKEN`, `NGROK_DOMAIN`, `WEBHOOK_URL`, `N8N_PROXY_HOPS` | Solo con el túnel público para Telegram (`--profile tunnel`): ver [docs/TUNEL_TELEGRAM.md](docs/TUNEL_TELEGRAM.md). |
+| `DASHBOARD_GOOGLE_CLIENT_ID`, `DASHBOARD_GOOGLE_CLIENT_SECRET`, `DASHBOARD_GOOGLE_REDIRECT_URI` | Conexión de Gmail (OAuth2). |
+| `DASHBOARD_FRONTEND_URL` | Adonde vuelve el navegador tras Google. Default `http://localhost:8080`; con Vite, `http://localhost:5173`. |
+| `CORS_ORIGINS`, `DASHBOARD_TRUSTED_PROXIES` | Orígenes permitidos (nunca `*`) y proxy en el que se confía para la IP del cliente. |
+| `DASHBOARD_ENABLE_DOCS`, `DASHBOARD_ALLOW_REGISTRATION` | Prender `/docs` (dev) y cerrar el alta de cuentas (instalación pública). |
+
+Generar los secretos (usá valores distintos para cada uno; el segundo necesita `pip install cryptography`):
+
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(48))"                                  # DASHBOARD_JWT_SECRET y DASHBOARD_N8N_SECRET
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"     # DASHBOARD_ENC_KEY
+```
+
+### Credenciales que te tocan a vos
+
+- **Gmail**: en Google Cloud Console creá un cliente OAuth (Web) en modo testing con tu cuenta como usuario de prueba, y cargá como URI de redirección **exactamente** el valor de `DASHBOARD_GOOGLE_REDIRECT_URI` (`http://localhost:8000/connections/gmail/callback`).
+- **Telegram**: creá un bot nuevo con @BotFather (no reutilices el del Flujo 2), importá `workflows/Flujo 3 — Telegram Vínculo de Cuenta.json`, cargale en n8n las credenciales *Telegram API* (token del bot) y *Header Auth* (`X-N8N-SECRET` = `DASHBOARD_N8N_SECRET`) y activalo. Necesita URL pública: `docker compose --profile tunnel up -d` (ngrok + gateway con allowlist). Paso a paso en **[docs/TUNEL_TELEGRAM.md](docs/TUNEL_TELEGRAM.md)**, que incluye Google Cloud para Gmail.
+
+### Límites honestos
+
+- Gmail y Telegram **reales** requieren esas credenciales; sin ellas la pantalla de Conexiones responde con un error controlado (Gmail) o el código nunca se confirma (Telegram).
+- El webhook de Telegram necesita una **URL pública HTTPS** (`WEBHOOK_URL`): el perfil `tunnel` del compose la da con ngrok y solo expone `POST /webhook/<uuid>/webhook` (guía: [docs/TUNEL_TELEGRAM.md](docs/TUNEL_TELEGRAM.md)).
+- WhatsApp queda en `pending` por diseño ("Meta aprueba en 1-3 días hábiles"); no llama a Meta.
+- Pedidos, tickets y catálogo son **globales**: todas las cuentas ven los mismos datos (un comercio por instalación). Detalle y demás desvíos: `SPEC_DASHBOARD_CLIENTE.md` §10.
+- Para que el Flujo 1 real escriba órdenes, la instancia de n8n necesita sus credenciales de Postgres (`postgres:5432`) y SMTP (`mailpit:1025`).
+
+Tests: `cd dashboard-api; .venv\Scripts\python -m pytest -q` (los de integración usan una BD aparte, `ecommerce_tesis_test` en `localhost:5433`, y se saltean si no está) y `cd dashboard-web; npm test; npm run build`. Más detalle del front y de la demo en vivo en `dashboard-web/README.md`.
+
+---
+
+## 🎬 Landing y video de presentación
+
+La cara pública del producto: para la presentación al tribunal y para mostrarlo fuera de la facultad.
+
+| Qué | Dónde |
+|---|---|
+| Landing | http://localhost:3001 (servicio `landing`) |
+| Guion del video | [`video/GUION.md`](video/GUION.md) — escena por escena, con tiempos y qué narrar |
+| Placas animadas | [`video/placas.html`](video/placas.html) — abrir en el navegador, `F` para pantalla completa, `→` para avanzar |
+| Limpieza post-ensayo | `video/limpiar_demo.ps1` |
+
+La landing tiene dos cosas que funcionan de verdad, no una maqueta:
+
+- **Un botón que mete un pedido real** por el mismo webhook que usaría la tienda, y muestra los tiempos de *ese* pedido. Hay un escenario con stock y otro sin stock, para ver que el sistema frena la venta en vez de vender de más.
+- **Un chat contra el asistente real**: el mensaje entra por el webhook del chatbot y la respuesta es la que el flujo escribió en `interactions`.
+
+Los detalles —los tres endpoints públicos, cómo no se pisan con los datos de la tesis, y una limitación conocida del chat— están en [`landing/README.md`](landing/README.md).
+
+> Lo que genera la landing lleva marcas propias (pedidos `ORD-WEB-`, usuarios `demo-*`) que ninguna corrida de la tesis usa. `video/limpiar_demo.ps1` lo borra y repone el stock descontado.
+
 ## 📁 Estructura del proyecto
 
 ```
-├── docker-compose.yml              ← Levanta los 4 servicios
+├── docker-compose.yml              ← Levanta los servicios (n8n, PostgreSQL, Mailpit, Grafana, dashboard-api, dashboard-web)
 ├── init_simple.sql                 ← Crea tablas y vistas en PostgreSQL
 ├── seed_expand.sql                 ← Carga productos, FAQs y datos históricos
+├── migracion_dashboard_cliente.sql ← Tablas del dashboard (client_accounts, channel_connections)
+├── seed_dashboard.sql              ← Cuenta demo del dashboard
+├── demo_en_vivo.ps1                ← Dispara una orden en vivo contra n8n (para filmar)
 ├── backup.ps1                      ← Backup completo (BD + workflows)
 ├── restore.ps1                     ← Restaurar desde backup
 ├── CREDENCIALES.example.md         ← Guía detallada de credenciales
@@ -509,10 +622,16 @@ Esta opción es ideal para **debugging** y ver qué hace cada nodo en detalle:
 │   ├── Flujo 2 - Chatbot Omnicanal IA.json
 │   └── Flujo 2 - Chatbot Omnicanal IA PRODUCCION.json
 │
+├── dashboard-api/                  ← Backend FastAPI del portal (pytest)
+├── dashboard-web/                  ← Frontend React + Vite servido por nginx (vitest)
+├── webhook-gateway/                ← nginx con allowlist delante de n8n (perfil "tunnel", ngrok)
+├── SPEC_DASHBOARD_CLIENTE.md       ← Spec del dashboard; §10 lista los desvíos reales
+│
 ├── docs/
 │   ├── TESIS_FINAL_UTN_v3.pdf      ← Documento final de tesis
 │   ├── SPEC_FLUJO1_PIPELINE_ORDENES.md
 │   ├── SPEC_FLUJO2_CHATBOT_OMNICANAL.md
+│   ├── TUNEL_TELEGRAM.md           ← Túnel ngrok, vínculo de Telegram y OAuth de Gmail (paso a paso)
 │   └── PROMPT_IA_CHATBOT.md        ← Prompt de GPT-4o-mini documentado
 │
 └── imagenes/                       ← Capturas de pantalla del sistema

@@ -1,0 +1,198 @@
+{
+  "name": "Flujo 3 — Telegram Vínculo de Cuenta",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🔗 Vínculo de Telegram\n\nEste workflow AISLADO conecta la cuenta del dashboard con Telegram usando el **bot dedicado de vínculo**.\n\n**Por qué un bot dedicado (no reutilizar el del Flujo 2):** un bot de Telegram solo admite UN webhook a la vez. Dos telegramTrigger con el mismo token se pisan el webhook y romperían el Flujo 2.\n\n## Setup (una sola vez)\n1. Crear el bot con @BotFather (p. ej. `/newbot tesis_vinculo_bot`) y obtener el token.\n2. Crear la credencial **Telegram API** con ese token y asignarla al Trigger y al nodo \"Responder Confirmación\". El token vive solo en la credencial (cifrada por n8n), no en el `.env`.\n3. Crear la credencial **Header Auth** con nombre `X-N8N-SECRET` y como valor el mismo `DASHBOARD_N8N_SECRET` del `.env` del dashboard-api; asignarla al nodo \"Confirmar Vínculo (API)\". No se usa `$env`: n8n 2.x lo bloquea por defecto y habilitarlo expondría todas las variables del contenedor a cualquier workflow.\n4. Requiere una URL pública HTTPS (`WEBHOOK_URL`, perfil `tunnel` del compose: ver docs/TUNEL_TELEGRAM.md) para que el trigger registre su webhook.\n\n**Flujo:** el cliente con \"Conectar Telegram\" en el panel obtiene un código de 6 dígitos. Lo envía por chat a este bot → el workflow valida `\\\\d{6}` → llama a `POST http://dashboard-api:8000/connections/telegram/confirm` con `X-N8N-SECRET` → responde confirmación al chat.\n\nEl workflow se importa con `active: false` (mismo patrón que Flujo 1 y 2). Se activa desde la UI de n8n.",
+        "height": 420,
+        "width": 460,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1360,
+        -280
+      ],
+      "id": "sticky-note-vinculo-001",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "name": "Trigger Telegram Vínculo",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        -1200,
+        0
+      ],
+      "id": "telegram-vinculo-trigger-001",
+      "typeVersion": 1.1,
+      "webhookId": "4136e4af-6173-4ec6-884b-8174d0df7a56",
+      "credentials": {
+        "telegramApi": {
+          "id": "PENDIENTE_TELEGRAM_VINCULO",
+          "name": "Telegram Bot Vínculo — PENDIENTE CREDENCIAL (token de @BotFather)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const msg = $json.message || {};\nconst text = String(msg.text || '').trim();\nconst chat_id = String(msg.chat?.id || msg.chat?.username || '');\nconst matches = /^\\d{6}$/.test(text);\nreturn [{ json: { ...$json, text, chat_id, matches } }];"
+      },
+      "name": "Normalizar y Validar Código",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -920,
+        200
+      ],
+      "id": "vinculo-normalizar-001",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "vinculo-if-regex-001",
+              "leftValue": "={{ $json.matches }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -680,
+        200
+      ],
+      "id": "vinculo-if-001",
+      "name": "¿Es código de 6 dígitos?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://dashboard-api:8000/connections/telegram/confirm",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ code: $json.text, chat_id: $json.chat_id }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -440,
+        0
+      ],
+      "id": "vinculo-confirm-api-001",
+      "name": "Confirmar Vínculo (API)",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PENDIENTE_HEADER_AUTH_VINCULO",
+          "name": "Header Auth X-N8N-SECRET — PENDIENTE CREDENCIAL (valor = DASHBOARD_N8N_SECRET)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalizar y Validar Código').item.json.chat_id }}",
+        "text": "=✅ ¡Listo! Tu cuenta quedó vinculada al panel de TechStore. Ya podés cerrar esta conversación y volver al panel para ver tu estado conectado.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -200,
+        0
+      ],
+      "id": "vinculo-respuesta-001",
+      "name": "Responder Confirmación",
+      "credentials": {
+        "telegramApi": {
+          "id": "PENDIENTE_TELEGRAM_VINCULO",
+          "name": "Telegram Bot Vínculo — PENDIENTE CREDENCIAL (token de @BotFather)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Telegram Vínculo": {
+      "main": [
+        [
+          {
+            "node": "Normalizar y Validar Código",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar y Validar Código": {
+      "main": [
+        [
+          {
+            "node": "¿Es código de 6 dígitos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es código de 6 dígitos?": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Vínculo (API)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Confirmar Vínculo (API)": {
+      "main": [
+        [
+          {
+            "node": "Responder Confirmación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "213e3a30cdd4dcda749fb058e675e1559cbf77ae8c1f235e919bf764d3432cf6"
+  },
+  "tags": [
+    {
+      "name": "vinculacion"
+    }
+  ]
+}
